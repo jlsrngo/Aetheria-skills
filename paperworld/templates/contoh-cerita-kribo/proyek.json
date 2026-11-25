@@ -1,0 +1,125 @@
+{
+  "judul": "Kribo & Pintu Lipat — PaperWorld",
+  "ukuran": [1920, 1080],
+  "fps": 30,
+  "vo": null,
+  "ekor": 0.8,
+  "musik": "auto",
+  "mood_musik": "kertas",
+  "sfx": true,
+  "subtitle": true,
+  "gaya_subtitle": "kertas",
+  "tokoh": {
+    "kribo": "kribo",
+    "nadia": "nadia",
+    "luna": "luna",
+    "kucing": "kucing"
+  },
+  "adegan": [
+    {
+      "id": "pembuka_kamar",
+      "latar": "kamar_kertas",
+      "durasi": 3.8,
+      "transisi": "potong",
+      "narasi": "Pagi itu Kribo menemukan buku pop-up aneh di meja belajarnya.",
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [-0.6, 0.0, 0.5],
+          "hadap": "depan",
+          "pose": "diam",
+          "ekspresi": "penasaran",
+          "masuk": { "t": 0.0, "dur": 0.7, "dari": "lipat" },
+          "aksi": [
+            { "t": 1.1, "pose": "pikir", "ekspresi": "mikir", "bicara": true }
+          ]
+        },
+        {
+          "id": "kucing",
+          "pos": [1.05, 0.0, 0.65],
+          "hadap": "kiri",
+          "pose": "lambai",
+          "ekspresi": "senang"
+        }
+      ],
+      "kamera": {
+        "awal": { "fokus": "kribo", "ukuran": "sedang", "sudut": "serong_kanan" },
+        "gerak": [
+          { "t": 0.5, "dur": 2.8, "jenis": "orbit", "sudut": -22, "dy": 0.15 }
+        ]
+      },
+      "sfx": [
+        { "t": 0.1, "jenis": "lipat" }
+      ]
+    },
+    {
+      "id": "ruang_pintu_ajaib",
+      "latar": "ruang_pintu",
+      "durasi": 4.2,
+      "transisi": "wipe",
+      "narasi": "Nadia dan Luna menunjuk pintu biru bertuliskan satu pintu lagi.",
+      "opsi": { "buka_pintu": 0.0 },
+      "animasi_opsi": [
+        { "t": 1.6, "dur": 1.2, "buka_pintu": 1.0 }
+      ],
+      "tokoh": [
+        {
+          "id": "nadia",
+          "pos": [-1.15, 0.0, 0.2],
+          "hadap": "serong_kanan",
+          "pose": "tunjuk",
+          "ekspresi": "senang",
+          "bicara": true
+        },
+        {
+          "id": "luna",
+          "pos": [1.05, 0.0, 0.25],
+          "hadap": "serong_kiri",
+          "pose": "lambai",
+          "ekspresi": "ceria"
+        },
+        {
+          "id": "kribo",
+          "pos": [0.0, 0.0, 0.9],
+          "hadap": "belakang",
+          "pose": "diam",
+          "ekspresi": "penasaran",
+          "aksi": [
+            { "t": 0.6, "ke_pos": [0.0, 0.0, -1.2], "durasi": 1.1, "gaya": "jalan" },
+            { "t": 1.7, "pose": "buka_pintu", "ekspresi": "kaget" }
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": { "pos": [0.2, 1.55, 3.8], "target": [0.0, 1.25, -1.6], "fov": 44 },
+        "gerak": [
+          { "t": 0.6, "dur": 3.0, "jenis": "pindah", "ke": { "pos": [0.0, 1.35, 1.15], "target": [0.0, 1.22, -2.5], "fov": 42 } }
+        ]
+      },
+      "sfx": [
+        { "t": 1.65, "jenis": "pintu" }
+      ]
+    },
+    {
+      "id": "taman_senang",
+      "latar": "taman_kertas",
+      "durasi": 4.0,
+      "transisi": "flash",
+      "narasi": "Di balik lipatan itu terbentang taman kertas cerah tempat semua ide lahir!",
+      "tokoh": [
+        { "id": "kribo", "pos": [-0.95, 0.0, 0.4], "hadap": "serong_kanan", "pose": "angkattangan", "ekspresi": "tertawa", "bicara": true },
+        { "id": "nadia", "pos": [0.15, 0.0, 0.2], "hadap": "depan", "pose": "tepuk", "ekspresi": "ceria" },
+        { "id": "luna", "pos": [1.15, 0.0, 0.4], "hadap": "serong_kiri", "pose": "menari", "ekspresi": "senang" }
+      ],
+      "kamera": {
+        "awal": { "pos": [0.0, 1.65, 4.4], "target": [0.05, 1.0, 0.2], "fov": 44 },
+        "gerak": [
+          { "t": 0.3, "dur": 3.2, "jenis": "push", "kali": 1.35 }
+        ]
+      },
+      "sfx": [
+        { "t": 0.4, "jenis": "ding" }
+      ]
+    }
+  ]
+}

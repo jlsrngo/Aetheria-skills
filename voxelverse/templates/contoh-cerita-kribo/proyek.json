@@ -1,0 +1,310 @@
+{
+  "judul": "Proyek Malam Kribo",
+  "ukuran": [1920, 1080],
+  "fps": 30,
+  "vo": null,
+  "musik": "auto",
+  "mood_musik": "hangat",
+  "subtitle": true,
+  "gaya_subtitle": "sinematik",
+  "tokoh": {
+    "kribo": "kribo",
+    "nadia": "nadia",
+    "robo": "robo"
+  },
+  "adegan": [
+    {
+      "latar": "kamar",
+      "waktu": "pagi",
+      "jam": "06:30",
+      "alarm": true,
+      "musik": "santai",
+      "narasi": "Pukul setengah tujuh pagi, weker berdering keras membangunkan Kribo.",
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [-1.35, 0.66, -1.55],
+          "hadap": "depan",
+          "pose": "tidur",
+          "ekspresi": "tidur",
+          "aksi": [
+            {
+              "kata": "membangunkan",
+              "pose": "duduk_sorak",
+              "ekspresi": "kaget",
+              "efek": "tanda_seru",
+              "efek_dur": 1.6
+            }
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [0.45, 1.12, -1.15],
+          "target": [0.25, 0.82, -2.20],
+          "fov": 34
+        },
+        "gerak": [
+          {
+            "t": 0.2,
+            "jenis": "goyang",
+            "kuat": 5,
+            "dur": 0.9
+          },
+          {
+            "kata": "membangunkan",
+            "jenis": "terbang",
+            "ke": {
+              "pos": [-0.20, 1.68, 1.55],
+              "target": [-1.25, 1.32, -1.55],
+              "fov": 46
+            },
+            "dur": 1.5
+          }
+        ]
+      }
+    },
+    {
+      "latar": "sekolah_luar",
+      "waktu": "pagi",
+      "papan": "SMP VOXEL",
+      "musik": "ceria",
+      "narasi": "Dengan ransel di punggung, Kribo berjalan bersemangat menuju sekolah.",
+      "transisi": {
+        "jenis": "iris",
+        "x": 0.5,
+        "y": 0.5,
+        "dur": 0.5
+      },
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [-3.2, 0.0, 2.2],
+          "pose": "jalan",
+          "ekspresi": "semangat",
+          "ransel": true,
+          "aksi": [
+            {
+              "t": 0.0,
+              "ke_pos": [0.2, 0.0, 0.2],
+              "durasi": 3.4,
+              "gaya": "jalan",
+              "hadap_akhir": "depan"
+            },
+            {
+              "t": 3.5,
+              "pose": "jempol",
+              "ekspresi": "senang"
+            }
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "ukuran": "lebar",
+          "fokus": "kribo"
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "ikut",
+            "fokus": "kribo",
+            "offset": [0.8, 1.55, 3.8],
+            "sampai": 3.4
+          },
+          {
+            "t": 3.4,
+            "jenis": "crane",
+            "ke": {
+              "dy": 1.4,
+              "dz": 1.5,
+              "target": [0.0, 2.4, -3.4]
+            },
+            "dur": 1.6
+          }
+        ]
+      }
+    },
+    {
+      "latar": "kafe",
+      "waktu": "siang",
+      "musik": "lofi",
+      "narasi": "Di kantin, Nadia memberi ide cemerlang untuk proyek diorama tiga dimensi.",
+      "transisi": {
+        "jenis": "whip",
+        "arah": "kiri",
+        "dur": 0.45
+      },
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [-0.55, 0.0, 0.6],
+          "hadap": "serong_kanan",
+          "pose": "mikir",
+          "ekspresi": "mikir"
+        },
+        {
+          "id": "nadia",
+          "pos": [0.55, 0.0, 0.6],
+          "hadap": "serong_kiri",
+          "pose": "ide",
+          "ekspresi": "semangat",
+          "bicara": true,
+          "aksi": [
+            {
+              "kata": "ide cemerlang",
+              "efek": "bohlam",
+              "efek_dur": 2.0
+            }
+          ]
+        }
+      ],
+      "balon": [
+        {
+          "oleh": "nadia",
+          "teks": "Kita bikin kota voxel 3D!",
+          "t": 0.8,
+          "sampai": 4.2
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [0.0, 1.52, 3.45],
+          "target": [0.0, 1.18, 0.60],
+          "fov": 44
+        },
+        "gerak": [
+          {
+            "t": 0.2,
+            "jenis": "orbit",
+            "sudut": 18,
+            "dur": 3.8
+          }
+        ]
+      }
+    },
+    {
+      "latar": "studio_kode",
+      "waktu": "malam",
+      "cuaca": "hujan",
+      "musik": "sinematik",
+      "narasi": "Malamnya ditemani hujan, Kribo dan Robo menulis kode sampai berhasil!",
+      "transisi": {
+        "jenis": "fade",
+        "dur": 0.6
+      },
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [0.08, 0.0, 0.36],
+          "hadap": "depan",
+          "pose": "duduk_ketik",
+          "ekspresi": "fokus",
+          "aksi": [
+            {
+              "kata": "berhasil",
+              "pose": "duduk_peregangan",
+              "ekspresi": "tertawa",
+              "efek": "kilau",
+              "efek_dur": 2.2
+            }
+          ]
+        },
+        {
+          "id": "robo",
+          "pos": [0.64, 0.775, 1.05],
+          "hadap": "depan",
+          "pose": "diam",
+          "ekspresi": "senang",
+          "aksi": [
+            {
+              "kata": "berhasil",
+              "pose": "sorak",
+              "ekspresi": "semangat"
+            }
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "ukuran": "luar_jendela"
+        },
+        "gerak": [
+          {
+            "t": 0.5,
+            "jenis": "potong",
+            "ke": {
+              "ukuran": "bahu_kiri"
+            }
+          },
+          {
+            "kata": "berhasil",
+            "jenis": "potong",
+            "ke": {
+              "ukuran": "balik_wajah"
+            }
+          },
+          {
+            "kata": "berhasil",
+            "jenis": "punch",
+            "kuat": 0.14
+          }
+        ]
+      }
+    },
+    {
+      "latar": "kota_hujan",
+      "waktu": "sore",
+      "cuaca": "gerimis",
+      "basah": true,
+      "musik": "hangat",
+      "narasi": "Kini dunia kecil buatan mereka menyala hidup di tengah kota.",
+      "transisi": {
+        "jenis": "fade",
+        "dur": 0.55
+      },
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [-4.8, 0.10, 1.0],
+          "hadap": "kanan",
+          "pose": "lambai",
+          "ekspresi": "senang"
+        },
+        {
+          "id": "nadia",
+          "pos": [-4.8, 0.10, 2.0],
+          "hadap": "kanan",
+          "pose": "sorak",
+          "ekspresi": "tertawa"
+        },
+        {
+          "id": "robo",
+          "pos": [-4.4, 0.10, 1.5],
+          "hadap": "kanan",
+          "pose": "sorak",
+          "ekspresi": "semangat"
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [2.2, 2.8, 7.5],
+          "target": [-1.0, 1.2, 0.5],
+          "fov": 46
+        },
+        "gerak": [
+          {
+            "t": 0.2,
+            "jenis": "crane",
+            "ke": {
+              "dy": 5.2,
+              "dz": 5.5,
+              "target": [0.0, 1.0, 0.0]
+            },
+            "dur": 4.2
+          }
+        ]
+      }
+    }
+  ]
+}

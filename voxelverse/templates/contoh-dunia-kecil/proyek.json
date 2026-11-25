@@ -1,0 +1,404 @@
+{
+  "judul": "Dunia Kecil VoxelVerse",
+  "ukuran": [1080, 1920],
+  "fps": 30,
+  "vo": null,
+  "musik": "auto",
+  "mood_musik": "sinematik",
+  "subtitle": true,
+  "gaya_subtitle": "sinematik",
+  "tokoh": {
+    "arka": "arka",
+    "robo": "robo",
+    "kribo": "kribo"
+  },
+  "adegan": [
+    {
+      "latar": "studio_kode",
+      "waktu": "malam",
+      "cuaca": "hujan",
+      "musik": "sinematik",
+      "narasi": "Ini bukan cuplikan game. Dunia kecil ini dibangun dari kode.",
+      "tokoh": [
+        {
+          "id": "arka",
+          "pos": [0.08, 0.0, 0.36],
+          "hadap": "depan",
+          "pose": "duduk_ketik",
+          "ekspresi": "fokus"
+        },
+        {
+          "id": "robo",
+          "pos": [0.64, 0.775, 1.05],
+          "hadap": 22,
+          "pose": "diam",
+          "ekspresi": "senang"
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "ukuran": "luar_jendela",
+          "fov": 42
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "push",
+            "kali": 1.32,
+            "dur": 3.8
+          }
+        ]
+      }
+    },
+    {
+      "latar": "studio_kode",
+      "waktu": "malam",
+      "cuaca": "hujan",
+      "musik": "sinematik",
+      "narasi": "Lihat cahayanya, gerak kameranya,",
+      "transisi": "potong",
+      "tokoh": [
+        {
+          "id": "arka",
+          "pos": [0.08, 0.0, 0.36],
+          "hadap": "depan",
+          "pose": "duduk_ketik",
+          "ekspresi": "fokus"
+        },
+        {
+          "id": "robo",
+          "pos": [0.64, 0.775, 1.05],
+          "hadap": -145,
+          "pose": "mikir",
+          "ekspresi": "tenang"
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "ukuran": "bahu_kiri"
+        },
+        "gerak": [
+          {
+            "t": 0.1,
+            "jenis": "pindah",
+            "ke": {
+              "pos": [-0.55, 1.32, 0.62],
+              "target": [-0.26, 1.14, 1.22],
+              "fov": 38
+            },
+            "dur": 3.4
+          }
+        ]
+      }
+    },
+    {
+      "latar": "studio_kode",
+      "waktu": "malam",
+      "cuaca": "hujan",
+      "musik": "sinematik",
+      "narasi": "bahkan bagaimana karakter itu bereaksi.",
+      "transisi": "potong",
+      "tokoh": [
+        {
+          "id": "arka",
+          "pos": [0.08, 0.0, 0.36],
+          "hadap": "depan",
+          "pose": "duduk",
+          "ekspresi": "mikir",
+          "aksi": [
+            {
+              "t": 0.45,
+              "pose": "duduk_peregangan",
+              "ekspresi": "fokus"
+            },
+            {
+              "t": 1.8,
+              "pose": "duduk",
+              "ekspresi": "tenang"
+            }
+          ]
+        },
+        {
+          "id": "robo",
+          "pos": [0.80, 0.775, 1.05],
+          "hadap": -135,
+          "pose": "sorak",
+          "ekspresi": "semangat"
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "ukuran": "balik_wajah",
+          "fov": 60
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "orbit",
+            "sudut": 8,
+            "dur": 2.4
+          }
+        ]
+      }
+    },
+    {
+      "latar": "studio_kode",
+      "waktu": "malam",
+      "cuaca": "hujan",
+      "build_layar": true,
+      "spark_layar": true,
+      "musik": "sinematik",
+      "narasi": "Lalu, satu percikan kecil",
+      "transisi": "potong",
+      "tokoh": [
+        {
+          "id": "arka",
+          "pos": [0.08, 0.0, 0.36],
+          "hadap": "depan",
+          "pose": "duduk",
+          "ekspresi": "terpana"
+        },
+        {
+          "id": "robo",
+          "pos": [0.64, 0.775, 1.05],
+          "hadap": -145,
+          "pose": "diam",
+          "ekspresi": "kaget"
+        }
+      ],
+      "percikan": [
+        {
+          "t": 0.7,
+          "dur": 1.2,
+          "jalur": [
+            [-0.36, 1.04, 1.16],
+            [-0.18, 1.24, 1.48],
+            [0.08, 1.46, 2.05]
+          ],
+          "warna": [255, 224, 130],
+          "kuat": 1.9
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [0.28, 1.18, 0.56],
+          "target": [-0.30, 1.12, 1.20],
+          "fov": 36
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "push",
+            "kali": 1.16,
+            "dur": 1.9
+          }
+        ]
+      }
+    },
+    {
+      "latar": "studio_kode",
+      "waktu": "malam",
+      "cuaca": "hujan",
+      "musik": "sinematik",
+      "narasi": "mengubah",
+      "transisi": "potong",
+      "tokoh": [
+        {
+          "id": "arka",
+          "pos": [0.08, 0.0, 0.36],
+          "hadap": "depan",
+          "pose": "duduk",
+          "ekspresi": "terpana"
+        },
+        {
+          "id": "robo",
+          "pos": [0.64, 0.775, 1.05],
+          "hadap": -145,
+          "pose": "diam",
+          "ekspresi": "kaget"
+        }
+      ],
+      "percikan": [
+        {
+          "t": 0.0,
+          "dur": 1.2,
+          "jalur": [
+            [0.10, 1.50, 1.85],
+            [0.85, 2.25, 3.20],
+            [1.55, 2.90, 4.60]
+          ],
+          "warna": [255, 228, 140],
+          "kuat": 2.1
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [0.22, 1.52, 1.45],
+          "target": [0.65, 1.85, 4.60],
+          "fov": 48
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "pindah",
+            "ke": {
+              "pos": [0.45, 2.05, 3.65],
+              "target": [1.35, 2.45, 4.80],
+              "fov": 50
+            },
+            "dur": 1.2
+          }
+        ]
+      }
+    },
+    {
+      "latar": "kota_hujan",
+      "waktu": "sore",
+      "cuaca": "hujan",
+      "basah": true,
+      "musik": "sinematik",
+      "narasi": "segalanya.",
+      "transisi": "potong",
+      "tokoh": [],
+      "percikan": [
+        {
+          "t": 0.0,
+          "dur": 1.1,
+          "jalur": [
+            [-4.35, 4.82, -6.0],
+            [-4.35, 4.50, -4.0],
+            [-4.35, 4.50, -1.5]
+          ],
+          "warna": [255, 230, 145],
+          "kuat": 2.2
+        },
+        {
+          "t": 0.15,
+          "dur": 0.9,
+          "jalur": [
+            [-4.4, 4.8, -4.0],
+            [-1.2, 4.72, -4.0],
+            [1.5, 4.65, -4.0]
+          ],
+          "warna": [255, 230, 145],
+          "kuat": 2.0
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [-1.8, 3.5, -1.2],
+          "target": [-4.4, 3.9, -4.0],
+          "fov": 42
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "pan",
+            "dx": 0.4,
+            "dur": 1.0
+          }
+        ]
+      }
+    },
+    {
+      "latar": "kota_hujan",
+      "waktu": "sore",
+      "cuaca": "hujan",
+      "basah": true,
+      "musik": "sinematik",
+      "narasi": "Karena animasi yang hebat bukan tentang banyaknya efek,",
+      "transisi": "potong",
+      "tokoh": [
+        {
+          "id": "kribo",
+          "pos": [-5.1, 0.10, -2.5],
+          "hadap": "depan",
+          "pose": "jalan",
+          "ekspresi": "senang",
+          "bawa": "payung",
+          "aksi": [
+            {
+              "t": 0.0,
+              "ke_pos": [-5.1, 0.10, 3.5],
+              "durasi": 3.4,
+              "gaya": "jalan"
+            }
+          ]
+        }
+      ],
+      "percikan": [
+        {
+          "t": 0.1,
+          "dur": 2.6,
+          "jalur": [
+            [-4.35, 4.82, -14.0],
+            [-4.35, 4.45, -9.0],
+            [-4.35, 4.82, -4.0],
+            [-4.35, 4.45, 1.0],
+            [-4.35, 4.82, 6.0]
+          ],
+          "warna": [255, 228, 138],
+          "kuat": 2.0
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [1.8, 4.4, 6.2],
+          "target": [0.0, 1.4, -1.5],
+          "fov": 44
+        },
+        "gerak": [
+          {
+            "t": 0.0,
+            "jenis": "ikut",
+            "fokus": "tram",
+            "offset": [1.6, 3.4, 6.4],
+            "sampai": 3.4
+          }
+        ]
+      }
+    },
+    {
+      "latar": "kota_hujan",
+      "waktu": "sore",
+      "cuaca": "hujan",
+      "basah": true,
+      "jendela_studio": true,
+      "musik": "sinematik",
+      "narasi": "tapi tentang membuat sesuatu terasa hidup.",
+      "transisi": "potong",
+      "tokoh": [],
+      "teks": [
+        {
+          "t": 1.8,
+          "sampai": 5.0,
+          "gaya": "kutipan",
+          "isi": "sebuah dunia kecil, dibangun dari kode",
+          "posisi": [0.5, 0.88]
+        }
+      ],
+      "kamera": {
+        "awal": {
+          "pos": [-4.25, 3.45, 0.15],
+          "target": [-7.35, 3.32, 0.0],
+          "fov": 42
+        },
+        "gerak": [
+          {
+            "t": 0.4,
+            "jenis": "terbang",
+            "via": [
+              [-1.5, 6.8, 7.2]
+            ],
+            "ke": {
+              "pos": [0.0, 11.4, 16.8],
+              "target": [0.0, 1.8, -5.5],
+              "fov": 46
+            },
+            "dur": 3.6
+          }
+        ]
+      }
+    }
+  ]
+}
