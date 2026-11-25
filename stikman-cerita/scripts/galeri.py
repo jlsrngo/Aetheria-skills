@@ -34,22 +34,22 @@ def lembar(out):
     d = ImageDraw.Draw(sheet)
     # kribo jadi tokoh utama di galeri default; kamera wajah disesuaikan dengan afro besar
     cols = [("Tokoh Utama — Kribo", "kribo", (84, 124, 128), (226, 238, 238), 0, Cam(0, -384, 0.40)),
-            ("Karakter Wanita", "nadia", (230, 80, 130), (255, 232, 240), 960, Cam(0, -320, 0.82))]
+            ("Karakter Wanita — Nadia", "nadia", (166, 124, 88), (244, 235, 224), 960, Cam(0, -342, 0.56))]
     eks6 = ["senang", "marah", "kaget", "sedih", "mikir", "tertawa"]
     poses = ["lambai", "tunjuk", "silang", "ide", "jalan"]
     for title, spec, col, light, ox, cam_eks in cols:
         d.ellipse([ox + 30, 90, ox + 400, 460], fill=light)
-        cam_main = Cam(0, -264, 0.80) if spec == "kribo" else Cam(0, -230, 1.0)
+        cam_main = Cam(19, -264, 0.80) if spec == "kribo" else Cam(8, -242, 0.92)
         im = potret(spec, 420, 520, cam_main, pose="jempol", expr="senang")
         sheet.paste(im, (ox + 10, 40))
-        pil(None, title, (ox + 560, 60), 46, (255, 255, 255), col, d)
+        pil(None, title, (ox + 665, 60), 40, (255, 255, 255), col, d)
         d.rounded_rectangle([ox + 400, 120, ox + 930, 540], radius=26, fill=light)
         pil(None, "Ekspresi Wajah", (ox + 665, 150), 26, (40, 40, 60), (255, 255, 255), d)
         for i, e in enumerate(eks6):
             im = potret(spec, 160, 150, cam_eks, expr=e, pose="diam")
             sheet.paste(im, (ox + 420 + (i % 3) * 165, 190 + (i // 3) * 170))
         pil(None, "Pose & Gestur", (ox + 480, 600), 26, (40, 40, 60), light, d)
-        cam_pose = Cam(10, -266, 0.40) if spec == "kribo" else Cam(0, -230, 0.48)
+        cam_pose = Cam(30, -266, 0.40) if spec == "kribo" else Cam(14, -246, 0.42)
         for i, p in enumerate(poses):
             im = potret(spec, 184, 390, cam_pose, pose=p, expr="senang" if p != "silang" else "tenang", t=0.3, amp=1.0 if p == "jalan" else 0, phase=0.9)
             sheet.paste(im, (ox + 12 + i * 185, 640))
@@ -67,7 +67,7 @@ def uji_kribo(out):
     for i, e in enumerate(eks):
         x, y = 30 + (i % 3) * 510, 92 + (i // 3) * 430
         d.rounded_rectangle([x, y, x + 480, y + 388], radius=28, fill=(226, 238, 238))
-        im = potret("kribo", 480, 388, Cam(0, -268, 0.65), expr=e, pose="diam", blink=0.0)
+        im = potret("kribo", 480, 388, Cam(0, -262, 0.65), expr=e, pose="diam", blink=0.0)
         sheet.paste(im, (x, y))
         pil(None, e, (x + 70, y + 352), 26, (255, 255, 255), (84, 124, 128), d)
     d.text((30, H - 32), "Cek: afro tidak menutup kacamata/alis, dasi kupu pas di bawah dagu, lengan & sneaker berwarna sesuai preset.",

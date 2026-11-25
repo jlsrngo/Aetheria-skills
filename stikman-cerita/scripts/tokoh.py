@@ -27,11 +27,17 @@ PRESET = {
     "kribo":  dict(nama="Kribo", rambut="afro", rambut_warna=HITAM, kulit=(255, 224, 196),
                    kacamata="kotak", wajah_maskulin=True, kemeja=(84, 124, 128), krah=False, kancing=False,
                    dasi=None, dasi_kupu=True, lengan_tebal=True, sepatu_sneaker=True,
-                   badan_lebar=1.55, pinggul_lebar=1.45, bahu_x=58.0, lengan_besar=1.05,
-                   hip_y=-135.0, kaki_tebal=1.85, kaki_lebar=1.45, sepatu_besar=1.25, tangan_besar=1.05,
+                   badan_lebar=2.05, pinggul_lebar=1.8, bahu_x=76.0, lengan_besar=1.25,
+                   hip_y=-105.0, kaki_tebal=2.4, kaki_lebar=1.7, sepatu_besar=1.25, tangan_besar=1.22,
                    bawah="celana", bawah_warna=(46, 46, 52)),
     "raka":   dict(nama="Raka", rambut="jambul", rambut_warna=HITAM, kemeja=PUTIH, dasi=BIRU, bawah="celana", bawah_warna=HITAM),
-    "nadia":  dict(nama="Nadia", hijab=PINK, hijab_tua=PINK_TUA, kemeja=PUTIH, dasi=MERAH, bawah="rok", bawah_warna=HITAM, bulu_mata=True),
+    "nadia":  dict(nama="Nadia", hijab=(32, 32, 40), hijab_tua=(76, 78, 92), hijab_gaya="modern",
+                   kulit=(255, 224, 196), kacamata="bulat", mata_chibi=True, bulu_mata=False,
+                   kemeja=(224, 194, 154), kemeja_dalam=PUTIH, blazer=True, krah=False, kancing=False, dasi=None,
+                   lengan_tebal=True, lengan_panjang=True,
+                   badan_lebar=1.45, pinggul_lebar=1.4, bahu_x=52.0, lengan_besar=1.0,
+                   hip_y=-138.0, kaki_tebal=1.55, kaki_lebar=1.18, sepatu_besar=1.12, tangan_besar=0.98,
+                   bawah="rok", bawah_warna=(44, 44, 52), sepatu=(68, 52, 46)),
     "bimo":   dict(nama="Bimo", rambut="keriting", rambut_warna=(62, 40, 34), kemeja=PUTIH, dasi=BIRU, bawah="celana", bawah_warna=HITAM),
     "dimas":  dict(nama="Dimas", rambut="rapi", rambut_warna=HITAM, kacamata=True, kemeja=PUTIH, dasi=BIRU, bawah="celana", bawah_warna=HITAM),
     "sari":   dict(nama="Sari", hijab=(250, 250, 252), hijab_tua=ABU, kemeja=PUTIH, dasi=MERAH, bawah="rok", bawah_warna=HITAM, bulu_mata=True),
@@ -257,10 +263,12 @@ class Tokoh:
                 c.line([(fx - toe * fl * 21 * s * sm, fy + 6 * s * sm),
                         (fx + toe * fl * 22 * s * sm, fy + 6 * s * sm)], PUTIH, 3.8 * s * sm)
             else:
-                c.ell(fx + fl * 7 * s, fy - 4 * s, 27 * s, 13 * s, sepatu, ow * .6, OUT)
+                toe = (-1 if i == 0 else 1) if bw > 1.2 else 1
+                c.ell(fx + toe * fl * 7 * s * sm, fy - 4 * s * sm, 27 * s * sm, 13 * s * sm, sepatu, ow * .6, OUT)
         if skirt:
             hem = hy + 74 + dy * 0.9
-            c.poly(TT([(-36, hy - 12), (36, hy - 12), (60, hem - 4)] + bezier((60, hem - 4), (0, hem + 22), (-60, hem - 4), 10)[1:-1] + [(-60, hem - 4)]),
+            sw = max(1.0, hipb * 0.92)
+            c.poly(TT([(-36 * sw, hy - 12), (36 * sw, hy - 12), (60 * sw, hem - 4)] + bezier((60 * sw, hem - 4), (0, hem + 22), (-60 * sw, hem - 4), 10)[1:-1] + [(-60 * sw, hem - 4)]),
                    bawah_c, ow, OUT)
         if not skirt and bw > 1.2:
             c.poly(TT([(-34 * hipb, hy - 14), (34 * hipb, hy - 14),
@@ -270,6 +278,18 @@ class Tokoh:
                    (43 * bw, SHOULDER_Y + 6), (38 * hipb, hy - 44), (35 * hipb, hy - 12),
                    (0, hy - 7), (-35 * hipb, hy - 12), (-38 * hipb, hy - 44)]),
                kemeja, ow, OUT, n=5)
+        if p.get("blazer"):
+            inner_c = warna(p.get("kemeja_dalam"), PUTIH)
+            lap_c = terang(kemeja, 0.08)
+            c.poly(TT([(-19 * bw, SHOULDER_Y + 4), (19 * bw, SHOULDER_Y + 4),
+                       (13 * hipb, hy - 10), (-13 * hipb, hy - 10)]), inner_c, ow * .65, OUT)
+            for sg in (-1, 1):
+                c.poly(TT([(sg * 16 * bw, SHOULDER_Y + 4),
+                           (sg * 34 * bw, SHOULDER_Y + 14),
+                           (sg * 29 * bw, SHOULDER_Y + 34),
+                           (sg * 35 * bw, SHOULDER_Y + 42),
+                           (sg * 13 * hipb, hy - 14),
+                           (sg * 14 * bw, SHOULDER_Y + 26)]), lap_c, ow * .75, OUT)
         if p.get("kemeja_garis"):
             gc = warna(p["kemeja_garis"], BIRU)
             for yy in (-215, -192, -170):
@@ -298,12 +318,22 @@ class Tokoh:
         # ---- hijab: drape di bawah dagu
         if p.get("hijab"):
             hj, hjd = warna(p["hijab"]), warna(p.get("hijab_tua"), gelap(warna(p["hijab"]), .15))
-            c.blob(TT([(-112, -336), (-122, -276), (-104, -222), (-52, -190), (0, -178), (52, -190), (104, -222), (122, -276), (112, -336), (0, -380)]),
-                   hj, ow, OUT, n=7)
-            c.curve(TT([(-70, -230), (-30, -214), (0, -204)]), hjd, 5 * s)
-            c.curve(TT([(70, -230), (30, -214), (0, -204)]), hjd, 5 * s)
-            c.curve(TT([(-96, -262), (-60, -236)]), hjd, 4 * s)
-            c.curve(TT([(96, -262), (60, -236)]), hjd, 4 * s)
+            if p.get("hijab_gaya") == "modern":
+                # selendang hijab modern: melilit leher & jatuh lembut di dada atas agar bahu blazer tetap tampak
+                c.blob(TT([(-100, -328), (-110, -268), (-94, -222), (-54, -206), (0, -184),
+                           (54, -206), (94, -222), (110, -268), (100, -328), (0, -388)]),
+                       hj, ow, OUT, n=7)
+                c.curve(TT([(-82, -236), (-38, -214), (0, -200), (38, -214), (82, -236)]), hjd, 4.0 * s)
+                c.curve(TT([(-58, -212), (-18, -196), (22, -200)]), hjd, 3.4 * s)
+                c.curve(TT([(-94, -264), (-66, -238)]), hjd, 3.2 * s)
+                c.curve(TT([(94, -264), (66, -238)]), hjd, 3.2 * s)
+            else:
+                c.blob(TT([(-112, -336), (-122, -276), (-104, -222), (-52, -190), (0, -178), (52, -190), (104, -222), (122, -276), (112, -336), (0, -380)]),
+                       hj, ow, OUT, n=7)
+                c.curve(TT([(-70, -230), (-30, -214), (0, -204)]), hjd, 5 * s)
+                c.curve(TT([(70, -230), (30, -214), (0, -204)]), hjd, 5 * s)
+                c.curve(TT([(-96, -262), (-60, -236)]), hjd, 4 * s)
+                c.curve(TT([(96, -262), (60, -236)]), hjd, 4 * s)
             # dasi tampak di bawah drape
             if dasi and not p.get("dasi_kupu"):
                 c.poly(TT([(-7, -190), (7, -190), (5, -178), (-5, -178)]), dasi, ow * .7, OUT)
@@ -372,15 +402,20 @@ class Tokoh:
         lb = float(self.p.get("lengan_besar", 1.0)) if tebal else 1.0
         tb = float(self.p.get("tangan_besar", 1.0))
         skin = warna(self.p.get("kulit"), PUTIH)
-        # lengan kartun berisi (tube kulit) atau lengan garis tipis seperti preset lama
-        if tebal:
-            arm_w = 16 * lb
+        # lengan kartun berisi (tube kulit / lengan panjang blazer) atau lengan garis tipis seperti preset lama
+        if self.p.get("lengan_panjang"):
+            arm_w = 19 * lb
             c.line([S, E, H], OUT, (arm_w + 2 * 3.4) * s)
-            c.line([S, E, H], skin, arm_w * s)
+            c.line([S, E, H], sleeve, arm_w * s)
         else:
-            c.line([S, E, H], OUT, 6.5 * s)
-        sl = (sh[0] + (el[0] - sh[0]) * 0.46, sh[1] + (el[1] - sh[1]) * 0.46)
-        c.tube(S, T(*sl), (24 * lb if tebal else 19) * s, sleeve, 3.4 * s)
+            if tebal:
+                arm_w = 16 * lb
+                c.line([S, E, H], OUT, (arm_w + 2 * 3.4) * s)
+                c.line([S, E, H], skin, arm_w * s)
+            else:
+                c.line([S, E, H], OUT, 6.5 * s)
+            sl = (sh[0] + (el[0] - sh[0]) * 0.46, sh[1] + (el[1] - sh[1]) * 0.46)
+            c.tube(S, T(*sl), (24 * lb if tebal else 19) * s, sleeve, 3.4 * s)
         # tangan
         dirv = (H[0] - E[0], H[1] - E[1])
         ang = math.atan2(dirv[1], dirv[0])
@@ -423,8 +458,19 @@ class Tokoh:
         r = p.get("rambut")
         if hij:
             hj, hjd = warna(p["hijab"]), warna(p.get("hijab_tua"), gelap(warna(p["hijab"]), .15))
-            outer = HH(_ellpts(0, -14, 112, 114))
-            c.poly(outer, hj, ow, OUT)
+            if p.get("hijab_gaya") == "modern":
+                # kubah hijab bundar halus (mirip referensi chibi) mengalir lembut ke bahu
+                outer = HH([
+                    (-108, -10), (-96, -78), (-56, -118), (0, -130),
+                    (56, -118), (96, -78), (108, -10),
+                    (112, 46), (82, 86), (0, 96), (-82, 86), (-112, 46),
+                ])
+                c.blob(outer, hj, ow, OUT, n=7)
+                c.curve(HH([(-86, -58), (-52, -100), (0, -112)]), hjd, 3.0 * s)
+                c.curve(HH([(86, -58), (52, -100), (0, -112)]), hjd, 3.0 * s)
+            else:
+                outer = HH(_ellpts(0, -14, 112, 114))
+                c.poly(outer, hj, ow, OUT)
         if r in ("kuncir",) and not hij:
             c.ell(*H(-92, -64), 30 * s, 30 * s, hair_c, ow, OUT)
             c.ell(*H(92, -64), 30 * s, 30 * s, hair_c, ow, OUT)
@@ -450,14 +496,25 @@ class Tokoh:
             for px, py, pr in puffs:
                 c.ell(*H(px, py), pr * s, pr * s, hair_c)
         # wajah
-        face = HH(_ellpts(0, 0, face_rx, face_ry, 34))
-        c.poly(face, warna(p.get("kulit"), PUTIH), ow, OUT)
-        # rambut depan
-        if not hij:
-            self._hair_front(c, H, HH, s, ow, r, hair_c, p)
-        else:
+        if hij and p.get("hijab_gaya") == "modern":
+            face_pts = [
+                (0, -76), (38, -60), (68, -32), (82, 4),
+                (78, 42), (54, 72), (24, 84), (0, 86),
+                (-24, 84), (-54, 72), (-78, 42), (-82, 4),
+                (-68, -32), (-38, -60),
+            ]
+            c.blob(HH(face_pts), warna(p.get("kulit"), PUTIH), ow, OUT, n=5)
             hjd2 = warna(p.get("hijab_tua"), gelap(warna(p["hijab"]), .15))
-            c.curve(HH(arc_pts(0, 2, face_rx + 1, face_ry + 1, 200, 340, 12)), hjd2, 4.2 * s)
+            c.curve(HH([(-74, -14), (-44, -56), (0, -76), (44, -56), (74, -14)]), hjd2, 3.0 * s)
+        else:
+            face = HH(_ellpts(0, 0, face_rx, face_ry, 34))
+            c.poly(face, warna(p.get("kulit"), PUTIH), ow, OUT)
+            # rambut depan
+            if not hij:
+                self._hair_front(c, H, HH, s, ow, r, hair_c, p)
+            else:
+                hjd2 = warna(p.get("hijab_tua"), gelap(warna(p["hijab"]), .15))
+                c.curve(HH(arc_pts(0, 2, face_rx + 1, face_ry + 1, 200, 340, 12)), hjd2, 4.2 * s)
         # topi/peci
         if p.get("peci"):
             c.poly(HH([(-70, -78), (-62, -118), (0, -128), (62, -118), (70, -78), (0, -62)]), HITAM, ow, OUT)
@@ -469,21 +526,26 @@ class Tokoh:
         # fitur wajah
         lx_, ly_ = look
         fs = 0.92 if hij else 1.0
+        chibi_eye = bool(p.get("mata_chibi"))
         fx0, fy0 = lx_ * 15, ly_ * 8
         eyes = ex["eyes"]
         blink = st.get("blink", 0.0)
-        ec = (-34 * fs, 34 * fs)
-        eye_y = -4 * fs + fy0
+        ec = (-35 * fs, 35 * fs) if chibi_eye else (-34 * fs, 34 * fs)
+        eye_y = (10 if chibi_eye else -4) * fs + fy0
         ew = 11.5 * (0.88 if mask else 1.0)
         eh = 17.5 * (1.12 if fem else (0.82 if mask else 1.0))
         hlk = ex.get("hl", 1.0) * (0.72 if mask else 1.0)
-        # lensa kacamata kotak digambar SEBELUM mata agar putih pekat tidak menutupi mata
+        # lensa kacamata digambar SEBELUM mata agar tidak menutupi mata/kilau
         hw, hh_g, rad_g = 29 * fs, 21 * fs, 7 * fs
+        r_bulat = 29 * fs
         if p.get("kacamata") == "kotak":
             for ex_ in ec:
                 gx, gy = ex_ + fx0, eye_y + 2
                 frame = _rectpts(gx - hw, gy - hh_g, gx + hw, gy + hh_g, rad_g, 5)
                 c.poly(HH(frame), (255, 255, 255, 235))
+        elif p.get("kacamata") == "bulat":
+            for ex_ in ec:
+                c.poly(HH(_ellpts(ex_ + fx0, eye_y + 2, r_bulat, r_bulat, 26)), (255, 255, 255, 52))
 
         for i, ex_ in enumerate(ec):
             ex_ = ex_ + fx0
@@ -493,6 +555,22 @@ class Tokoh:
                     sc = 1.15 if eyes == "wide" else 1.0
                     hh = 8.5 * sc * (1 - 0.9 * blink)
                     c.poly(HH(_ellpts(ex_, eye_y + 2, 6.5 * sc, max(1.5, hh), 14)), OUT)
+                elif chibi_eye and eyes in ("oval", "wide", "spark", "half", "wink"):
+                    # mata bulat besar berkilau (gaya chibi anime imut)
+                    sc = 1.15 if eyes == "wide" else 1.0
+                    ew_c = 16.0 * sc
+                    hh = 18.8 * sc * (1 - 0.9 * blink)
+                    if eyes == "half":
+                        hh = 18.8 * 0.52
+                    c.poly(HH(_ellpts(ex_, eye_y + 2, ew_c, max(1.8, hh), 20)), OUT)
+                    if hh > 6:
+                        c.curve(HH(arc_pts(ex_, eye_y + 1, ew_c + 1.4, hh + 1.0, 200, 340, 10)), OUT, 4.0 * s)
+                        c.poly(HH(_ellpts(ex_ - 5.2, eye_y + 2 - hh * .30, 5.8 * hlk, 5.8 * hlk, 12)), PUTIH)
+                        c.poly(HH(_ellpts(ex_ + 5.0, eye_y + 2 + hh * .32, 2.6, 2.6, 10)), PUTIH)
+                    if eyes == "spark" and hh > 6:
+                        c.poly(HH(_ellpts(ex_ - 4.5, eye_y + 2 + hh * .36, 2.4, 2.4, 8)), PUTIH)
+                    if eyes == "half":
+                        c.line(HH([(ex_ - ew_c - 3, eye_y + 2 - hh * .4), (ex_ + ew_c + 3, eye_y + 2 - hh * .4)]), OUT, 4.6 * s)
                 else:
                     sc = 1.3 if eyes == "wide" else 1.0
                     hh = eh * sc * (1 - 0.9 * blink)
@@ -520,7 +598,7 @@ class Tokoh:
                 for k in (0, 1):
                     c.line(HH([(ex_ + sg * 11, eye_y - 10 + k * 7), (ex_ + sg * (19 + k * 2), eye_y - 18 + k * 8)]), OUT, 3.6 * s)
 
-        # bingkai kacamata kotak (di atas mata)
+        # bingkai kacamata (di atas mata)
         if p.get("kacamata") == "kotak":
             for ex_ in ec:
                 gx, gy = ex_ + fx0, eye_y + 2
@@ -530,6 +608,14 @@ class Tokoh:
             for sg in (-1, 1):
                 gx = ec[0 if sg < 0 else 1] + fx0 + sg * hw
                 c.line(HH([(gx, eye_y - 4), (gx + sg * 12 * fs, eye_y - 8)]), OUT, 4.2 * s)
+        elif p.get("kacamata") == "bulat":
+            for ex_ in ec:
+                c.poly(HH(_ellpts(ex_ + fx0, eye_y + 2, r_bulat, r_bulat, 26)), None, 3.4 * s, OUT)
+            c.curve(HH([(ec[0] + fx0 + r_bulat, eye_y + 1), (fx0, eye_y - 3),
+                        (ec[1] + fx0 - r_bulat, eye_y + 1)]), OUT, 3.2 * s, n=6)
+            for sg in (-1, 1):
+                gx = ec[0 if sg < 0 else 1] + fx0 + sg * r_bulat
+                c.line(HH([(gx, eye_y - 1), (gx + sg * 11 * fs, eye_y - 5)]), OUT, 3.0 * s)
         elif p.get("kacamata"):
             for ex_ in ec:
                 c.poly(HH(_ellpts(ex_ + fx0, eye_y, 30, 30, 22)), (255, 255, 255, 70), ow * .9, OUT)
@@ -541,25 +627,36 @@ class Tokoh:
             lift, tl, tr = br
             for i, (bx, tv) in enumerate(((ec[0], tl), (ec[1], tr))):
                 sg = -1 if i == 0 else 1
-                by = eye_y - 30 * fs - lift - (6 if p.get("kacamata") == "kotak" else 0)
+                by = eye_y - 30 * fs - lift - (6 if p.get("kacamata") in ("kotak", "bulat") else 0)
                 outer = (bx + fx0 + sg * 17, by + tv * 11)
                 inner = (bx + fx0 - sg * 17, by - tv * 11)
                 mid = (bx + fx0, by - 4 + (4 if abs(tv) > .5 else 0) + (-6 if lift > 6 else 0))
-                c.curve(HH([outer, mid, inner]), OUT, (6.0 if mask else 5.6) * s)
+                c.curve(HH([outer, mid, inner]), OUT, (6.0 if mask else (4.4 if chibi_eye else 5.6)) * s)
         elif mask:
             # alis tipis & pendek tepat di atas kacamata
             for i, bx in enumerate(ec):
                 sg = -1 if i == 0 else 1
                 by = eye_y - 34
                 c.line(HH([(bx + fx0 + sg * 14, by), (bx + fx0 - sg * 14, by + 2)]), OUT, 5.2 * s)
+        elif chibi_eye:
+            # alis melengkung lembut di atas kacamata bulat
+            for i, bx in enumerate(ec):
+                sg = -1 if i == 0 else 1
+                by = eye_y - 34 * fs
+                c.curve(HH([(bx + fx0 + sg * 14, by + 3), (bx + fx0, by - 2),
+                            (bx + fx0 - sg * 13, by + 2)]), OUT, 3.8 * s)
 
         # pipi (hilangkan blush pink lebar pada mode maskulin kecuali saat sangat malu)
         bl = ex.get("blush", 0.0)
         if mask:
             bl = 0.45 if bl >= 0.95 else 0.0
+        elif chibi_eye and bl > 0.02:
+            bl = max(bl, 0.55)
         if bl > 0.02:
+            bx_off = 48 if chibi_eye else 58
+            by_off = (eye_y + 24 * fs) if chibi_eye else (28 * fs + fy0 * .4)
             for sg in (-1, 1):
-                c.poly(HH(_ellpts(sg * 58 * fs + fx0 * .6, 28 * fs + fy0 * .4, 17, 10.5, 16)), (255, 140, 160, int(150 * bl)))
+                c.poly(HH(_ellpts(sg * bx_off * fs + fx0 * .6, by_off, 17, 10.5, 16)), (255, 140, 160, int(150 * bl)))
         # mulut
         self._mouth(c, st, ex, HH, s, ow, fs, fx0, fy0)
         # kumis jenggot
@@ -644,8 +741,8 @@ class Tokoh:
             else:
                 kind = "open"
                 op = 0.12 + 0.88 * talk
-        mx, my = fx0 * .6, 44 * fs + fy0 * .4
-        k = ex.get("small", 1.0)
+        mx, my = fx0 * .6, (50 if self.p.get("mata_chibi") else 44) * fs + fy0 * .4
+        k = ex.get("small", 1.0) * (0.76 if self.p.get("mata_chibi") and talk is None and kind == "open" else 1.0)
 
         def D(w, d):
             top = [(mx - w, my - 1), (mx - w * .5, my - 4), (mx + w * .5, my - 4), (mx + w, my - 1)]

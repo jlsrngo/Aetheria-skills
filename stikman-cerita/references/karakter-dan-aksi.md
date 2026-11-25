@@ -4,7 +4,7 @@
 **Jangan mengubah gaya** ini kecuali user meminta; `kribo` dipakai kecuali naskah meminta tokoh lain. Lihat semuanya: `python3 scripts/galeri.py galeri.png --semua`, uji khusus: `python3 scripts/galeri.py uji-kribo.png --kribo`.
 
 ## Tokoh bawaan (`tokoh` di proyek.json)
-**`kribo` (UTAMA — chibi afro hitam, kacamata kotak, kulit peach, kaos teal + dasi kupu-kupu, lengan berisi, sneaker hitam-putih)** · `raka` (pria, rambut jambul hitam, dasi biru) · `nadia` (hijab pink, dasi merah, rok hitam) · `bimo` (rambut keriting) · `dimas` (kacamata) · `sari` (hijab putih) · `tika` (kuncir) · `ayah` · `ibu` (hijab hijau) · `guru` (uban, kacamata, kumis) · `bu_guru` (hijab ungu) · `kakek` (peci, jenggot) · `adik` (kecil, skala 0.8).
+**`kribo` (UTAMA — chibi afro hitam, kacamata kotak, kulit peach, kaos teal + dasi kupu-kupu, lengan berisi, sneaker hitam-putih)** · `nadia` (chibi hijab hitam modern, kacamata bulat tipis, mata chibi berkilau, blazer krem/beige lengan panjang + dalaman putih, rok gelap) · `raka` (pria, rambut jambul hitam, dasi biru) · `bimo` (rambut keriting) · `dimas` (kacamata) · `sari` (hijab putih) · `tika` (kuncir) · `ayah` · `ibu` (hijab hijau) · `guru` (uban, kacamata, kumis) · `bu_guru` (hijab ungu) · `kakek` (peci, jenggot) · `adik` (kecil, skala 0.8).
 
 Pemeran sendiri / modifikasi:
 ```json
