@@ -132,8 +132,91 @@ def jam_digital(c, f, s, t, jam="07:00", **k):
     weker(c, f, s, t, jam=jam)
 
 
+def otak(c, f, s, t, warna=(250, 174, 198), **k):
+    """Ikon/properti otak pink berlekuk-lekuk gaya komik chibi."""
+    wob = 1.0 + 0.03 * math.sin(t * 4.5)
+    ss = s * wob
+    lip = gelap(warna, 0.24)
+    lobes = [(-38, -6, 22), (-24, -26, 24), (-4, -30, 22), (16, -28, 23), (36, -12, 22),
+             (40, 12, 21), (20, 26, 20), (-2, 24, 18), (-24, 24, 21), (-40, 12, 20)]
+    for lx, ly, lr in lobes:
+        c.ell(*f(lx, ly), lr * ss + OW * s, lr * ss + OW * s, OUT)
+    c.ell(*f(0, 0), 42 * ss + OW * s, 28 * ss + OW * s, OUT)
+    c.ell(*f(0, 0), 42 * ss, 28 * ss, warna)
+    for lx, ly, lr in lobes:
+        c.ell(*f(lx, ly), lr * ss, lr * ss, warna)
+    # belahan tengah & lekukan sulkus
+    c.curve(_P(f, [(0, -34), (-2, -8), (2, 16), (0, 30)]), lip, 3.6 * s)
+    c.curve(_P(f, [(-34, -8), (-18, -14), (-10, -2)]), lip, 3.2 * s)
+    c.curve(_P(f, [(-32, 12), (-16, 6), (-12, 18)]), lip, 3.2 * s)
+    c.curve(_P(f, [(34, -8), (18, -14), (10, -2)]), lip, 3.2 * s)
+    c.curve(_P(f, [(32, 12), (16, 6), (12, 18)]), lip, 3.2 * s)
+    c.ell(*f(-18, -22), 7 * ss, 4 * ss, (255, 255, 255, 150))
+
+
+def virus(c, f, s, t, warna=(112, 204, 88), mata=True, **k):
+    """Properti virus hijau berduri mahkota dengan ekspresi nakal."""
+    wob = 1.0 + 0.05 * math.sin(t * 7.0)
+    ss = s * wob
+    r = 30.0
+    spikes = []
+    for i in range(10):
+        a = math.radians(i * 36 + math.sin(t * 2.5) * 6)
+        ca, sa = math.cos(a), math.sin(a)
+        spikes.append(((ca * (r - 2), sa * (r - 2)), (ca * (r + 15), sa * (r + 15))))
+    # pass 1: outline
+    for p0, p1 in spikes:
+        c.line(_P(f, [p0, p1]), OUT, 13 * ss)
+        c.ell(*f(*p1), 9.5 * ss + OW * .8 * s, 9.5 * ss + OW * .8 * s, OUT)
+    c.ell(*f(0, 0), r * ss + OW * s, r * ss + OW * s, OUT)
+    # pass 2: isi
+    for p0, p1 in spikes:
+        c.line(_P(f, [p0, p1]), warna, 6.5 * ss)
+        c.ell(*f(*p1), 8.2 * ss, 8.2 * ss, terang(warna, 0.22))
+    c.ell(*f(0, 0), r * ss, r * ss, warna)
+    c.ell(*f(-14, 12), 5.5 * ss, 4.5 * ss, gelap(warna, 0.22))
+    c.ell(*f(16, -12), 4.5 * ss, 4.5 * ss, gelap(warna, 0.22))
+    if mata:
+        for sg in (-1, 1):
+            c.ell(*f(sg * 10, -3), 5.2 * ss, 6.0 * ss, OUT)
+            c.ell(*f(sg * 10 - 1.5, -5), 2.0 * ss, 2.0 * ss, PUTIH)
+            c.line(_P(f, [(sg * 16, -11), (sg * 4, -7)]), OUT, 3.2 * s)
+        c.curve(_P(f, [(-10, 10), (0, 16), (10, 10)]), OUT, 3.0 * s)
+
+
+def sel_imun(c, f, s, t, warna=(236, 248, 255), **k):
+    """Properti sel darah putih (sistem imun) berpendar biru muda."""
+    wob = 1.0 + 0.04 * math.sin(t * 5.0)
+    ss = s * wob
+    c.ell(*f(0, 0), 40 * ss, 40 * ss, (120, 204, 252, 85))
+    bumps = [(math.cos(math.radians(i * 45)) * 22, math.sin(math.radians(i * 45)) * 22, 16) for i in range(8)]
+    for bx, by, br in bumps:
+        c.ell(*f(bx, by), br * ss + OW * .9 * s, br * ss + OW * .9 * s, OUT)
+    c.ell(*f(0, 0), 28 * ss, 28 * ss, warna)
+    for bx, by, br in bumps:
+        c.ell(*f(bx, by), br * ss, br * ss, warna)
+    c.ell(*f(0, 0), 16 * ss, 16 * ss, (170, 224, 255, 160))
+
+
+def termometer(c, f, s, t, suhu=0.85, **k):
+    """Termometer komik dengan raksa merah naik saat demam."""
+    lvl = clamp(suhu + 0.04 * math.sin(t * 5.0), 0.15, 0.96)
+    c.line(_P(f, [(0, -64), (0, 28)]), OUT, 28 * s)
+    c.ell(*f(0, 38), 24 * s + OW * s, 24 * s + OW * s, OUT)
+    c.line(_P(f, [(0, -64), (0, 28)]), (242, 248, 255), 20 * s)
+    c.ell(*f(0, 38), 24 * s, 24 * s, (242, 248, 255))
+    top_y = lerp(24, -56, lvl)
+    col = MERAH if lvl > 0.6 else ORANYE if lvl > 0.4 else HIJAU
+    c.line(_P(f, [(0, top_y), (0, 34)]), col, 11 * s)
+    c.ell(*f(0, 38), 16 * s, 16 * s, col)
+    c.ell(*f(-5, 33), 4.5 * s, 4.5 * s, (255, 255, 255, 180))
+    for yy in (-48, -32, -16, 0, 16):
+        c.line(_P(f, [(10, yy), (18, yy)]), OUT, 2.8 * s, False)
+
+
 BENDA = {"hp": hp, "buku": buku, "pensil": pensil, "stik": stik, "bola": bola, "kertas": kertas, "gelas": gelas,
-         "payung": payung, "kado": kado, "bunga": bunga, "uang": uang, "laptop": laptop, "weker": weker, "jam": jam_digital}
+         "payung": payung, "kado": kado, "bunga": bunga, "uang": uang, "laptop": laptop, "weker": weker, "jam": jam_digital,
+         "otak": otak, "virus": virus, "sel_imun": sel_imun, "termometer": termometer}
 
 
 # ----------------------------------------------------------------- ikon komik
@@ -234,10 +317,30 @@ def awan(c, f, s, t, **k):
         c.ell(*f(dx, dy), r * s, r * s, PUTIH, 0)
 
 
+def pusing(c, f, s, t, warna=KUNING, **k):
+    """Lingkaran pusing berputar + 3 bintang kecil tepat di atas kepala."""
+    # lintasan elips putar
+    ring = [(math.cos(math.radians(a)) * 86, math.sin(math.radians(a)) * 24) for a in range(0, 361, 15)]
+    c.curve(_P(f, ring), OUT, 4.2 * s)
+    ring2 = [(math.cos(math.radians(a)) * 58, math.sin(math.radians(a)) * 15 - 10) for a in range(0, 361, 18)]
+    c.curve(_P(f, ring2), OUT, 3.2 * s)
+    # 3 bintang berputar mengikuti elips
+    for i in range(3):
+        ang = t * 4.2 + i * (2 * math.pi / 3)
+        sx, sy = math.cos(ang) * 86, math.sin(ang) * 24
+        sc = 0.42 + 0.12 * math.sin(ang)
+        pts = []
+        for j in range(10):
+            rr = (38 if j % 2 == 0 else 16) * sc
+            aa = math.radians(-90 + j * 36)
+            pts.append((sx + rr * math.cos(aa), sy + rr * math.sin(aa)))
+        c.poly(_P(f, pts), warna, 3.0 * s, OUT)
+
+
 IKON = {"tanda_seru": tanda_seru, "seru": tanda_seru, "tanya": tanya, "hati": hati, "bintang": bintang, "kilau": kilau,
         "zzz": zzz, "bohlam": bohlam, "ide": bohlam, "not": not_musik, "musik": not_musik, "keringat": keringat,
         "centang": centang, "silang": silang, "koin": koin, "debu": debu, "gerak": gelombang, "awan_pikir": awan_pikir,
-        "awan": awan}
+        "awan": awan, "pusing": pusing}
 
 
 def gambar(c, jenis, x, y, s=1.0, rot=0.0, t=0.0, **opsi):

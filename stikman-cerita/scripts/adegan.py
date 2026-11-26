@@ -332,7 +332,7 @@ class Adegan:
         self.u = H / 1080.0 if W >= H else W / 1080.0 * 1.25
         self.ss = film.ss
         self.opts = dict(spec.get("opsi", {}))
-        for k in ("waktu", "jam", "papan", "warna", "alarm", "papan_tulis", "selimut", "lampu_nyala", "meja_depan"):
+        for k in ("waktu", "jam", "papan", "warna", "alarm", "papan_tulis", "selimut", "lampu_nyala", "meja_depan", "bahaya", "bahaya_t", "istirahat_t", "mode", "demam", "konsol"):
             if k in spec:
                 self.opts[k] = spec[k]
         self.words = film.words_rel(idx)

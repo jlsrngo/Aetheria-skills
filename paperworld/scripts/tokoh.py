@@ -40,8 +40,9 @@ def warna(v, default=None):
 PRESET = {
     "luna": dict(
         nama="Luna", tipe="humanoid", rambut="bob_ahoge", rambut_warna=COKLAT_RAMBUT,
-        kulit=(248, 226, 198), kemeja=KORAL, mantel=True, syal=KUNING,
+        kulit=(242, 210, 180), kemeja=(216, 84, 60), mantel=True, syal=KUNING,
         kancing_kuning=True, bawah="celana", bawah_warna=BIRU, sepatu=COKLAT_TUA,
+        mata_polos=True,
     ),
     "kribo": dict(
         nama="Kribo", tipe="humanoid", rambut="afro", rambut_warna=(28, 28, 34),
@@ -54,7 +55,7 @@ PRESET = {
         blazer=True, kemeja_dalam=PUTIH, bawah="rok", bawah_warna=(48, 50, 58), sepatu=(78, 54, 44),
     ),
     "kucing": dict(
-        nama="Kucing Kertas", tipe="kucing", warna=KUNING, dasi=MERAH, skala=0.85,
+        nama="Kucing Kertas", tipe="kucing", warna=(228, 168, 30), dasi=MERAH, skala=1.08,
     ),
     "raka": dict(
         nama="Raka", tipe="humanoid", rambut="jambul", rambut_warna=HITAM,
@@ -153,7 +154,7 @@ POSE = {
     "tunjuk":        dict(l_arm=(0, 0, -12), r_arm=(-82, 0, 14)),
     "tunjuk_kiri":   dict(l_arm=(-82, 0, -14), r_arm=(0, 0, 12)),
     "tunjuk_atas":   dict(l_arm=(0, 0, -10), r_arm=(-150, 0, 16)),
-    "buka_pintu":    dict(l_arm=(0, 0, -12), r_arm=(-68, -12, 16)),
+    "buka_pintu":    dict(l_arm=(0, 0, -10), r_arm=(-46, 0, 12)),
     "ide":           dict(l_arm=(0, 0, -16), r_arm=(0, 0, 142)),
     "pinggang":      dict(l_arm=(0, 0, -36), r_arm=(0, 0, 36)),
     "jempol":        dict(l_arm=(0, 0, -12), r_arm=(-76, 0, 20)),
@@ -291,14 +292,18 @@ class TokohKertas:
         tc_back = tc + body_mat @ np.array([0.0, 0.0, -0.055 * s], dtype=np.float32)
         tc_skirt = tc + body_mat @ np.array([0.0, 0.0, -0.015 * s], dtype=np.float32)
         if self.p.get("mantel"):
-            coat_pts = coat_2d(0.38 * s, 0.50 * s, 0.58 * s, 0.05 * s)
-            sc.extrude_2d(coat_pts, thk * 1.35, baju, baju, None, origin=torso_o, mat=body_mat, sort_anchor=tc)
+            coat_pts = coat_2d(0.40 * s, 0.50 * s, 0.57 * s, 0.055 * s)
+            coat_edge = mix(baju, KERTAS_TEPI, 0.42)
+            sc.extrude_2d(coat_pts, thk * 1.32, baju, baju, coat_edge, origin=torso_o, mat=body_mat, sort_anchor=tc)
+            # Garis sabuk pinggang & 2 kancing kuning di depan + belakang (persis gaya mantel Luna referensi!)
+            belt_col = gelap(baju, 0.16)
+            sc.extrude_2d(rrect_2d(0.0, 0.19 * s, 0.43 * s, 0.036 * s, 0.012 * s), 0.012 * s, belt_col, belt_col, belt_col, origin=torso_o + body_mat @ np.array([0.0, 0.0, thk * 0.68]), mat=body_mat, cast_shadow=False, sort_anchor=tc_mid)
+            sc.extrude_2d(rrect_2d(0.0, 0.19 * s, 0.43 * s, 0.036 * s, 0.012 * s), 0.012 * s, belt_col, belt_col, belt_col, origin=torso_o + body_mat @ np.array([0.0, 0.0, -thk * 0.68]), mat=body_mat, cast_shadow=False, sort_anchor=tc_back)
             if self.p.get("kancing_kuning"):
-                btn = circle_2d(0.0, 0.0, 0.026 * s, 0.026 * s, n=16)
-                for bx in (-0.065 * s, 0.065 * s):
-                    sc.extrude_2d(btn, 0.016 * s, KUNING, KUNING, None, origin=torso_o + body_mat @ np.array([bx, 0.22 * s, thk * 0.72]), mat=body_mat, cast_shadow=False, sort_anchor=tc_front, drop_shadow=0.22)
-                    sc.extrude_2d(btn, 0.016 * s, KUNING, KUNING, None, origin=torso_o + body_mat @ np.array([bx, 0.22 * s, -thk * 0.72]), mat=body_mat, cast_shadow=False, sort_anchor=tc_back)
-                sc.extrude_2d(rrect_2d(0.0, 0.23 * s, 0.42 * s, 0.045 * s, 0.015 * s), 0.016 * s, gelap(baju, 0.14), gelap(baju, 0.14), None, origin=torso_o + body_mat @ np.array([0.0, 0.0, -thk * 0.70]), mat=body_mat, cast_shadow=False, sort_anchor=tc_back)
+                btn = circle_2d(0.0, 0.0, 0.022 * s, 0.022 * s, n=14)
+                for bx in (-0.095 * s, 0.095 * s):
+                    sc.extrude_2d(btn, 0.014 * s, KUNING, KUNING, KUNING, origin=torso_o + body_mat @ np.array([bx, 0.19 * s, thk * 0.72]), mat=body_mat, cast_shadow=False, sort_anchor=tc_front, drop_shadow=0.14)
+                    sc.extrude_2d(btn, 0.014 * s, KUNING, KUNING, KUNING, origin=torso_o + body_mat @ np.array([bx, 0.19 * s, -thk * 0.72]), mat=body_mat, cast_shadow=False, sort_anchor=tc_back)
         else:
             if self.p.get("bawah") == "rok":
                 sc.extrude_2d(coat_2d(0.38 * s, 0.52 * s, 0.26 * s, 0.03 * s), thk * 1.25, bawah_col, bawah_col, None, origin=torso_o + body_mat @ np.array([0.0, -0.06 * s, 0.0]), mat=body_mat, sort_anchor=tc_skirt)
@@ -312,50 +317,50 @@ class TokohKertas:
                 dc = warna(self.p.get("dasi"), BIRU)
                 sc.extrude_2d(rrect_2d(0.0, 0.34 * s, 0.07 * s, 0.28 * s, 0.02 * s), 0.016 * s, dc, dc, None, origin=torso_o + body_mat @ np.array([0.0, 0.0, thk * 0.72]), mat=body_mat, cast_shadow=False, sort_anchor=tc_front, drop_shadow=0.22)
 
-        # ------------------ SYAL KUNING BERUMBAI + GARIS RAJUT (depan & belakang!)
+        # ------------------ SYAL KUNING BERUMBAI (rapi melingkar leher tanpa duri vertikal di belakang!)
         if self.p.get("syal"):
             scol = warna(self.p.get("syal"), KUNING)
-            s_rib = gelap(scol, 0.18)
+            s_rib = gelap(scol, 0.16)
             sway = math.sin(t * 4.0) * 6.0 if P["walk"] > 0.1 else 0.0
-            collar = rrect_2d(0.0, 0.55 * s, 0.36 * s, 0.115 * s, 0.048 * s)
-            sc.extrude_2d(collar, thk * 1.75, scol, scol, None, origin=torso_o, mat=body_mat, sort_anchor=tc_front, drop_shadow=0.22)
-            for rx in (-0.085 * s, 0.0, 0.085 * s):
-                sc.extrude_2d(rrect_2d(rx, 0.55 * s, 0.014 * s, 0.085 * s, 0.005 * s), 0.010 * s, s_rib, s_rib, s_rib, origin=torso_o + body_mat @ np.array([0.0, 0.0, thk * 0.90]), mat=body_mat, cast_shadow=False, sort_anchor=tc_front2)
-                sc.extrude_2d(rrect_2d(rx, 0.55 * s, 0.014 * s, 0.085 * s, 0.005 * s), 0.010 * s, s_rib, s_rib, s_rib, origin=torso_o + body_mat @ np.array([0.0, 0.0, -thk * 0.90]), mat=body_mat, cast_shadow=False, sort_anchor=tc_back)
+            collar = rrect_2d(0.0, 0.56 * s, 0.34 * s, 0.115 * s, 0.050 * s)
+            sc.extrude_2d(collar, thk * 1.78, scol, scol, mix(scol, KERTAS_TEPI, 0.30), origin=torso_o, mat=body_mat, sort_anchor=tc_front)
+            for rx in (-0.08 * s, 0.0, 0.08 * s):
+                sc.extrude_2d(rrect_2d(rx, 0.56 * s, 0.012 * s, 0.072 * s, 0.004 * s), 0.008 * s, s_rib, s_rib, s_rib, origin=torso_o + body_mat @ np.array([0.0, 0.0, thk * 0.90]), mat=body_mat, cast_shadow=False, sort_anchor=tc_front2)
             tail_pts = (
-                (-0.056 * s, 0.0), (0.056 * s, 0.0), (0.056 * s, -0.24 * s),
-                (0.026 * s, -0.20 * s), (0.0, -0.24 * s), (-0.026 * s, -0.20 * s), (-0.056 * s, -0.24 * s),
+                (-0.054 * s, 0.0), (0.054 * s, 0.0), (0.054 * s, -0.23 * s),
+                (0.025 * s, -0.19 * s), (0.0, -0.23 * s), (-0.025 * s, -0.19 * s), (-0.054 * s, -0.23 * s),
             )
-            sc.extrude_2d(tail_pts, 0.022 * s, scol, scol, None, origin=torso_o + body_mat @ np.array([0.11 * s, 0.54 * s, thk * 0.92]), mat=body_mat @ euler_mat(0.0, 0.0, 14.0 + sway), cast_shadow=False, sort_anchor=tc_front2, drop_shadow=0.22)
-            sc.extrude_2d(tail_pts, 0.022 * s, scol, scol, None, origin=torso_o + body_mat @ np.array([0.11 * s, 0.54 * s, -thk * 0.92]), mat=body_mat @ euler_mat(0.0, 0.0, 14.0 + sway), cast_shadow=False, sort_anchor=tc_back)
+            sc.extrude_2d(tail_pts, 0.020 * s, scol, scol, mix(scol, KERTAS_TEPI, 0.30), origin=torso_o + body_mat @ np.array([0.10 * s, 0.54 * s, thk * 0.92]), mat=body_mat @ euler_mat(0.0, 0.0, 14.0 + sway), cast_shadow=False, sort_anchor=tc_front2)
+            sc.extrude_2d(tail_pts, 0.020 * s, scol, scol, mix(scol, KERTAS_TEPI, 0.30), origin=torso_o + body_mat @ np.array([0.09 * s, 0.54 * s, -thk * 0.92]), mat=body_mat @ euler_mat(0.0, 0.0, 14.0 + sway), cast_shadow=False, sort_anchor=tc_back)
 
         if st.get("ransel"):
             sc.extrude_2d(rrect_2d(0.0, 0.30 * s, 0.36 * s, 0.38 * s, 0.05 * s), 0.14 * s, (74, 88, 132), (74, 88, 132), None, origin=torso_o + body_mat @ np.array([0.0, 0.0, -0.09 * s]), mat=body_mat, sort_anchor=tc + body_mat @ np.array([0.0, 0.0, -0.10 * s], dtype=np.float32))
 
-        # ------------------ LENGAN & TANGAN KERTAS
-        sh_x = 0.23 * s
-        sh_y = 0.50 * s
-        arm_strip = rrect_2d(0.0, -0.17 * s, 0.098 * s, 0.34 * s, 0.044 * s)
-        hand_c = circle_2d(0.0, -0.35 * s, 0.050 * s, 0.050 * s, n=20)
+        # ------------------ LENGAN & TANGAN KERTAS (menyambung rapat dengan bahu mantel!)
+        sh_x = 0.195 * s
+        sh_y = 0.49 * s
+        arm_strip = rrect_2d(0.0, -0.165 * s, 0.092 * s, 0.33 * s, 0.042 * s)
+        hand_c = circle_2d(0.0, -0.34 * s, 0.048 * s, 0.048 * s, n=20)
+        arm_edge = mix(baju, KERTAS_TEPI, 0.38)
         for side, sx, arot in ((-1, -sh_x, P["l_arm"]), (1, sh_x, P["r_arm"])):
             sh_o = torso_o + body_mat @ np.array([sx, sh_y, 0.0], dtype=np.float32)
             amat = body_mat @ euler_mat(*arot)
-            sc.extrude_2d(arm_strip, thk * 0.9, baju, baju, None, origin=sh_o, mat=amat)
-            sc.extrude_2d(hand_c, thk * 0.8, kulit, kulit, None, origin=sh_o, mat=amat, bias=-0.01, cast_shadow=False)
+            sc.extrude_2d(arm_strip, thk * 0.88, baju, baju, arm_edge, origin=sh_o, mat=amat)
+            sc.extrude_2d(hand_c, thk * 0.78, kulit, kulit, mix(kulit, KERTAS_TEPI, 0.35), origin=sh_o, mat=amat, bias=-0.01, cast_shadow=False)
             bawa = st.get("bawa")
             if bawa:
                 bname = bawa["jenis"] if isinstance(bawa, dict) else bawa
                 bhand = bawa.get("tangan", "kanan") if isinstance(bawa, dict) else "kanan"
                 if (side == 1 and bhand == "kanan") or (side == -1 and bhand == "kiri"):
-                    hand_world = sh_o + amat @ np.array([0.0, -0.35 * s, 0.03 * s], dtype=np.float32)
+                    hand_world = sh_o + amat @ np.array([0.0, -0.34 * s, 0.03 * s], dtype=np.float32)
                     BD.draw_prop(sc, bname, tuple(hand_world.tolist()), s=s * 0.85, t=t, rot=(0.0, yaw, 0.0))
 
         # ------------------ LEHER, KEPALA, RAMBUT / HIJAB, & WAJAH KERTAS
         head_o = torso_o + body_mat @ np.array([0.0, 0.84 * s, 0.0], dtype=np.float32)
         head_mat = body_mat @ euler_mat(*P["head"])
-        sc.extrude_2d(rrect_2d(0.0, 0.59 * s, 0.14 * s, 0.10 * s, 0.02 * s), thk * 0.9, kulit, kulit, None, origin=torso_o, mat=body_mat, cast_shadow=False, sort_anchor=torso_o + body_mat @ np.array([0.0, 0.59 * s, -0.01 * s], dtype=np.float32))
-        head_pts = circle_2d(0.0, 0.0, 0.275 * s, 0.255 * s, n=32)
-        sc.extrude_2d(head_pts, thk * 1.45, kulit, kulit, None, origin=head_o, mat=head_mat, sort_anchor=head_o)
+        sc.extrude_2d(rrect_2d(0.0, 0.58 * s, 0.13 * s, 0.10 * s, 0.02 * s), thk * 0.88, kulit, kulit, mix(kulit, KERTAS_TEPI, 0.35), origin=torso_o, mat=body_mat, cast_shadow=False, sort_anchor=torso_o + body_mat @ np.array([0.0, 0.58 * s, -0.01 * s], dtype=np.float32))
+        head_pts = circle_2d(0.0, 0.0, 0.275 * s, 0.258 * s, n=32)
+        sc.extrude_2d(head_pts, thk * 1.40, kulit, kulit, mix(kulit, KERTAS_TEPI, 0.42), origin=head_o, mat=head_mat, sort_anchor=head_o)
 
         if self.p.get("hijab"):
             self._draw_hijab(sc, head_o, head_mat, thk, s, torso_o, body_mat)
@@ -370,25 +375,25 @@ class TokohKertas:
         anc_back = head_o + head_mat @ np.array([0.0, 0.0, -0.055 * s], dtype=np.float32)
         anc_front = head_o + head_mat @ np.array([0.0, 0.0, +0.025 * s], dtype=np.float32)
         if style == "bob_ahoge":
-            bob_back = bob_hair_2d(0.66 * s, 0.64 * s, n_top=28)
-            sc.extrude_2d(bob_back, thk * 1.05, hcol, hcol, None, origin=head_o + head_mat @ np.array([0.0, 0.03 * s, -thk * 0.85]), mat=head_mat, sort_anchor=anc_back)
-            # Anak rambut samping membingkai pipi kiri-kanan
-            side_lock = rrect_2d(0.0, 0.015 * s, 0.105 * s, 0.33 * s, 0.042 * s, n_corner=4)
-            for sx in (-1.0, 1.0):
-                sc.extrude_2d(side_lock, thk * 0.60, hcol, hcol, None, origin=head_o + head_mat @ np.array([sx * 0.252 * s, 0.0, thk * 0.56]), mat=head_mat, cast_shadow=False, sort_anchor=anc_front, drop_shadow=0.18)
-            # Poni dahi melengkung halus
+            h_edge = mix(hcol, KERTAS_TEPI, 0.28)
+            bob_back = bob_hair_2d(0.65 * s, 0.62 * s, n_top=28)
+            sc.extrude_2d(bob_back, thk * 1.05, hcol, hcol, h_edge, origin=head_o + head_mat @ np.array([0.0, 0.035 * s, -thk * 0.82]), mat=head_mat, sort_anchor=anc_back)
+            # Poni belah samping melengkung organik membingkai wajah bulat chubby (seperti REF!)
             bang_pts = []
-            for k in range(9):
-                u = -1.0 + 2.0 * (k / 8.0)
-                bx = 0.28 * s * u
-                by = (0.095 + 0.035 * math.cos(u * math.pi * 1.15)) * s
-                bang_pts.append((round(bx, 5), round(by, 5)))
-            for k in range(9):
-                a = math.pi * (k / 8.0)
-                bang_pts.append((round(0.295 * s * math.cos(a), 5), round((0.12 + 0.175 * math.sin(a)) * s, 5)))
-            sc.extrude_2d(bang_pts, thk * 0.65, hcol, hcol, None, origin=head_o + head_mat @ np.array([0.0, 0.0, thk * 0.72]), mat=head_mat, cast_shadow=False, sort_anchor=anc_front, drop_shadow=0.20)
+            # Garis bawah poni melengkung lembut asimetris dari pipi kiri naik melewati dahi ke pipi kanan
+            for k in range(13):
+                u = -1.0 + 2.0 * (k / 12.0)
+                bx = 0.295 * s * u
+                # Melengkung naik di dahi kanan-tengah, turun membingkai pelipis kiri & kanan
+                arch_h = 0.125 - 0.17 * (u * u) + 0.045 * math.sin((u + 0.25) * 1.8)
+                bang_pts.append((round(bx, 5), round(arch_h * s, 5)))
+            # Busur luar atas mengikuti kubah kepala bulat
+            for k in range(15):
+                a = math.pi * (k / 14.0)
+                bang_pts.append((round(0.305 * s * math.cos(a), 5), round((0.08 + 0.225 * math.sin(a)) * s, 5)))
+            sc.extrude_2d(bang_pts, thk * 0.56, hcol, hcol, h_edge, origin=head_o + head_mat @ np.array([0.0, 0.0, thk * 0.68]), mat=head_mat, cast_shadow=False, sort_anchor=anc_front, drop_shadow=0.14)
             # Jambul spiral halus khas Luna di puncak kepala
-            sc.extrude_2d(spiral_ahoge_2d(s), thk * 0.72, hcol, hcol, None, origin=head_o + head_mat @ np.array([0.0, 0.26 * s, 0.0]), mat=head_mat, cast_shadow=False, sort_anchor=anc_front, drop_shadow=0.18)
+            sc.extrude_2d(spiral_ahoge_2d(s), thk * 0.68, hcol, hcol, h_edge, origin=head_o + head_mat @ np.array([0.0, 0.275 * s, 0.0]), mat=head_mat, cast_shadow=False, sort_anchor=anc_front, drop_shadow=0.12)
         elif style == "afro":
             afro_pts = cloud_afro_2d(0.40 * s, 0.34 * s, lobes=9, n=48)
             sc.extrude_2d(afro_pts, thk * 1.30, hcol, hcol, None, origin=head_o + head_mat @ np.array([0.0, 0.11 * s, -thk * 0.90]), mat=head_mat, sort_anchor=anc_back)
@@ -429,46 +434,54 @@ class TokohKertas:
         if lx == 0.0 and ly == 0.0 and "look" in ex:
             lx, ly = ex["look"]
 
-        # Pipi kertas bulat merona
-        bl = ex.get("blush", 0.5)
+        # Pipi kertas bulat merona lembut
+        bl = ex.get("blush", 0.55)
         if bl > 0.1:
-            bc = mix(kulit, PIPI, clamp(bl * 0.75, 0.25, 0.8))
-            chk = circle_2d(0.0, 0.0, 0.045 * s, 0.032 * s, n=18)
-            sc.extrude_2d(chk, 0.008 * s, bc, bc, bc, origin=head_o + head_mat @ np.array([-0.155 * s, -0.065 * s, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
-            sc.extrude_2d(chk, 0.008 * s, bc, bc, bc, origin=head_o + head_mat @ np.array([0.155 * s, -0.065 * s, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
+            bc = mix(kulit, PIPI, clamp(bl * 0.78, 0.30, 0.82))
+            chk = circle_2d(0.0, 0.0, 0.044 * s, 0.034 * s, n=18)
+            sc.extrude_2d(chk, 0.006 * s, bc, bc, bc, origin=head_o + head_mat @ np.array([-0.152 * s, -0.068 * s, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
+            sc.extrude_2d(chk, 0.006 * s, bc, bc, bc, origin=head_o + head_mat @ np.array([0.152 * s, -0.068 * s, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
 
-        # Mata kertas
+        # Mata kertas (untuk Luna / mata_polos: mata titik lembut tanpa sclera putih melotot!)
+        mata_polos = bool(self.p.get("mata_polos", False))
         for side in (-1, 1):
             cx = side * eye_x
             if eyes in ("arc_up", "arc_dn"):
-                dy_a = 0.01 * s if eyes == "arc_up" else -0.01 * s
-                arc_bar = rrect_2d(0.0, 0.0, 0.064 * s, 0.018 * s, 0.006 * s)
-                sc.extrude_2d(arc_bar, 0.010 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([cx, eye_y + dy_a, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.14)
+                dy_a = 0.008 * s if eyes == "arc_up" else -0.008 * s
+                arc_bar = rrect_2d(0.0, 0.0, 0.056 * s, 0.015 * s, 0.006 * s)
+                sc.extrude_2d(arc_bar, 0.008 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([cx, eye_y + dy_a, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
             elif eyes == "wink" and side == 1:
-                sc.extrude_2d(rrect_2d(0.0, 0.0, 0.064 * s, 0.018 * s, 0.006 * s), 0.010 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([cx, eye_y, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.14)
+                sc.extrude_2d(rrect_2d(0.0, 0.0, 0.056 * s, 0.015 * s, 0.006 * s), 0.008 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([cx, eye_y, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
             else:
-                erx = 0.038 * s if eyes == "wide" else (0.024 * s if eyes == "dot" else 0.030 * s)
-                ery = 0.048 * s if eyes == "wide" else (0.024 * s if eyes == "dot" else 0.042 * s)
-                ox, oy = clamp(lx, -1, 1) * 0.012 * s, clamp(ly, -1, 1) * 0.010 * s
-                sc.extrude_2d(circle_2d(0.0, 0.0, erx, ery, n=20), 0.010 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([cx + ox, eye_y + oy, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.16)
-                if eyes != "dot":
-                    sc.extrude_2d(circle_2d(0.0, 0.0, erx * 0.34, ery * 0.28, n=14), 0.010 * s, PUTIH, PUTIH, PUTIH, origin=head_o + head_mat @ np.array([cx + ox - 0.010 * s, eye_y + oy + 0.014 * s, zf + 0.005 * s]), mat=head_mat, cast_shadow=False, sort_anchor=anc_hi)
+                if mata_polos:
+                    erx = 0.025 * s if eyes == "wide" else 0.021 * s
+                    ery = 0.029 * s if eyes == "wide" else 0.024 * s
+                else:
+                    erx = 0.032 * s if eyes == "wide" else (0.022 * s if eyes == "dot" else 0.027 * s)
+                    ery = 0.038 * s if eyes == "wide" else (0.022 * s if eyes == "dot" else 0.034 * s)
+                ox, oy = clamp(lx, -1, 1) * 0.010 * s, clamp(ly, -1, 1) * 0.008 * s
+                sc.extrude_2d(circle_2d(0.0, 0.0, erx, ery, n=18), 0.008 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([cx + ox, eye_y + oy, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
+                if (not mata_polos) and eyes != "dot":
+                    sc.extrude_2d(circle_2d(0.0, 0.0, erx * 0.28, ery * 0.24, n=12), 0.008 * s, PUTIH, PUTIH, PUTIH, origin=head_o + head_mat @ np.array([cx + ox - 0.007 * s, eye_y + oy + 0.010 * s, zf + 0.004 * s]), mat=head_mat, cast_shadow=False, sort_anchor=anc_hi)
 
-        # Mulut kertas (termasuk ekspresi 'o' kaget di akhir video!)
-        my = -0.108 * s
+        # Mulut kertas mungil & manis (proporsional gaya miniatur stop-motion)
+        my = -0.106 * s
         open_amt = float(st.get("open_amt", 0.0))
         mouth = ex.get("mouth", "smile")
         if open_amt > 0.15:
-            mh = (0.026 + 0.052 * open_amt) * s
-            sc.extrude_2d(circle_2d(0.0, 0.0, 0.048 * s, mh * 0.65, 16), 0.010 * s, MERAH_TUA, MERAH_TUA, MERAH_TUA, origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.14)
+            mh = (0.016 + 0.032 * open_amt) * s
+            sc.extrude_2d(circle_2d(0.0, 0.0, 0.028 * s, mh * 0.60, 16), 0.007 * s, (112, 48, 44), (112, 48, 44), (112, 48, 44), origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
         elif mouth == "o":
-            sc.extrude_2d(circle_2d(0.0, 0.0, 0.040 * s, 0.048 * s, 20), 0.010 * s, (72, 34, 30), (72, 34, 30), (72, 34, 30), origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.14)
+            sc.extrude_2d(circle_2d(0.0, 0.0, 0.024 * s, 0.029 * s, 18), 0.007 * s, (68, 36, 34), (68, 36, 34), (68, 36, 34), origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
         elif mouth == "open":
-            sc.extrude_2d(circle_2d(0.0, 0.0, 0.052 * s, 0.036 * s, 16), 0.010 * s, MERAH_TUA, MERAH_TUA, MERAH_TUA, origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.14)
+            sc.extrude_2d(circle_2d(0.0, 0.0, 0.026 * s, 0.018 * s, 16), 0.007 * s, (148, 62, 56), (148, 62, 56), (148, 62, 56), origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
+        elif mouth == "smile":
+            for sx, rz in ((-0.012 * s, -15), (0.012 * s, 15)):
+                sc.extrude_2d(rrect_2d(0.0, 0.0, 0.028 * s, 0.010 * s, 0.004 * s), 0.007 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([sx, my + 0.003 * s, zf]), mat=head_mat @ euler_mat(0, 0, rz), cast_shadow=False, sort_anchor=anc_face)
         else:
-            sc.extrude_2d(rrect_2d(0.0, 0.0, 0.072 * s, 0.018 * s, 0.006 * s), 0.010 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face, drop_shadow=0.14)
+            sc.extrude_2d(rrect_2d(0.0, 0.0, 0.040 * s, 0.011 * s, 0.004 * s), 0.007 * s, OUT, OUT, OUT, origin=head_o + head_mat @ np.array([0.0, my, zf]), mat=head_mat, cast_shadow=False, sort_anchor=anc_face)
 
-        # Kacamata kertas (Kribo & Nadia)
+        # Kacamata kertas (Kribo kotak & Nadia bulat mulus)
         kac = self.p.get("kacamata")
         if kac:
             gz = zf + 0.016 * s
@@ -477,22 +490,23 @@ class TokohKertas:
                 gx = side * eye_x
                 if kac == "bulat":
                     rad = 0.062 * s
-                    for k in range(10):
-                        ad = k * 36.0
-                        ar = math.radians(ad)
-                        sc.rbox(head_o + head_mat @ np.array([gx + math.cos(ar) * rad, eye_y + math.sin(ar) * rad, gz]), (0.018 * s, 0.046 * s, 0.016 * s), fc, roundness=0.4, seg=1, mat=head_mat @ euler_mat(0, 0, ad), cast_shadow=False, sort_anchor=anc_g)
+                    for flip in (0.0, 180.0):
+                        sc.extrude_ring_arch(rad - 0.011 * s, rad + 0.006 * s, 0.0, 0.014 * s, fc, edge_col=fc, n_arc=16, origin=head_o + head_mat @ np.array([gx, eye_y, gz]), mat=head_mat @ euler_mat(0, 0, flip), cast_shadow=False, sort_anchor=anc_g)
                 else:
-                    bw, bh, th = 0.132 * s, 0.104 * s, 0.018 * s
+                    bw, bh, th = 0.132 * s, 0.104 * s, 0.016 * s
                     for bx, by, w0, h0 in ((0, bh * 0.5, bw + th * 0.5, th), (0, -bh * 0.5, bw + th * 0.5, th), (-bw * 0.5, 0, th, bh), (bw * 0.5, 0, th, bh)):
-                        sc.extrude_2d(rrect_2d(0.0, 0.0, w0, h0, 0.005 * s), 0.016 * s, fc, fc, fc, origin=head_o + head_mat @ np.array([gx + bx, eye_y + by, gz]), mat=head_mat, cast_shadow=False, sort_anchor=anc_g, drop_shadow=0.18)
-            sc.extrude_2d(rrect_2d(0.0, 0.0, 0.08 * s, 0.016 * s, 0.005 * s), 0.016 * s, fc, fc, fc, origin=head_o + head_mat @ np.array([0.0, eye_y + 0.01 * s, gz]), mat=head_mat, cast_shadow=False, sort_anchor=anc_g, drop_shadow=0.18)
+                        sc.extrude_2d(rrect_2d(0.0, 0.0, w0, h0, 0.005 * s), 0.015 * s, fc, fc, fc, origin=head_o + head_mat @ np.array([gx + bx, eye_y + by, gz]), mat=head_mat, cast_shadow=False, sort_anchor=anc_g, drop_shadow=0.14)
+            sc.extrude_2d(rrect_2d(0.0, 0.0, 0.075 * s, 0.014 * s, 0.005 * s), 0.015 * s, fc, fc, fc, origin=head_o + head_mat @ np.array([0.0, eye_y + 0.01 * s, gz]), mat=head_mat, cast_shadow=False, sort_anchor=anc_g, drop_shadow=0.14)
 
     # ------------------------------------------------------------------ KUCING POP-UP KERTAS
     def _draw_kucing(self, sc, pos, st, s, yaw, t):
+        pop_v = clamp(float(st.get("pop_up", 1.0)))
+        if pop_v <= 0.02:
+            return
         px, py, pz = pos
         col = warna(self.p.get("warna"), KUNING)
         dcol = warna(self.p.get("dasi"), MERAH)
-        pop_rx = (1.0 - clamp(float(st.get("pop_up", 1.0)))) * 88.0
+        pop_rx = (1.0 - pop_v) * 88.0
         root = np.array([px, py, pz], dtype=np.float32)
         rmat = euler_mat(pop_rx, yaw, 0.0)
         thk = 0.052 * s

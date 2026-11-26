@@ -23,38 +23,38 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FONT_DIR = os.path.normpath(os.path.join(HERE, "..", "assets", "fonts"))
 
 # ------------------------------------------------------------------ palet kertas pastel & hangat
-OUT = (38, 34, 34)
-KERTAS_TEPI = (246, 238, 224)
-PUTIH = (252, 248, 240)
-KRIM = (242, 226, 198)
-MEJA = (232, 214, 186)
+OUT = (38, 32, 30)
+KERTAS_TEPI = (244, 234, 216)
+PUTIH = (248, 243, 232)
+KRIM = (238, 220, 190)
+MEJA = (224, 200, 166)
 HITAM = (34, 34, 42)
-COKLAT_RAMBUT = (96, 54, 28)
-KORAL = (224, 94, 74)
-MERAH = (218, 72, 58)
-MERAH_TUA = (164, 48, 42)
-PIPI = (222, 128, 112)
-BIRU = (64, 110, 192)
-BIRU_TUA = (42, 72, 146)
-BIRU_MUDA = (166, 206, 238)
-BIRU_MALAM = (36, 62, 128)
-MINT = (178, 222, 204)
-MINT_MUDA = (212, 238, 224)
-TEAL = (74, 134, 138)
-PINK = (238, 154, 168)
-SALMON = (234, 144, 126)
-KUNING = (240, 188, 52)
-KUNING_MUDA = (250, 224, 128)
-ORANYE = (236, 138, 62)
-HIJAU = (92, 174, 110)
-HIJAU_TUA = (54, 122, 76)
-COKLAT = (146, 94, 58)
-COKLAT_TUA = (94, 58, 34)
-UNGU = (142, 120, 206)
-NAVY = (38, 50, 102)
-ABU = (196, 198, 206)
-ABU_TUA = (108, 110, 122)
-KULIT = (248, 226, 198)
+COKLAT_RAMBUT = (86, 46, 22)
+KORAL = (218, 88, 66)
+MERAH = (212, 68, 52)
+MERAH_TUA = (158, 46, 38)
+PIPI = (224, 124, 108)
+BIRU = (60, 104, 184)
+BIRU_TUA = (40, 68, 138)
+BIRU_MUDA = (158, 198, 232)
+BIRU_MALAM = (34, 58, 118)
+MINT = (168, 214, 194)
+MINT_MUDA = (204, 232, 216)
+TEAL = (72, 130, 134)
+PINK = (234, 148, 162)
+SALMON = (228, 138, 118)
+KUNING = (236, 182, 48)
+KUNING_MUDA = (248, 220, 122)
+ORANYE = (232, 132, 58)
+HIJAU = (88, 168, 104)
+HIJAU_TUA = (50, 116, 72)
+COKLAT = (142, 90, 54)
+COKLAT_TUA = (90, 54, 30)
+UNGU = (138, 116, 200)
+NAVY = (36, 48, 98)
+ABU = (192, 194, 202)
+ABU_TUA = (104, 106, 118)
+KULIT = (246, 222, 192)
 
 
 def mix(a, b, t):
@@ -315,16 +315,25 @@ def star_2d(r_out=0.28, r_in=0.12, points=5):
     return tuple(pts)
 
 
-def crescent_2d(r=0.45, offset=0.40, n=14):
+def crescent_2d(r=0.45, offset=0.42, n=22):
+    """Bulan sabit CCW mulus berbentuk C (perut di kiri, tanduk menghadap kanan) tanpa self-intersection."""
+    d = r * clamp(offset, 0.18, 0.72)
+    r_in = r * 0.84
+    # Titik potong tepat lingkaran luar (0,0,r) dan lingkaran pemotong (+d,0,r_in)
+    x_int = (r * r + d * d - r_in * r_in) / (2.0 * d)
+    x_int = clamp(x_int, -r * 0.96, r * 0.96)
+    y_int = math.sqrt(max(1e-6, r * r - x_int * x_int))
+    a_out = math.atan2(y_int, x_int)
+    a_in = math.atan2(y_int, x_int - d)
     pts = []
+    # Busur luar CCW dari +a_out memutar lewat kiri (pi) ke (2*pi - a_out)
     for i in range(n + 1):
-        a = -math.pi * 0.52 + (math.pi * 1.04) * (i / n)
+        a = lerp(a_out, 2.0 * math.pi - a_out, i / n)
         pts.append((round(r * math.cos(a), 5), round(r * math.sin(a), 5)))
-    for i in range(n, -1, -1):
-        a = -math.pi * 0.52 + (math.pi * 1.04) * (i / n)
-        x = r * 0.86 * math.cos(a) + r * offset
-        y = r * 0.86 * math.sin(a)
-        pts.append((round(x, 5), round(y, 5)))
+    # Busur dalam kembali dari (2*pi - a_in) lewat kiri (pi) ke +a_in (tanpa duplikasi ujung)
+    for i in range(1, n):
+        a = lerp(2.0 * math.pi - a_in, a_in, i / n)
+        pts.append((round(d + r_in * math.cos(a), 5), round(r_in * math.sin(a), 5)))
     return tuple(pts)
 
 
@@ -339,20 +348,27 @@ def cloud_afro_2d(rx=0.35, ry=0.28, lobes=9, n=54):
 
 
 def bob_hair_2d(w=0.66, h=0.62, n_top=28):
-    r = w * 0.5
-    cr = r * 0.14
+    """Siluet rambut bob melengkung halus (dome bulat di atas, melebar lembut ke bawah, pojok membulat)."""
+    r_top = w * 0.46
+    r_bot = w * 0.51
+    cr = r_bot * 0.16
+    y_bot = -h * 0.44
+    cy = h * 0.50 - r_top
     pts = []
-    # Pojok bawah kiri & kanan membulat halus
+    # Pojok bawah kiri & kanan membulat lembut
     for k in range(5):
         a = math.pi + math.pi * 0.5 * (k / 4.0)
-        pts.append((round(-r + cr + cr * math.cos(a), 5), round(-h * 0.42 + cr * math.sin(a), 5)))
+        pts.append((round(-r_bot + cr + cr * math.cos(a), 5), round(y_bot + cr + cr * math.sin(a), 5)))
     for k in range(5):
         a = math.pi * 1.5 + math.pi * 0.5 * (k / 4.0)
-        pts.append((round(r - cr + cr * math.cos(a), 5), round(-h * 0.42 + cr * math.sin(a), 5)))
-    cy = h * 0.52 - r
+        pts.append((round(r_bot - cr + cr * math.cos(a), 5), round(y_bot + cr + cr * math.sin(a), 5)))
+    # Sisi kanan sedikit mengecil lembut ke kubah kepala
+    pts.append((round(r_bot * 0.985, 5), round(lerp(y_bot + cr, cy, 0.52), 5)))
+    # Kubah atas setengah lingkaran mulus
     for i in range(n_top + 1):
         a = math.pi * (i / n_top)
-        pts.append((round(r * math.cos(a), 5), round(cy + r * 0.96 * math.sin(a), 5)))
+        pts.append((round(r_top * math.cos(a), 5), round(cy + r_top * 0.98 * math.sin(a), 5)))
+    pts.append((round(-r_bot * 0.985, 5), round(lerp(y_bot + cr, cy, 0.52), 5)))
     return tuple(pts)
 
 
@@ -452,39 +468,35 @@ def _verify_contours():
 _verify_contours()
 
 
-# ------------------------------------------------------------------ cold-press paper texture (cached)
+# ------------------------------------------------------------------ fine matte art-carton finish (cached)
 @functools.lru_cache(maxsize=4)
 def _paper_maps(W, H):
     rng = np.random.default_rng(2026)
-    mw, mh = max(8, W // 6), max(8, H // 6)
-    m_raw = (rng.normal(0.0, 1.0, (mh, mw)) * 32.0 + 128.0).clip(0, 255).astype(np.uint8)
-    r_m = max(4, min(W, H) // 85)
+    mw, mh = max(8, W // 8), max(8, H // 8)
+    m_raw = (rng.normal(0.0, 1.0, (mh, mw)) * 22.0 + 128.0).clip(0, 255).astype(np.uint8)
+    r_m = max(4, min(W, H) // 75)
     m_img = Image.fromarray(m_raw, "L").resize((W, H), Image.Resampling.BILINEAR).filter(ImageFilter.GaussianBlur(r_m))
     m_arr = np.asarray(m_img, dtype=np.float32) - float(np.mean(np.asarray(m_img, dtype=np.float32)))
     m_std = max(1e-3, float(np.std(m_arr)))
-    mottle = (m_arr / m_std) * 3.8
+    mottle = (m_arr / m_std) * 1.15
 
-    h_raw = (rng.normal(0.0, 1.0, (H, W)) * 38.0 + 128.0).clip(0, 255).astype(np.uint8)
-    h_img = Image.fromarray(h_raw, "L").filter(ImageFilter.GaussianBlur(1.6))
+    # Serat halus art-carton (tanpa bercak kotor / garis moire)
+    h_raw = (rng.normal(0.0, 1.0, (H, W)) * 24.0 + 128.0).clip(0, 255).astype(np.uint8)
+    h_img = Image.fromarray(h_raw, "L").filter(ImageFilter.GaussianBlur(1.2))
     h_arr = np.asarray(h_img, dtype=np.float32)
     emb_core = h_arr[:-2, :-2] - h_arr[2:, 2:]
     emb = np.pad(emb_core, ((1, 1), (1, 1)), mode="edge")
     emb_std = max(1e-3, float(np.std(emb)))
-    emboss = (emb / emb_std) * 5.2
-
-    wv_x = np.sin(np.arange(W, dtype=np.float32)[None, :] * 1.15) * 1.1
-    wv_y = np.sin(np.arange(H, dtype=np.float32)[:, None] * 1.15) * 1.1
-    flecks = (rng.random((H, W)) < 0.0011).astype(np.float32) * -10.0
+    emboss = (emb / emb_std) * 1.35
 
     yy = np.linspace(-1.0, 1.0, H, dtype=np.float32)[:, None]
     xx = np.linspace(-1.0, 1.0, W, dtype=np.float32)[None, :]
-    vig = 1.0 - 0.06 * np.clip((xx * xx + yy * yy - 0.35) / 1.35, 0.0, 1.0)
+    vig = 1.0 - 0.088 * np.clip((xx * xx + yy * yy - 0.36) / 1.40, 0.0, 1.0)
 
     delta = np.empty((H, W, 3), dtype=np.float32)
-    base = emboss + wv_x + wv_y + flecks
-    delta[:, :, 0] = base + mottle * 1.00
-    delta[:, :, 1] = base + mottle * 0.90
-    delta[:, :, 2] = base + mottle * 0.58
+    delta[:, :, 0] = emboss + mottle * 1.00
+    delta[:, :, 1] = emboss + mottle * 0.92
+    delta[:, :, 2] = emboss + mottle * 0.72
     return delta, vig[:, :, None]
 
 
@@ -581,23 +593,31 @@ class ScenePaper:
         self.lights = []
         self.tex_quads = []
 
-        # Pencahayaan studio hangat cerah ala miniatur kertas
-        self.sky_top = (248, 240, 224)
-        self.sky_bot = (242, 232, 212)
-        self.amb_sky = (0.80, 0.78, 0.75)
-        self.amb_ground = (0.68, 0.64, 0.59)
-        self.sun_dir = np.array([-0.48, 0.68, 0.56], dtype=np.float32)
+        # Pencahayaan studio miniatur diorama kertas hangat (warm key + soft shadow map 3D + SSAO)
+        self.sky_top = (240, 228, 206)
+        self.sky_bot = (230, 215, 190)
+        self.amb_sky = (0.62, 0.60, 0.56)
+        self.amb_ground = (0.46, 0.41, 0.35)
+        self.sun_dir = np.array([-0.64, 0.60, 0.48], dtype=np.float32)
         self.sun_dir /= np.linalg.norm(self.sun_dir)
-        self.sun_col = np.array([1.02, 0.97, 0.90], dtype=np.float32)
-        self.sun_int = 0.28
-        self.fog_col = (242, 232, 212)
-        self.fog_start = 26.0
-        self.fog_density = 0.012
+        self.sun_col = np.array([1.08, 0.99, 0.86], dtype=np.float32)
+        self.sun_int = 0.56
+        self.fog_col = (234, 220, 196)
+        self.fog_start = 24.0
+        self.fog_density = 0.014
         self.shadow_floor_y = 0.0
-        self.floor_shadow_col = (182, 164, 138)
+        self.floor_shadow_col = (176, 156, 128)
         self.shadow_wall_z = None
         self.wall_shadow_col = (14, 22, 48)
-        self.bloom_strength = 0.22
+        self.use_shadow_map = True
+        self.shadow_map_res = 512
+        self.shadow_strength = 1.0
+        self.shadow_tint = (0.28, 0.31, 0.36)
+        self.shadow_blur = 1.6
+        self.use_ssao = True
+        self.ssao_strength = 0.38
+        self.ssao_radius = 0.52
+        self.bloom_strength = 0.44
         self.paper_grain = True
         self.grade_tint = None
 
@@ -691,7 +711,7 @@ class ScenePaper:
         n_v = len(clean)
         fc = np.array(front_col, dtype=np.float32)
         bc = np.array(back_col if back_col is not None else front_col, dtype=np.float32)
-        ec_tup = edge_col if edge_col is not None else mix(front_col, KERTAS_TEPI, 0.48)
+        ec_tup = edge_col if edge_col is not None else mix(front_col, KERTAS_TEPI, 0.68)
         ec = np.array(ec_tup, dtype=np.float32)
 
         q_rim, c_rim = [], []
@@ -745,7 +765,7 @@ class ScenePaper:
         """Bangun cincin busur melengkung mulus dari quad konveks radial tanpa triangulasi ear-clipping."""
         hz = float(thickness) * 0.5
         fc = np.array(col, dtype=np.float32)
-        ec_tup = edge_col if edge_col is not None else mix(col, KERTAS_TEPI, 0.48)
+        ec_tup = edge_col if edge_col is not None else mix(col, KERTAS_TEPI, 0.68)
         ec = np.array(ec_tup, dtype=np.float32)
 
         pts_in, pts_out = [], []
@@ -799,7 +819,7 @@ class ScenePaper:
         self._push(_xform(q_fb), np.array(c_fb, dtype=np.float32), 1.0, 0.0, False, bias, cast_shadow, False, False, sort_anchor=sort_anchor)
 
     def arch_wall(self, origin, wall_w, wall_h, door_w, door_h, thickness=0.14,
-                  wall_col=PUTIH, trim_col=None, edge_col=None, rot=None, mat=None, cast_shadow=True):
+                  wall_col=PUTIH, trim_col=None, edge_col=None, rot=None, mat=None, cast_shadow=True, bias=0.45):
         """Dinding kertas dengan lubang pintu lengkung nyata yang bisa dilewati tokoh & kamera."""
         hw = wall_w * 0.5
         dw = door_w * 0.5
@@ -809,15 +829,15 @@ class ScenePaper:
             for sgn in (-1.0, 1.0):
                 p_side = [(-side_w * 0.5, 0.0), (side_w * 0.5, 0.0), (side_w * 0.5, wall_h), (-side_w * 0.5, wall_h)]
                 off = np.array([sgn * (dw + side_w * 0.5), 0.0, 0.0], dtype=np.float32)
-                self.extrude_2d(p_side, thickness, wall_col, wall_col, edge_col, origin=np.array(origin) + m_use @ off, mat=m_use, cast_shadow=cast_shadow)
-        n_arc = 28
+                self.extrude_2d(p_side, thickness, wall_col, wall_col, edge_col, origin=np.array(origin) + m_use @ off, mat=m_use, bias=bias, cast_shadow=cast_shadow)
+        n_arc = 32
         r = dw
         cy = max(0.05, door_h - r)
         sp_pts = [(dw, wall_h), (-dw, wall_h)]
         for i in range(n_arc + 1):
             a = math.pi - math.pi * (i / n_arc)
             sp_pts.append((round(r * math.cos(a), 5), round(cy + r * math.sin(a), 5)))
-        self.extrude_2d(sp_pts, thickness, wall_col, wall_col, edge_col, origin=origin, mat=m_use, cast_shadow=cast_shadow)
+        self.extrude_2d(sp_pts, thickness, wall_col, wall_col, edge_col, origin=origin, mat=m_use, bias=bias, cast_shadow=cast_shadow)
         if trim_col is not None:
             tw = 0.09
             for z_off in (thickness * 0.5 + 0.015, -thickness * 0.5 - 0.015):
@@ -890,9 +910,10 @@ class ScenePaper:
         basis = np.column_stack([right, up, fwd])
         focal = (H * 0.5) / math.tan(math.radians(clamp(cam.fov, 15.0, 110.0) * 0.5))
 
-        # Siapkan proyeksi bayangan lantai lembut (masker Gaussian blur di atas bidang lantai)
+        use_smap = bool(self.use_shadow_map)
+        # Fallback proyeksi lantai/dinding lama hanya dipakai jika shadow map 3D dimatikan eksplisit
         floor_sv_cam = None
-        if self.shadow_floor_y is not None and np.any(shads):
+        if (not use_smap) and self.shadow_floor_y is not None and np.any(shads):
             fy = float(self.shadow_floor_y)
             sv = verts[shads]
             above = sv[:, :, 1].max(axis=1) > fy + 0.02
@@ -908,28 +929,22 @@ class ScenePaper:
                 if np.any(sv_vis):
                     floor_sv_cam = sv_cam[sv_vis]
 
-        # Proyeksi bayangan lembut ke dinding malam (jika aktif)
-        if self.shadow_wall_z is not None and np.any(wshads):
+        wall_sv_cam = None
+        if (not use_smap) and self.shadow_wall_z is not None and np.any(wshads):
             wz = float(self.shadow_wall_z)
             wv = verts[wshads]
             in_front = wv[:, :, 2].max(axis=1) > wz + 0.02
             if np.any(in_front):
                 wv = wv[in_front].copy()
                 sz_c = np.maximum(wv[:, :, 2], wz)
-                t_hit = np.minimum(5.0, (sz_c - wz) / max(abs(float(self.sun_dir[2])), 0.22))
-                wv[:, :, 0] -= t_hit * float(self.sun_dir[0])
-                wv[:, :, 1] -= t_hit * float(self.sun_dir[1]) * 0.45
-                wv[:, :, 2] = wz + 0.008
-                nw = len(wv)
-                verts = np.concatenate([verts, wv], axis=0)
-                cols = np.concatenate([cols, np.broadcast_to(np.array(self.wall_shadow_col, np.float32) / 255.0, (nw, 3)).copy()], axis=0)
-                alphas = np.concatenate([alphas, np.full(nw, 0.30, np.float32)], axis=0)
-                emiss = np.concatenate([emiss, np.zeros(nw, np.float32)], axis=0)
-                twos = np.concatenate([twos, np.ones(nw, bool)], axis=0)
-                biases = np.concatenate([biases, np.full(nw, 0.35, np.float32)], axis=0)
-                unlits = np.concatenate([unlits, np.ones(nw, bool)], axis=0)
-                ancs = np.concatenate([ancs, np.zeros((nw, 3), np.float32)], axis=0)
-                hancs = np.concatenate([hancs, np.zeros(nw, bool)], axis=0)
+                t_hit = np.minimum(5.0, (sz_c - wz) / max(abs(float(self.sun_dir[2])), 0.28))
+                wv[:, :, 0] -= t_hit * float(self.sun_dir[0]) * 0.72
+                wv[:, :, 1] -= t_hit * float(self.sun_dir[1]) * 0.48
+                wv[:, :, 2] = wz + 0.012
+                wv_cam = (wv - cam.pos[None, None, :]) @ basis
+                wv_vis = wv_cam[:, :, 2].max(axis=1) > 0.14
+                if np.any(wv_vis):
+                    wall_sv_cam = wv_cam[wv_vis]
 
         rel = verts - cam.pos[None, None, :]
         v_cam = rel @ basis
@@ -961,7 +976,16 @@ class ScenePaper:
             sky_w = (nn[:, 1] * 0.5 + 0.5)[:, None]
             amb = np.array(self.amb_ground)[None, :] * (1.0 - sky_w) + np.array(self.amb_sky)[None, :] * sky_w
             sun_d = np.maximum(0.0, nn @ self.sun_dir)[:, None]
-            lit = amb + sun_d * self.sun_col[None, :] * self.sun_int
+            # Cahaya pantul hangat halus dari permukaan meja (warm bounce light) + kontras key light
+            bounce = np.maximum(0.0, -nn[:, 0] * self.sun_dir[0] * 0.35 + (1.0 - np.abs(nn[:, 1])) * 0.12)[:, None]
+            lit = amb + sun_d * self.sun_col[None, :] * self.sun_int + bounce * np.array([0.11, 0.09, 0.07], np.float32)[None, :]
+            # Ambient occlusion halus di dasar pertemuan dinding/objek dengan lantai
+            if self.shadow_floor_y is not None:
+                h_above = np.maximum(0.0, ct[:, 1] - float(self.shadow_floor_y))
+                is_vert = (np.abs(nn[:, 1]) < 0.72) & (h_above < 0.36)
+                if np.any(is_vert):
+                    ao_k = np.where(is_vert, 0.90 + 0.10 * np.clip(h_above / 0.36, 0.0, 1.0), 1.0)[:, None]
+                    lit = lit * ao_k
 
             if self.lights:
                 for L in self.lights:
@@ -1067,15 +1091,48 @@ class ScenePaper:
                     clipped = _clip_poly_z(p3, 0.14)
                     if len(clipped) >= 3:
                         sd.polygon([(hw_h + (p[0] / p[2]) * f_h, hh_h - (p[1] / p[2]) * f_h) for p in clipped], fill=255)
-                smask = smask.filter(ImageFilter.GaussianBlur(4.5)).resize((W, H), Image.Resampling.BILINEAR)
+                smask = smask.filter(ImageFilter.GaussianBlur(5.5)).resize((W, H), Image.Resampling.BILINEAR)
                 ma = (np.asarray(smask, dtype=np.float32) / 255.0)[:, :, None]
-                sh_tint = np.array([0.23, 0.25, 0.29], dtype=np.float32)[None, None, :]
+                sh_tint = np.array([0.26, 0.29, 0.34], dtype=np.float32)[None, None, :]
                 arr_g = np.asarray(img, dtype=np.float32) * (1.0 - ma * sh_tint)
                 img = Image.fromarray(np.clip(arr_g, 0.0, 255.0).astype(np.uint8), "RGB")
                 draw_rgb = ImageDraw.Draw(img, "RGBA")
 
+            wall_shadow_done = wall_sv_cam is None
+            wz_cam_thresh = None
+            if not wall_shadow_done:
+                wz_cam_thresh = float(np.dot(np.array([cam.pos[0], cam.pos[1], float(self.shadow_wall_z)], np.float32) - cam.pos, fwd)) - 0.05
+
             for oi in up_order:
                 di = depth_list[oi]
+                if not wall_shadow_done and di < wz_cam_thresh:
+                    # Terapkan bayangan dinding lembut tepat setelah dinding belakang tergambar!
+                    sw_h, sh_h = max(8, W // 2), max(8, H // 2)
+                    wmask = Image.new("L", (sw_h, sh_h), 0)
+                    wd = ImageDraw.Draw(wmask)
+                    f_h = focal * 0.5
+                    hw_h, hh_h = sw_h * 0.5, sh_h * 0.5
+                    w_zmin = wall_sv_cam[:, :, 2].min(axis=1)
+                    w_fast = w_zmin >= 0.14
+                    if np.any(w_fast):
+                        wf = wall_sv_cam[w_fast]
+                        wzf = wf[:, :, 2]
+                        wfx = (hw_h + (wf[:, :, 0] / wzf) * f_h).tolist()
+                        wfy = (hh_h - (wf[:, :, 1] / wzf) * f_h).tolist()
+                        for xs, ys in zip(wfx, wfy):
+                            wd.polygon([(xs[0], ys[0]), (xs[1], ys[1]), (xs[2], ys[2]), (xs[3], ys[3])], fill=255)
+                    for p3 in wall_sv_cam[~w_fast]:
+                        clipped = _clip_poly_z(p3, 0.14)
+                        if len(clipped) >= 3:
+                            wd.polygon([(hw_h + (p[0] / p[2]) * f_h, hh_h - (p[1] / p[2]) * f_h) for p in clipped], fill=255)
+                    wmask = wmask.filter(ImageFilter.GaussianBlur(4.2)).resize((W, H), Image.Resampling.BILINEAR)
+                    wma = (np.asarray(wmask, dtype=np.float32) / 255.0)[:, :, None]
+                    wtint = np.array([0.42, 0.40, 0.34], dtype=np.float32)[None, None, :]
+                    arr_w = np.asarray(img, dtype=np.float32) * (1.0 - wma * wtint)
+                    img = Image.fromarray(np.clip(arr_w, 0.0, 255.0).astype(np.uint8), "RGB")
+                    draw_rgb = ImageDraw.Draw(img, "RGBA")
+                    wall_shadow_done = True
+
                 while tex_ptr < len(tex_items) and tex_items[tex_ptr][0] >= di:
                     _, dpts, tpimg, tem = tex_items[tex_ptr]
                     _paste_tex_quad(img, bloom_buf, dpts, tpimg, tem, W, H)
@@ -1102,6 +1159,15 @@ class ScenePaper:
                 _paste_tex_quad(img, bloom_buf, dpts, tpimg, tem, W, H)
                 tex_ptr += 1
 
+            # --- TRUE 3D DIRECTIONAL SHADOW MAP + WORLD-SPACE ALCHEMY SSAO (100% Pure Python/NumPy/PIL) ---
+            if use_smap or self.use_ssao:
+                img = self._apply_3d_shadow_and_ssao(
+                    img, cam, basis, focal, W, H,
+                    verts, alphas, unlits, shads, wshads,
+                    idx, vc, nn, ee, aa, uu,
+                    gnd_order, up_order, fast_list, sx_all, sy_all,
+                )
+
             if bloom_buf is not None:
                 for L in self.lights:
                     if L.halo <= 0.01:
@@ -1112,11 +1178,12 @@ class ScenePaper:
                         rp = (L.halo / lz) * lf * 0.25
                         if rp >= 1.0:
                             cx, cy = lx * 0.25, ly * 0.25
-                            lc = tuple(int(clamp(c * 255.0 * min(1.2, L.intensity * 0.5), 0, 255)) for c in L.color)
+                            lc = tuple(int(clamp(c * 255.0 * min(1.3, L.intensity * 0.65), 0, 255)) for c in L.color)
                             bd.ellipse([cx - rp, cy - rp, cx + rp, cy + rp], fill=lc)
-                b1 = bloom_buf.filter(ImageFilter.GaussianBlur(5))
-                b2 = bloom_buf.filter(ImageFilter.GaussianBlur(14))
-                ba = (np.asarray(b1, np.float32) * 0.5 + np.asarray(b2, np.float32) * 0.75) * self.bloom_strength
+                b1 = bloom_buf.filter(ImageFilter.GaussianBlur(6))
+                b2 = bloom_buf.filter(ImageFilter.GaussianBlur(18))
+                b3 = bloom_buf.filter(ImageFilter.GaussianBlur(38))
+                ba = (np.asarray(b1, np.float32) * 0.42 + np.asarray(b2, np.float32) * 0.68 + np.asarray(b3, np.float32) * 0.85) * self.bloom_strength
                 ba_img = Image.fromarray(np.clip(ba, 0, 255).astype(np.uint8), "RGB").resize((W, H), Image.BILINEAR)
                 arr = np.asarray(img, np.uint16) + np.asarray(ba_img, np.uint16)
                 img = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8), "RGB")
@@ -1132,6 +1199,232 @@ class ScenePaper:
         if cam.blur > 0.2:
             img = img.filter(ImageFilter.GaussianBlur(min(12.0, cam.blur)))
         return img
+
+    def _apply_3d_shadow_and_ssao(
+        self, img, cam, basis, focal, W, H,
+        verts, alphas, unlits, shads, wshads,
+        idx, vc, nn, ee, aa, uu,
+        gnd_order, up_order, fast_list, sx_all, sy_all,
+    ):
+        """Shadow Map 3D ortografis (PCF 3x3) + World-Space Alchemy SSAO 100% pure Python/NumPy/PIL."""
+        scale_s = min(0.5, 360.0 / max(1, W))
+        SW, SH = max(32, int(round(W * scale_s))), max(32, int(round(H * scale_s)))
+        sx_sc = SW / float(W)
+        sy_sc = SH / float(H)
+        focal_s = focal * sy_sc
+        hw_s, hh_s = SW * 0.5, SH * 0.5
+
+        # 1. Pass Face-ID kamera (C-speed PIL Painter's Order) untuk posisi dunia 3D eksak per piksel
+        id_img = Image.new("I", (SW, SH), 0)
+        id_draw = ImageDraw.Draw(id_img)
+        opaque_flag = ((aa >= 0.99) & (~uu)).tolist()
+
+        for order_grp in (gnd_order, up_order):
+            for oi in order_grp:
+                if not opaque_flag[oi]:
+                    continue
+                if fast_list[oi]:
+                    xs, ys = sx_all[oi], sy_all[oi]
+                    pts2 = [(xs[0] * sx_sc, ys[0] * sy_sc), (xs[1] * sx_sc, ys[1] * sy_sc),
+                            (xs[2] * sx_sc, ys[2] * sy_sc), (xs[3] * sx_sc, ys[3] * sy_sc)]
+                else:
+                    clipped = _clip_poly_z(vc[oi], 0.14)
+                    if len(clipped) < 3:
+                        continue
+                    pts2 = [(hw_s + (p[0] / p[2]) * focal_s, hh_s - (p[1] / p[2]) * focal_s) for p in clipped]
+                id_draw.polygon(pts2, fill=int(oi) + 1)
+
+        ids = np.asarray(id_img, dtype=np.int32)
+        mask = ids > 0
+        if not np.any(mask):
+            return img
+
+        # Rekonstruksi posisi 3D dunia (P_world) dan normal (N_world) eksak via interseksi ray-plane
+        yy_g, xx_g = np.mgrid[0:SH, 0:SW].astype(np.float32)
+        fi = ids[mask] - 1
+
+        p0_c = vc[:, 0, :]
+        n_c = nn @ basis
+        plane_d = np.sum(p0_c * n_c, axis=1)
+        z_fmin = np.maximum(0.14, vc[:, :, 2].min(axis=1) - 0.04)
+        z_fmax = vc[:, :, 2].max(axis=1) + 0.04
+        z_fmean = vc[:, :, 2].mean(axis=1)
+
+        rx = (xx_g[mask] + 0.5 - hw_s) / focal_s
+        ry = -(yy_g[mask] + 0.5 - hh_s) / focal_s
+        ray_c = np.stack([rx, ry, np.ones_like(rx)], axis=-1)
+        nc_pix = n_c[fi]
+        denom = np.sum(ray_c * nc_pix, axis=-1)
+        safe_d = np.where(np.abs(denom) > 0.035, denom, 1.0)
+        t_raw = np.where(np.abs(denom) > 0.035, plane_d[fi] / safe_d, z_fmean[fi])
+        t_hit = np.clip(t_raw, z_fmin[fi], z_fmax[fi])
+
+        P_cam = ray_c * t_hit[:, None]
+        P_world = P_cam @ basis.T + cam.pos[None, :]
+        N_world = nn[fi]
+        E_pix = ee[fi]
+        em_damp = np.clip(1.0 - E_pix * 2.2, 0.0, 1.0)
+
+        # 2. Directional 3D Shadow Map (ortografis dari matahari + 3x3 PCF)
+        sh_grid = None
+        if self.use_shadow_map and self.shadow_strength > 0.01:
+            caster_mask = (shads | wshads) & (alphas >= 0.99) & (~unlits)
+            if np.any(caster_mask):
+                l_fwd = (-self.sun_dir).astype(np.float32)
+                l_fwd /= max(float(np.linalg.norm(l_fwd)), 1e-6)
+                up_h = np.array([0.0, 1.0, 0.0], np.float32) if abs(float(l_fwd[1])) < 0.96 else np.array([0.0, 0.0, 1.0], np.float32)
+                l_right = np.cross(l_fwd, up_h)
+                l_right /= max(float(np.linalg.norm(l_right)), 1e-6)
+                l_up = np.cross(l_right, l_fwd)
+                l_basis = np.column_stack([l_right, l_up, l_fwd])
+
+                pw_l = P_world @ l_basis
+                # Fokuskan frustum shadow map tepat pada area kamera yang terlihat (abaikan outlier jauh > 26u)
+                near_cam = t_hit < 26.0
+                pw_fit = pw_l[near_cam] if np.any(near_cam) else pw_l
+                lx_min = float(np.percentile(pw_fit[:, 0], 0.3)) - 1.2
+                lx_max = float(np.percentile(pw_fit[:, 0], 99.7)) + 1.2
+                ly_min = float(np.percentile(pw_fit[:, 1], 0.3)) - 1.2
+                ly_max = float(np.percentile(pw_fit[:, 1], 99.7)) + 1.2
+                # Pastikan aspek persegi agar resolusi texel seragam di kedua sumbu
+                span = max(2.0, lx_max - lx_min, ly_max - ly_min)
+                cx_l, cy_l = 0.5 * (lx_min + lx_max), 0.5 * (ly_min + ly_max)
+                lx_min, lx_max = cx_l - span * 0.5, cx_l + span * 0.5
+                ly_min, ly_max = cy_l - span * 0.5, cy_l + span * 0.5
+
+                LM = int(self.shadow_map_res)
+                inv_span = LM / span
+                texel_w = span / LM
+
+                c_verts = verts[caster_mask]
+                vl = c_verts @ l_basis
+                # Cull caster yang di luar frustum shadow map
+                in_box = (
+                    (vl[:, :, 0].max(axis=1) >= lx_min) & (vl[:, :, 0].min(axis=1) <= lx_max) &
+                    (vl[:, :, 1].max(axis=1) >= ly_min) & (vl[:, :, 1].min(axis=1) <= ly_max)
+                )
+                if np.any(in_box):
+                    vl = vl[in_box]
+                    c_verts = c_verts[in_box]
+                    c_n = np.cross(c_verts[:, 1] - c_verts[:, 0], c_verts[:, 2] - c_verts[:, 0])
+                    c_n /= np.maximum(np.linalg.norm(c_n, axis=1, keepdims=True), 1e-6)
+                    nl = c_n @ l_basis
+                    lz_mean = vl[:, :, 2].mean(axis=1)
+                    # Painter order dari terjauh dari matahari (lz besar) ke terdekat matahari (lz kecil)
+                    s_order = np.argsort(-lz_mean, kind="stable")
+
+                    sx_l = ((vl[:, :, 0] - lx_min) * inv_span).tolist()
+                    sy_l = ((ly_max - vl[:, :, 1]) * inv_span).tolist()
+
+                    l_id_img = Image.new("I", (LM, LM), 0)
+                    ld = ImageDraw.Draw(l_id_img)
+                    for si in s_order:
+                        xs, ys = sx_l[si], sy_l[si]
+                        ld.polygon([(xs[0], ys[0]), (xs[1], ys[1]), (xs[2], ys[2]), (xs[3], ys[3])], fill=int(si) + 1)
+
+                    l_ids = np.asarray(l_id_img, dtype=np.int32)
+                    l_mask = l_ids > 0
+                    lz_map = np.full((LM, LM), 1e9, dtype=np.float32)
+                    if np.any(l_mask):
+                        sfi = l_ids[l_mask] - 1
+                        lyy, lxx = np.where(l_mask)
+                        lx_c = lx_min + (lxx.astype(np.float32) + 0.5) * texel_w
+                        ly_c = ly_max - (lyy.astype(np.float32) + 0.5) * texel_w
+                        lp0 = vl[:, 0, :]
+                        l_pd = np.sum(lp0 * nl, axis=1)
+                        lz_fmin = vl[:, :, 2].min(axis=1)
+                        lz_fmax = vl[:, :, 2].max(axis=1)
+                        nl_s = nl[sfi]
+                        nz_s = nl_s[:, 2]
+                        ok_nz = np.abs(nz_s) > 0.08
+                        safe_nz = np.where(ok_nz, nz_s, 1.0)
+                        lz_exact = np.where(ok_nz, (l_pd[sfi] - lx_c * nl_s[:, 0] - ly_c * nl_s[:, 1]) / safe_nz, lz_fmin[sfi])
+                        lz_map[l_mask] = np.clip(lz_exact, lz_fmin[sfi] - 0.015, lz_fmax[sfi] + 0.015)
+
+                    # Proyeksi titik kamera (dengan normal-offset bias) ke ruang cahaya + 3x3 PCF
+                    n_bias = max(0.016, texel_w * 0.90)
+                    d_bias = max(0.026, texel_w * 1.25)
+                    p_bias_l = (P_world + N_world * n_bias) @ l_basis
+                    su_f = (p_bias_l[:, 0] - lx_min) * inv_span - 0.5
+                    sv_f = (ly_max - p_bias_l[:, 1]) * inv_span - 0.5
+                    plz = p_bias_l[:, 2] - d_bias
+
+                    in_sm = (su_f >= 1.5) & (su_f < LM - 2.5) & (sv_f >= 1.5) & (sv_f < LM - 2.5)
+                    sh_val = np.zeros(len(fi), dtype=np.float32)
+                    if np.any(in_sm):
+                        su0 = np.rint(su_f[in_sm]).astype(np.int32)
+                        sv0 = np.rint(sv_f[in_sm]).astype(np.int32)
+                        pz_in = plz[in_sm]
+                        acc = np.zeros(len(su0), dtype=np.float32)
+                        for dv in (-1, 0, 1):
+                            for du in (-1, 0, 1):
+                                acc += (pz_in > lz_map[sv0 + dv, su0 + du]).astype(np.float32)
+                        sh_val[in_sm] = acc / 9.0
+
+                    # Redam halus pada bidang yang memang membelakangi matahari (bebas shadow acne!)
+                    ndotl = N_world @ self.sun_dir
+                    facing_sun = np.clip((ndotl - 0.02) / 0.14, 0.0, 1.0)
+                    sh_val = sh_val * facing_sun * em_damp * float(self.shadow_strength)
+
+                    sh_grid = np.zeros((SH, SW), dtype=np.float32)
+                    sh_grid[mask] = sh_val
+
+        # 3. World-Space Alchemy SSAO (12 tap pada 2 cincin — zero flat-plane self-occlusion!)
+        ao_grid = None
+        if self.use_ssao and self.ssao_strength > 0.01:
+            P_full = np.zeros((SH, SW, 3), dtype=np.float32)
+            N_full = np.zeros((SH, SW, 3), dtype=np.float32)
+            P_full[mask] = P_world
+            N_full[mask] = N_world
+            # Downsample 2x untuk kecepatan tinggi (~180x320) lalu blur lembut
+            P_ao = P_full[::2, ::2]
+            N_ao = N_full[::2, ::2]
+            V_ao = mask[::2, ::2]
+            E_ao = np.ones((SH, SW), dtype=np.float32)
+            E_ao[mask] = em_damp
+            E_ao = E_ao[::2, ::2]
+            ha, wa = V_ao.shape
+            r_ao = float(self.ssao_radius)
+            occ = np.zeros((ha, wa), dtype=np.float32)
+            # 12 tap: cincin ketat (lipatan kertas/sudut) + cincin sedang (sudut ruangan/lantai)
+            taps = (
+                (-2, 0), (2, 0), (0, -2), (0, 2),
+                (-2, -2), (2, 2), (-2, 2), (2, -2),
+                (-5, -2), (5, 2), (-2, 5), (2, -5),
+            )
+            for dy, dx in taps:
+                y0s, y1s = max(0, dy), ha + min(0, dy)
+                x0s, x1s = max(0, dx), wa + min(0, dx)
+                y0d, y1d = max(0, -dy), ha + min(0, -dy)
+                x0d, x1d = max(0, -dx), wa + min(0, -dx)
+                valid_pair = V_ao[y0d:y1d, x0d:x1d] & V_ao[y0s:y1s, x0s:x1s]
+                diff = P_ao[y0s:y1s, x0s:x1s] - P_ao[y0d:y1d, x0d:x1d]
+                dist2 = np.sum(diff * diff, axis=-1)
+                dist = np.sqrt(dist2 + 1e-6)
+                h = np.sum(diff * N_ao[y0d:y1d, x0d:x1d], axis=-1)
+                tap_v = np.where(
+                    valid_pair & (dist < r_ao) & (h > 0.022),
+                    np.clip((h - 0.022) / (dist + 0.075), 0.0, 1.0) * (1.0 - dist / r_ao),
+                    0.0,
+                )
+                occ[y0d:y1d, x0d:x1d] += tap_v
+            ao_raw = np.clip((occ / len(taps)) * (float(self.ssao_strength) * 2.85), 0.0, 0.62) * E_ao
+            ao_img = Image.fromarray((ao_raw * 255.0).astype(np.uint8), "L").filter(ImageFilter.GaussianBlur(1.5)).resize((W, H), Image.Resampling.BILINEAR)
+            ao_grid = np.asarray(ao_img, dtype=np.float32) / 255.0
+
+        # 4. Gabungkan Shadow Map + SSAO ke gambar resolusi penuh dengan warna bayangan diorama hangat
+        arr = np.asarray(img, dtype=np.float32)
+        if sh_grid is not None:
+            sh_img = Image.fromarray((np.clip(sh_grid, 0.0, 1.0) * 255.0).astype(np.uint8), "L")
+            if self.shadow_blur > 0.1:
+                sh_img = sh_img.filter(ImageFilter.GaussianBlur(float(self.shadow_blur)))
+            sh_up = (np.asarray(sh_img.resize((W, H), Image.Resampling.BILINEAR), dtype=np.float32) / 255.0)[:, :, None]
+            stint = np.array(self.shadow_tint, dtype=np.float32)[None, None, :]
+            arr = arr * (1.0 - sh_up * stint)
+        if ao_grid is not None:
+            ao_tint = np.array([0.88, 0.94, 1.02], dtype=np.float32)[None, None, :]
+            arr = arr * (1.0 - ao_grid[:, :, None] * ao_tint)
+        return Image.fromarray(np.clip(arr, 0.0, 255.0).astype(np.uint8), "RGB")
 
 
 def _paste_tex_quad(img, bloom_buf, dpts, tpimg, tem, W, H):

@@ -48,6 +48,23 @@ PRESET = {
     "bu_guru": dict(nama="Bu Guru", hijab=UNGU, hijab_tua=UNGU_TUA, kacamata=True, kemeja=(240, 232, 250), dasi=None, bawah="rok", bawah_warna=UNGU_TUA, bulu_mata=True, skala=1.04),
     "kakek":  dict(nama="Kakek", rambut="botak", peci=True, kumis=True, jenggot=True, kemeja=(250, 250, 250), dasi=None, bawah="celana", bawah_warna=(90, 70, 60), skala=0.98, uban=True),
     "adik":   dict(nama="Adik", rambut="bob", rambut_warna=HITAM, kemeja=(255, 226, 120), dasi=None, bawah="rok", bawah_warna=PINK_TUA, bulu_mata=True, skala=0.8),
+    "otak":   dict(nama="Sang Otak", kepala="otak", kulit=(250, 174, 198), mata_chibi=True, bulu_mata=False,
+                   kemeja=(242, 248, 255), krah=True, kancing=True, dasi=(66, 178, 232),
+                   lengan_tebal=True, lengan_panjang=True, sepatu_sneaker=True,
+                   badan_lebar=1.45, pinggul_lebar=1.4, bahu_x=54.0, lengan_besar=1.0,
+                   hip_y=-138.0, kaki_tebal=1.65, kaki_lebar=1.25, sepatu_besar=1.15, tangan_besar=1.02,
+                   bawah="celana", bawah_warna=(54, 68, 96), sepatu=(52, 62, 86)),
+    "virus":  dict(nama="Virus", kepala="virus", kulit=(112, 204, 88), wajah_maskulin=True, bulu_mata=False,
+                   kemeja=(66, 138, 64), krah=False, kancing=False, dasi=None,
+                   lengan_tebal=True, lengan_besar=0.95, badan_lebar=1.35, pinggul_lebar=1.3, bahu_x=48.0,
+                   hip_y=-142.0, kaki_tebal=1.5, kaki_lebar=1.2, sepatu_besar=1.05, tangan_besar=0.95,
+                   bawah="celana", bawah_warna=(44, 86, 48), sepatu=(36, 62, 40), skala=0.84),
+    "sel_imun": dict(nama="Sel Imun", kepala="sel_imun", kulit=(236, 248, 255), mata_chibi=True, bulu_mata=False,
+                     kemeja=(78, 172, 242), krah=False, kancing=False, dasi=None, perisai_dada=True,
+                     lengan_tebal=True, lengan_panjang=True, sepatu_sneaker=True,
+                     badan_lebar=1.5, pinggul_lebar=1.42, bahu_x=54.0, lengan_besar=1.02,
+                     hip_y=-136.0, kaki_tebal=1.7, kaki_lebar=1.28, sepatu_besar=1.15, tangan_besar=1.02,
+                     bawah="celana", bawah_warna=(52, 108, 176), sepatu=(44, 86, 148), skala=0.94),
 }
 
 
@@ -135,6 +152,7 @@ POSE = {
     "dagu":        _P((14, 10, "m"), (56, -158, "m"), tilt=7),
     "kaget":       _P((100, 24, "m"), (100, 24, "m"), lean=-5),
     "sedih":       _P((6, 4, "m"), (6, 4, "m"), lean=3, tilt=8),
+    "pusing":      _P((128, 88, "m"), (128, 88, "m"), lean=3, tilt=6),
     "marah":       _P((40, -108, "f"), (40, -108, "f"), lean=3),
     "kepal":       _P((16, -110, "f"), (16, -110, "f")),
     "menyerahkan": _P((62, -14, "m"), (62, -14, "m")),
@@ -294,6 +312,12 @@ class Tokoh:
             gc = warna(p["kemeja_garis"], BIRU)
             for yy in (-215, -192, -170):
                 c.line(TT([(-38, yy), (38, yy)]), gc, 6 * s, False)
+        if p.get("perisai_dada"):
+            # lencana perisai putih-biru di dada sel imun
+            by = SHOULDER_Y + 46
+            c.poly(TT([(0, by - 22), (22, by - 14), (18, by + 10), (0, by + 24), (-18, by + 10), (-22, by - 14)]), PUTIH, ow * .7, OUT)
+            c.line(TT([(0, by - 10), (0, by + 10)]), BIRU, 5.5 * s, False)
+            c.line(TT([(-10, by), (10, by)]), BIRU, 5.5 * s, False)
         # krah + dasi (dasi kupu-kupu menggantikan krah/dasi biasa)
         if p.get("krah", True) and not p.get("dasi_kupu"):
             c.poly(TT([(0, SHOULDER_Y + 24), (-22, SHOULDER_Y - 2), (-4, SHOULDER_Y - 2)]), PUTIH, ow * .7, OUT)
@@ -496,7 +520,62 @@ class Tokoh:
             for px, py, pr in puffs:
                 c.ell(*H(px, py), pr * s, pr * s, hair_c)
         # wajah
-        if hij and p.get("hijab_gaya") == "modern":
+        kepala = p.get("kepala")
+        if kepala == "otak":
+            # kepala otak pink chibi berlekuk-lekuk (2-pass: outline luar dulu lalu isi pink + lekukan sulkus)
+            bc = warna(p.get("kulit"), (250, 174, 198))
+            lip = gelap(bc, 0.25)
+            lobes = [
+                (-84, 34, 42), (-96, -12, 46), (-82, -56, 46), (-42, -82, 46),
+                (42, -82, 46), (82, -56, 46), (96, -12, 46), (84, 34, 42),
+                (-46, 62, 42), (0, 68, 44), (46, 62, 42),
+            ]
+            c.ell(*H(0, -6), 104 * s + ow, 88 * s + ow, OUT)
+            for lx, ly, lr in lobes:
+                c.ell(*H(lx, ly), lr * s + ow, lr * s + ow, OUT)
+            c.ell(*H(0, -6), 104 * s, 88 * s, bc)
+            for lx, ly, lr in lobes:
+                c.ell(*H(lx, ly), lr * s, lr * s, bc)
+            # belahan tengah dahi atas & garis lekukan otak (tidak menutupi mata/mulut)
+            c.curve(HH([(0, -112), (-3, -84), (2, -56)]), lip, 4.8 * s)
+            c.curve(HH([(-90, -48), (-66, -66), (-42, -52)]), lip, 4.2 * s)
+            c.curve(HH([(90, -48), (66, -66), (42, -52)]), lip, 4.2 * s)
+            c.curve(HH([(-108, -12), (-86, -24), (-74, -4)]), lip, 3.8 * s)
+            c.curve(HH([(108, -12), (86, -24), (74, -4)]), lip, 3.8 * s)
+            c.curve(HH([(-98, 28), (-78, 16), (-68, 36)]), lip, 3.6 * s)
+            c.curve(HH([(98, 28), (78, 16), (68, 36)]), lip, 3.6 * s)
+            c.ell(*H(-46, -86), 14 * s, 7 * s, (255, 255, 255, 130))
+        elif kepala == "virus":
+            # kepala virus hijau berduri mahkota (2-pass)
+            vc = warna(p.get("kulit"), (112, 204, 88))
+            spikes = []
+            for i in range(10):
+                a = math.radians(i * 36 + 18)
+                ca, sa = math.cos(a), math.sin(a)
+                spikes.append(((ca * 92, sa * 92), (ca * 128, sa * 128)))
+            for p0, p1 in spikes:
+                c.line(HH([p0, p1]), OUT, 22 * s)
+                c.ell(*H(*p1), 17 * s + ow, 17 * s + ow, OUT)
+            c.ell(*H(0, 0), 96 * s + ow, 96 * s + ow, OUT)
+            for p0, p1 in spikes:
+                c.line(HH([p0, p1]), vc, 12 * s)
+                c.ell(*H(*p1), 15.5 * s, 15.5 * s, terang(vc, 0.22))
+            c.ell(*H(0, 0), 96 * s, 96 * s, vc)
+            for bx, by, br in ((-56, -46, 12), (58, -38, 10), (-60, 44, 10), (54, 48, 12)):
+                c.ell(*H(bx, by), br * s, br * s, gelap(vc, 0.20))
+        elif kepala == "sel_imun":
+            # kepala sel darah putih berpendar biru muda (2-pass awan lembut)
+            ic = warna(p.get("kulit"), (236, 248, 255))
+            c.ell(*H(0, 0), 124 * s, 124 * s, (120, 204, 252, 70))
+            bumps = [(math.cos(math.radians(i * 45)) * 74, math.sin(math.radians(i * 45)) * 74, 46) for i in range(8)]
+            c.ell(*H(0, 0), 92 * s + ow, 92 * s + ow, OUT)
+            for bx, by, br in bumps:
+                c.ell(*H(bx, by), br * s + ow, br * s + ow, OUT)
+            c.ell(*H(0, 0), 92 * s, 92 * s, ic)
+            for bx, by, br in bumps:
+                c.ell(*H(bx, by), br * s, br * s, ic)
+            c.ell(*H(-42, -56), 16 * s, 10 * s, (255, 255, 255, 190))
+        elif hij and p.get("hijab_gaya") == "modern":
             face_pts = [
                 (0, -76), (38, -60), (68, -32), (82, 4),
                 (78, 42), (54, 72), (24, 84), (0, 86),

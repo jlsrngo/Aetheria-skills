@@ -677,12 +677,141 @@ def polos_f(c, t, o):
     pass
 
 
+# ================================================================= RUANG OTAK & DALAM TUBUH
+def ruang_otak_b(c, t, o):
+    """Ruang kendali tubuh milik Sang Otak (layar ECG, status, suhu, kabel saraf menyala)."""
+    if "istirahat_t" in o and t >= float(o["istirahat_t"]):
+        bahaya, mode = False, "istirahat"
+    elif "bahaya_t" in o:
+        bahaya = t >= float(o["bahaya_t"])
+        mode = "bahaya" if bahaya else o.get("mode", "normal")
+    else:
+        bahaya = bool(o.get("bahaya"))
+        mode = o.get("mode", "bahaya" if bahaya else "normal")
+    bg_top = (92, 34, 48) if bahaya else ((38, 60, 104) if mode == "istirahat" else (46, 54, 96))
+    bg_bot = (138, 56, 68) if bahaya else ((68, 96, 148) if mode == "istirahat" else (78, 88, 142))
+    c.gradient(bg_top, bg_bot, 0, 0.85)
+    # jalur saraf di dinding belakang (parallax lembut)
+    c.set_depth(0.6)
+    nc = (255, 120, 120) if bahaya else ((130, 210, 255) if mode == "istirahat" else (126, 224, 240))
+    for sy in (-760, -610, -450):
+        c.curve([(-2200, sy), (-1100, sy - 60), (0, sy + 20), (1100, sy - 50), (2200, sy)], nc + (120,), 8)
+    # pulsa sinyal besar berjalan di kabel saraf
+    for i in range(4):
+        px = -1400 + ((t * 260 + i * 760) % 2800)
+        py = -760 + (i % 3) * 155
+        c.ell(px, py, 14, 14, nc, 3, OUT)
+    c.set_depth(1.0)
+    # lantai logam pastel
+    lantai(c, (96, 106, 144) if not bahaya else (112, 72, 84), garis=(74, 82, 118))
+    # ---- Monitor Kiri: ECG Detak Jantung
+    c.rect(-820, -660, -340, -370, (32, 38, 62), OW, OUT, r=18)
+    c.rect(-800, -640, -360, -390, (18, 28, 42))
+    ecg_c = (255, 86, 86) if bahaya else (88, 240, 152)
+    pts = []
+    speed = 5.5 if bahaya else (1.8 if mode == "istirahat" else 3.2)
+    for k in range(32):
+        xx = -790 + k * 13.5
+        ph = (k * 0.42 - t * speed) % 3.2
+        yy = -515
+        if 1.2 < ph < 1.45:
+            yy -= 78
+        elif 1.45 <= ph < 1.7:
+            yy += 46
+        elif 0.8 < ph <= 1.2:
+            yy -= 16
+        pts.append((xx, yy))
+    c.line(pts, ecg_c, 6, False)
+    c.text(-580, -612, "DETAK JANTUNG", 22, (190, 210, 236), "teks")
+    # ---- Monitor Tengah: Status Utama
+    c.rect(-290, -700, 290, -370, (32, 38, 62), OW, OUT, r=20)
+    scr_c = (74, 20, 28) if bahaya else ((20, 44, 72) if mode == "istirahat" else (20, 44, 58))
+    c.rect(-270, -680, 270, -390, scr_c)
+    if bahaya:
+        blink = 0.55 + 0.45 * math.sin(t * 10)
+        c.text(0, -565, "BAHAYA!", 56, (255, int(90 * blink + 50), 90), "seru")
+        c.text(0, -490, "VIRUS TERDETEKSI", 28, (255, 206, 130), "judul")
+    elif mode == "istirahat":
+        c.text(0, -565, "MODE ISTIRAHAT", 38, (140, 224, 255), "judul")
+        c.text(0, -495, "PEMULIHAN TUBUH", 26, (210, 240, 255), "teks")
+    else:
+        c.text(0, -565, "TUBUH NORMAL", 42, (110, 244, 174), "judul")
+        c.text(0, -495, "SEMUA KENDALI AKTIF", 24, (190, 232, 245), "teks")
+    # ---- Monitor Kanan: Suhu Tubuh
+    c.rect(340, -660, 820, -370, (32, 38, 62), OW, OUT, r=18)
+    c.rect(360, -640, 800, -390, (18, 28, 42))
+    c.text(580, -612, "SUHU TUBUH", 22, (190, 210, 236), "teks")
+    suhu_txt = "39.2 C" if bahaya else ("37.4 C" if mode == "istirahat" else "36.6 C")
+    suhu_col = (255, 92, 92) if bahaya else ((255, 206, 92) if mode == "istirahat" else (106, 238, 166))
+    c.text(580, -525, suhu_txt, 54, suhu_col, "seru")
+    # bar suhu
+    c.rect(410, -455, 750, -425, (44, 52, 74), 3, OUT, r=10)
+    fill_w = 320 if bahaya else (210 if mode == "istirahat" else 160)
+    c.rect(414, -451, 414 + fill_w, -429, suhu_col, 0, OUT, r=8)
+    # lampu sirene bahaya di sudut atas
+    if bahaya:
+        al = int(40 + 35 * (0.5 + 0.5 * math.sin(t * 9)))
+        c.d.rectangle([0, 0, c.im.width, c.im.height], fill=(255, 40, 40, al))
+
+
+def ruang_otak_f(c, t, o):
+    if o.get("konsol", True):
+        # meja konsol rendah di depan kaki agar tokoh & tangan tetap terlihat jelas
+        c.poly([(-460, -140), (460, -140), (520, 0), (-520, 0)], (118, 130, 170), OW, OUT)
+        c.poly([(-460, -140), (460, -140), (480, -104), (-480, -104)], (152, 166, 208), OW, OUT)
+        for i, col in enumerate((HIJAU, KUNING, BIRU_MUDA, MERAH, HIJAU, KUNING)):
+            bx = -300 + i * 120
+            c.ell(bx, -122, 22, 10, col, 3, OUT)
+
+
+def dalam_tubuh_b(c, t, o):
+    """Latar di dalam tubuh/pembuluh darah (pastel merah muda; memerah hangat saat demam)."""
+    demam = bool(o.get("demam"))
+    top = (214, 62, 54) if demam else (214, 96, 118)
+    bot = (252, 132, 86) if demam else (252, 178, 186)
+    c.gradient(top, bot, 0, 0.9)
+    # dinding terowongan pembuluh darah melengkung di kejauhan (parallax)
+    c.set_depth(0.45)
+    wall_c = (182, 48, 44) if demam else (186, 74, 98)
+    c.blob([(-2600, -1200), (-2600, -680), (-1400, -610), (-300, -700), (800, -600), (1900, -690), (2600, -620), (2600, -1200)], wall_c, OW, OUT, n=6)
+    # sel darah merah mengambang lembut (objek besar bersih, bukan partikel kecil)
+    rbc_c = (232, 54, 62) if not demam else (246, 86, 44)
+    for i in range(6):
+        rx = -1500 + ((i * 580 + t * (95 if demam else 55)) % 3000)
+        ry = -540 + (i % 3) * 145 + math.sin(t * 2.0 + i) * 14
+        c.ell(rx, ry, 58, 34, rbc_c, 3.6, OUT)
+        c.ell(rx, ry, 28, 14, gelap(rbc_c, 0.22))
+    c.set_depth(1.0)
+    # lantai pembuluh darah lembut
+    lantai(c, (226, 98, 76) if demam else (232, 134, 150), garis=(198, 74, 60) if demam else (204, 108, 126))
+    if demam:
+        # indikator panas/termometer besar di sisi kanan latar
+        c.rect(520, -640, 620, -240, (255, 240, 232), OW, OUT, r=42)
+        c.ell(570, -220, 66, 66, (255, 240, 232), OW, OUT)
+        lvl = 0.72 + 0.16 * (0.5 + 0.5 * math.sin(t * 4.0))
+        top_y = lerp(-240, -600, lvl)
+        c.rect(546, top_y, 594, -210, MERAH, 0, OUT, r=18)
+        c.ell(570, -220, 44, 44, MERAH)
+        c.text(570, -685, "39.2 C", 44, KUNING_MUDA, "seru", stroke=4)
+        c.d.rectangle([0, 0, c.im.width, c.im.height], fill=(255, 80, 40, 38))
+
+
+def dalam_tubuh_f(c, t, o):
+    # lekukan jaringan foreground lembut di pinggir bawah
+    c.set_depth(1.15)
+    fc = (176, 48, 42) if o.get("demam") else (188, 82, 106)
+    c.ell(-1050, 90, 240, 120, fc, OW, OUT)
+    c.ell(1050, 90, 240, 120, fc, OW, OUT)
+    c.set_depth(1.0)
+
+
 SET = {
     "kamar": (kamar_b, kamar_f), "sekolah_luar": (sekolah_luar_b, sekolah_luar_f), "sekolah": (sekolah_luar_b, sekolah_luar_f),
     "taman": (taman_b, taman_f), "kelas": (kelas_b, kelas_f), "ruang_belajar": (ruang_belajar_b, ruang_belajar_f),
     "ruang_tamu": (ruang_tamu_b, ruang_tamu_f), "jalan": (jalan_b, jalan_f), "kantin": (kantin_b, kantin_f),
     "lapangan": (lapangan_b, lapangan_f), "rumah_depan": (rumah_depan_b, rumah_depan_f), "meja_makan": (meja_makan_b, meja_makan_f),
     "padang": (padang_b, padang_f), "polos": (polos_b, polos_f),
+    "ruang_otak": (ruang_otak_b, ruang_otak_f), "dalam_tubuh": (dalam_tubuh_b, dalam_tubuh_f),
 }
 ALIAS = {"kamar_tidur": "kamar", "gerbang_sekolah": "sekolah_luar", "halaman_sekolah": "taman", "dapur": "meja_makan",
          "ruang_keluarga": "ruang_tamu", "meja_belajar": "ruang_belajar", "komplek": "jalan", "kampung": "jalan", "luar": "padang"}

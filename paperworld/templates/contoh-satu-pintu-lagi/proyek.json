@@ -4,7 +4,7 @@
   "fps": 30,
   "supersample": 1.65,
   "vo": null,
-  "ekor": 0.6,
+  "ekor": 0.0,
   "musik": "auto",
   "mood_musik": "kertas",
   "sfx": true,
@@ -18,211 +18,261 @@
     {
       "id": "pintu_5_menit",
       "latar": "meja_hp",
-      "durasi": 3.3,
+      "durasi": 3.0,
       "transisi": "potong",
       "narasi": "Katanya cuma lima menit saja, tapi pintunya langsung terbuka.",
-      "opsi": { "mode_pintu": false, "buka_pintu": 0.0 },
+      "opsi": { "pop_play": 0.0, "pop_door": 0.0, "buka_pintu": 0.0, "flip_judul": 0.0 },
       "animasi_opsi": [
-        { "t": 0.85, "dur": 0.05, "mode_pintu": true, "buka_pintu": 0.0 },
-        { "t": 1.1, "dur": 1.1, "buka_pintu": 1.0 }
+        { "t": 0.12, "dur": 0.35, "pop_play": 1.0 },
+        { "t": 1.20, "dur": 0.45, "pop_door": 1.0 },
+        { "t": 1.32, "dur": 0.38, "flip_judul": 1.0 },
+        { "t": 1.80, "dur": 0.55, "buka_pintu": 1.0 },
+        { "t": 2.32, "dur": 0.28, "flip_judul": 0.0 }
       ],
       "tokoh": [
         {
           "id": "luna",
-          "pos": [0.62, 0.0, 2.35],
-          "hadap": "belakang",
+          "pos": [0.48, 0.0, 2.62],
+          "skala": 0.92,
+          "hadap": "depan",
           "pose": "diam",
           "ekspresi": "tenang",
           "aksi": [
-            { "t": 0.15, "ke_pos": [0.28, 0.26, 0.72], "durasi": 0.95, "gaya": "jalan" },
-            { "t": 1.15, "pose": "buka_pintu", "ekspresi": "fokus" }
+            { "t": 0.25, "hadap": "belakang" },
+            { "t": 0.55, "ke_pos": [0.38, 0.40, 0.72], "durasi": 0.80, "gaya": "jalan", "hadap_akhir": "belakang" },
+            { "t": 1.68, "pose": "buka_pintu", "ekspresi": "fokus" },
+            { "t": 2.08, "ke_pos": [0.28, 0.40, -1.05], "durasi": 0.88, "gaya": "jalan", "hadap_akhir": "belakang" }
           ]
         }
       ],
       "kamera": {
-        "awal": { "pos": [0.25, 1.75, 5.1], "target": [-0.15, 0.95, 0.25], "fov": 44 },
+        "awal": { "pos": [0.22, 1.68, 6.65], "target": [-0.16, 0.78, 0.15], "fov": 41 },
         "gerak": [
-          { "t": 0.25, "dur": 2.65, "jenis": "pindah", "ke": { "pos": [0.18, 1.45, 2.25], "target": [0.20, 1.28, -0.5], "fov": 43 }, "ease": "io" }
+          { "t": 0.45, "dur": 1.45, "jenis": "pindah", "ke": { "pos": [0.68, 1.88, 3.05], "target": [0.28, 1.40, -0.28], "fov": 44 }, "ease": "io" },
+          { "t": 1.95, "dur": 1.02, "jenis": "pindah", "ke": { "pos": [0.28, 1.42, 0.42], "target": [0.28, 1.22, -2.55], "fov": 46 }, "ease": "in" }
         ]
       },
       "sfx": [
-        { "t": 0.9, "jenis": "lipat" },
-        { "t": 1.15, "jenis": "pintu" }
+        { "t": 0.15, "jenis": "notif" },
+        { "t": 1.22, "jenis": "lipat" },
+        { "t": 1.82, "jenis": "pintu" }
       ]
     },
     {
-      "id": "kota_menara_jam",
+      "id": "kota_jam_dan_gang",
       "latar": "kota_jam",
-      "durasi": 2.7,
-      "transisi": "fade",
-      "narasi": "Tiba-tiba satu jam berlalu di depan menara jam.",
-      "opsi": { "pop_jam": 0.25, "buka_pintu_kanan": 0.0 },
-      "animasi_opsi": [
-        { "t": 0.05, "dur": 0.55, "pop_jam": 1.0 }
-      ],
-      "tokoh": [
-        { "id": "luna", "pos": [-0.85, 0.02, 2.6], "hadap": "belakang", "pose": "diam", "ekspresi": "fokus" }
-      ],
-      "kamera": {
-        "awal": { "pos": [-0.15, 1.85, 5.4], "target": [0.0, 3.8, -8.5], "fov": 46 },
-        "gerak": [
-          { "t": 0.15, "dur": 2.35, "jenis": "pindah", "ke": { "pos": [0.0, 2.85, 2.6], "target": [0.0, 3.9, -8.5], "fov": 44 }, "ease": "io" }
-        ]
-      },
-      "sfx": [
-        { "t": 0.2, "jenis": "ding" }
-      ]
-    },
-    {
-      "id": "kota_koridor_pintu",
-      "latar": "kota_jam",
-      "durasi": 2.8,
+      "durasi": 6.2,
       "transisi": "potong",
-      "narasi": "Setiap langkah membuka deretan pintu baru.",
-      "opsi": { "pop_jam": 1.0, "buka_pintu_kanan": 0.0 },
+      "narasi": "Tiba-tiba satu jam berlalu, dan setiap langkah membuka deretan pintu baru.",
+      "opsi": { "pop_kota": 0.0, "pop_jam": 0.0, "pop_gang": 0.0, "buka_pintu_kanan": 0.0 },
       "animasi_opsi": [
-        { "t": 0.95, "dur": 1.05, "buka_pintu_kanan": 1.0 }
+        { "t": 0.08, "dur": 0.55, "pop_kota": 1.0 },
+        { "t": 1.15, "dur": 0.42, "pop_jam": 1.0 },
+        { "t": 2.40, "dur": 0.30, "pop_jam": 0.0 },
+        { "t": 2.75, "dur": 0.55, "pop_gang": 1.0 },
+        { "t": 4.65, "dur": 0.65, "buka_pintu_kanan": 1.0 }
       ],
       "tokoh": [
         {
           "id": "luna",
-          "pos": [0.95, 0.0, 2.3],
-          "hadap": "kanan",
+          "pos": [-0.65, 0.02, 3.25],
+          "hadap": "belakang",
           "pose": "diam",
-          "ekspresi": "senang",
+          "ekspresi": "fokus",
           "aksi": [
-            { "t": 0.1, "ke_pos": [2.15, 0.0, 1.2], "durasi": 0.85, "gaya": "jalan" },
-            { "t": 0.95, "pose": "buka_pintu", "hadap": "kanan", "ekspresi": "fokus" }
+            { "t": 3.10, "ke_pos": [0.95, 0.0, 1.82], "durasi": 1.45, "gaya": "jalan", "hadap_akhir": "kanan" },
+            { "t": 4.60, "pose": "buka_pintu", "hadap": "kanan" },
+            { "t": 5.15, "ke_pos": [2.85, 0.0, 1.80], "durasi": 0.98, "gaya": "jalan", "hadap_akhir": "kanan" }
           ]
         }
       ],
       "kamera": {
-        "awal": { "pos": [0.45, 1.95, 4.5], "target": [1.35, 1.15, -1.2], "fov": 44 },
+        "awal": { "pos": [-0.30, 1.85, 5.25], "target": [0.0, 2.25, -8.5], "fov": 46 },
         "gerak": [
-          { "t": 0.2, "dur": 2.3, "jenis": "pindah", "ke": { "pos": [0.15, 1.48, 2.35], "target": [2.45, 1.18, 0.8], "fov": 43 }, "ease": "io" }
+          { "t": 0.15, "dur": 2.25, "jenis": "pindah", "ke": { "pos": [0.0, 3.35, 2.35], "target": [0.0, 4.25, -8.8], "fov": 44 }, "ease": "io" },
+          { "t": 2.75, "dur": 1.05, "jenis": "pindah", "ke": { "pos": [-0.45, 3.05, 5.35], "target": [0.65, 0.95, -0.55], "fov": 46 }, "ease": "io" },
+          { "t": 3.85, "dur": 1.25, "jenis": "pindah", "ke": { "pos": [-0.20, 1.65, 2.75], "target": [2.15, 1.08, 1.65], "fov": 45 }, "ease": "io" },
+          { "t": 5.15, "dur": 1.02, "jenis": "pindah", "ke": { "pos": [1.55, 1.45, 1.85], "target": [4.25, 1.25, 1.80], "fov": 46 }, "ease": "in" }
         ]
       },
       "sfx": [
-        { "t": 1.0, "jenis": "pintu" }
+        { "t": 0.12, "jenis": "lipat" },
+        { "t": 1.20, "jenis": "ding" },
+        { "t": 2.80, "jenis": "lipat" },
+        { "t": 4.68, "jenis": "pintu" }
       ]
     },
     {
       "id": "satu_pintu_lagi",
       "latar": "ruang_pintu",
-      "durasi": 4.1,
+      "durasi": 3.5,
       "transisi": "potong",
       "narasi": "Setiap kali menutup satu halaman, selalu muncul satu pintu lagi.",
-      "opsi": { "buka_pintu": 0.0 },
+      "opsi": { "pop_pintu_biru": 0.0, "buka_pintu": 0.0, "flip_judul": 0.0 },
       "animasi_opsi": [
-        { "t": 1.25, "dur": 1.1, "buka_pintu": 1.0 }
+        { "t": 0.65, "dur": 0.55, "pop_pintu_biru": 1.0 },
+        { "t": 1.38, "dur": 0.62, "buka_pintu": 1.0 },
+        { "t": 2.05, "dur": 0.45, "flip_judul": 1.0 }
       ],
       "tokoh": [
         {
           "id": "luna",
-          "pos": [-0.35, 0.0, 1.15],
+          "pos": [-0.95, 0.0, 1.35],
           "hadap": "belakang",
           "pose": "diam",
           "ekspresi": "tenang",
           "aksi": [
-            { "t": 0.15, "ke_pos": [0.0, 0.0, -1.55], "durasi": 1.05, "gaya": "jalan" },
-            { "t": 1.25, "pose": "buka_pintu", "ekspresi": "senang" },
-            { "t": 2.15, "ke_pos": [0.0, 0.0, -2.5], "durasi": 1.2, "gaya": "jalan" }
+            { "t": 0.10, "ke_pos": [0.0, 0.0, -1.15], "durasi": 1.15, "gaya": "jalan", "hadap_akhir": "belakang" },
+            { "t": 1.35, "pose": "buka_pintu", "ekspresi": "senang" },
+            { "t": 1.85, "ke_pos": [0.0, 0.0, -2.85], "durasi": 1.25, "gaya": "jalan", "hadap_akhir": "belakang" }
           ]
         }
       ],
       "kamera": {
-        "awal": { "pos": [0.35, 1.55, 3.35], "target": [0.0, 1.25, -1.9], "fov": 44 },
+        "awal": { "pos": [-1.45, 2.25, 3.25], "target": [-0.35, 1.05, -1.55], "fov": 45 },
         "gerak": [
-          { "t": 0.25, "dur": 2.35, "jenis": "pindah", "ke": { "pos": [0.0, 1.38, 0.75], "target": [0.0, 1.25, -2.6], "fov": 43 }, "ease": "io" },
-          { "t": 2.75, "dur": 1.25, "jenis": "pindah", "ke": { "pos": [0.0, 2.05, 0.55], "target": [0.0, 2.65, -2.05], "fov": 42 }, "ease": "io" }
+          { "t": 0.20, "dur": 1.75, "jenis": "pindah", "ke": { "pos": [-0.18, 1.52, 1.45], "target": [0.0, 1.22, -2.45], "fov": 44 }, "ease": "io" },
+          { "t": 2.05, "dur": 1.40, "jenis": "pindah", "ke": { "pos": [0.0, 1.65, -1.15], "target": [0.0, 1.65, -3.85], "fov": 44 }, "ease": "in" }
         ]
       },
       "sfx": [
-        { "t": 1.3, "jenis": "pintu" }
+        { "t": 0.70, "jenis": "lipat" },
+        { "t": 1.42, "jenis": "pintu" }
       ]
     },
     {
-      "id": "kucing_malam_fajar",
+      "id": "panggung_lipat_buku",
       "latar": "panggung_kertas",
-      "durasi": 4.4,
+      "durasi": 4.9,
       "transisi": "potong",
       "narasi": "Ada kucing ceria, bayangan malam, dan cahaya fajar di baliknya.",
+      "opsi": { "trans_malam": 0.0, "drop_malam": 0.0, "trans_fajar": 0.0, "ray_scale": 0.0 },
+      "animasi_opsi": [
+        { "t": 1.35, "dur": 0.55, "trans_malam": 1.0 },
+        { "t": 1.55, "dur": 0.70, "drop_malam": 1.0 },
+        { "t": 2.75, "dur": 0.50, "trans_fajar": 1.0 },
+        { "t": 2.95, "dur": 0.45, "ray_scale": 1.0 }
+      ],
       "tokoh": [
-        { "id": "kucing", "pos": [-4.5, 0.36, -0.35], "hadap": "depan", "pose": "lambai", "ekspresi": "senang" },
-        { "id": "luna", "pos": [-0.56, 0.0, 0.48], "hadap": "depan", "pose": "mikir", "ekspresi": "mikir" }
+        {
+          "id": "kucing",
+          "pos": [0.0, 0.38, -0.35],
+          "hadap": "depan",
+          "pose": "lambai",
+          "ekspresi": "senang",
+          "aksi": [
+            { "t": 1.38, "pop_up": 0.0 }
+          ]
+        },
+        {
+          "id": "luna",
+          "pos": [-2.15, 0.0, 0.35],
+          "skala": 0.86,
+          "hadap": "depan",
+          "pose": "diam",
+          "ekspresi": "tenang",
+          "aksi": [
+            { "t": 0.95, "ke_pos": [-0.62, 0.0, 0.35], "durasi": 0.55, "gaya": "jalan", "hadap_akhir": "depan" },
+            { "t": 3.05, "hadap": "belakang" },
+            { "t": 3.45, "ke_pos": [0.35, 0.0, 0.15], "durasi": 0.75, "gaya": "jalan", "hadap_akhir": "belakang" }
+          ]
+        }
       ],
       "kamera": {
-        "awal": { "pos": [-4.5, 1.22, 2.35], "target": [-4.5, 1.02, -0.35], "fov": 40 },
+        "awal": { "pos": [0.55, 1.15, 2.05], "target": [0.0, 0.88, -0.35], "fov": 40 },
         "gerak": [
-          { "t": 1.35, "jenis": "potong", "ke": { "pos": [-0.10, 1.28, 3.35], "target": [-0.08, 1.18, -0.85], "fov": 44 } },
-          { "t": 2.85, "jenis": "potong", "ke": { "pos": [4.5, 1.32, 3.35], "target": [4.5, 1.25, -0.95], "fov": 44 } }
+          { "t": 0.10, "dur": 1.25, "jenis": "pindah", "ke": { "pos": [-0.25, 1.35, 3.25], "target": [-0.15, 1.15, -0.55], "fov": 44 }, "ease": "io" },
+          { "t": 1.40, "dur": 1.40, "jenis": "pindah", "ke": { "pos": [-0.08, 1.48, 3.75], "target": [-0.05, 1.46, -0.85], "fov": 46 }, "ease": "io" },
+          { "t": 2.95, "dur": 0.95, "jenis": "pindah", "ke": { "pos": [0.05, 1.32, 3.15], "target": [0.0, 1.25, -0.95], "fov": 45 }, "ease": "io" },
+          { "t": 3.95, "dur": 0.92, "jenis": "pindah", "ke": { "pos": [0.0, 1.15, 0.15], "target": [0.0, 1.05, -2.55], "fov": 48 }, "ease": "in" }
         ]
-      }
+      },
+      "sfx": [
+        { "t": 1.38, "jenis": "lipat" },
+        { "t": 2.78, "jenis": "lipat" },
+        { "t": 3.98, "jenis": "whoosh_lembut" }
+      ]
     },
     {
       "id": "labirin_terbuka",
       "latar": "labirin_pintu",
-      "durasi": 5.8,
-      "transisi": "flash",
+      "durasi": 6.4,
+      "transisi": "potong",
       "narasi": "Tanpa sadar kita terjebak di labirin kertas tanpa ujung.",
-      "opsi": { "pintu_tengah_pop": 0.0, "pintu_buka_semua": 0.0 },
+      "opsi": { "domino_pintu": 0.0, "pintu_buka_semua": 0.0, "rebah_labirin": 0.0 },
       "animasi_opsi": [
-        { "t": 0.3, "dur": 0.85, "pintu_tengah_pop": 1.0 },
-        { "t": 1.9, "dur": 2.3, "pintu_buka_semua": 1.0 }
+        { "t": 0.05, "dur": 1.25, "domino_pintu": 1.0 },
+        { "t": 2.85, "dur": 2.35, "pintu_buka_semua": 1.0 },
+        { "t": 5.55, "dur": 0.80, "rebah_labirin": 1.0 }
       ],
       "tokoh": [
         {
           "id": "luna",
-          "pos": [0.0, 0.0, 2.15],
+          "pos": [0.0, 0.0, 2.55],
+          "skala": 0.86,
           "hadap": "belakang",
           "pose": "diam",
           "ekspresi": "fokus",
-          "masuk": { "t": 1.5, "dur": 0.45, "dari": "lipat" }
-        }
-      ],
-      "kamera": {
-        "awal": { "pos": [0.0, 1.38, 3.55], "target": [0.0, 1.15, -1.2], "fov": 46 },
-        "gerak": [
-          { "t": 0.0, "dur": 1.5, "jenis": "pindah", "ke": { "pos": [0.0, 1.35, 0.85], "target": [0.0, 1.18, -1.2], "fov": 45 } },
-          { "t": 1.65, "dur": 3.8, "jenis": "pindah", "ke": { "pos": [0.0, 14.2, 7.6], "target": [0.0, 0.0, -2.5], "fov": 48 }, "ease": "io" }
-        ]
-      },
-      "sfx": [
-        { "t": 0.35, "jenis": "lipat" },
-        { "t": 2.0, "jenis": "pintu" }
-      ]
-    },
-    {
-      "id": "akhir_notif",
-      "latar": "lipat_meja",
-      "durasi": 5.4,
-      "transisi": "potong",
-      "narasi": "Sampai akhirnya satu bunyi notifikasi menyadarkan segalanya!",
-      "opsi": { "pop_notif": 0.0 },
-      "animasi_opsi": [
-        { "t": 2.8, "dur": 0.55, "pop_notif": 1.0 }
-      ],
-      "tokoh": [
-        {
-          "id": "luna",
-          "pos": [0.64, 0.0, 0.45],
-          "hadap": "depan",
-          "pose": "diam",
-          "ekspresi": "fokus",
+          "masuk": { "t": 1.35, "dur": 0.45, "dari": "lipat" },
           "aksi": [
-            { "t": 2.85, "pose": "kaget_halus", "ekspresi": "kaget" }
+            { "t": 5.50, "pop_up": 0.0 }
           ]
         }
       ],
       "kamera": {
-        "awal": { "pos": [0.0, 6.8, 5.9], "target": [0.0, 0.2, 3.2], "fov": 46 },
+        "awal": { "pos": [0.0, 1.12, 3.65], "target": [0.0, 0.82, -3.0], "fov": 48 },
         "gerak": [
-          { "t": 0.2, "dur": 2.45, "jenis": "pindah", "ke": { "pos": [0.05, 1.15, 3.85], "target": [0.05, 0.88, -0.6], "fov": 45 }, "ease": "io" },
-          { "t": 2.85, "dur": 0.45, "jenis": "punch", "kuat": 0.12 }
+          { "t": 0.0, "dur": 1.35, "jenis": "pindah", "ke": { "pos": [0.0, 2.25, 2.15], "target": [0.0, 0.35, -2.0], "fov": 48 }, "ease": "io" },
+          { "t": 1.45, "dur": 3.95, "jenis": "pindah", "ke": { "pos": [0.0, 12.8, 7.2], "target": [0.0, 0.0, -3.2], "fov": 48 }, "ease": "io" },
+          { "t": 5.45, "dur": 0.90, "jenis": "pindah", "ke": { "pos": [0.0, 11.2, 6.4], "target": [0.0, 0.0, -2.8], "fov": 46 }, "ease": "io" }
         ]
       },
       "sfx": [
-        { "t": 2.85, "jenis": "notif" }
+        { "t": 0.30, "jenis": "lipat" },
+        { "t": 2.90, "jenis": "pintu" },
+        { "t": 5.58, "jenis": "lipat" }
+      ]
+    },
+    {
+      "id": "akhir_origami_hp",
+      "latar": "lipat_meja",
+      "durasi": 6.0,
+      "transisi": "potong",
+      "narasi": "Sampai akhirnya satu bunyi notifikasi menyadarkan segalanya!",
+      "opsi": { "lipat_tahap": 0.0, "pop_notif": 0.0 },
+      "animasi_opsi": [
+        { "t": 0.25, "dur": 0.42, "lipat_tahap": 1.0 },
+        { "t": 0.72, "dur": 0.40, "lipat_tahap": 2.0 },
+        { "t": 1.16, "dur": 0.38, "lipat_tahap": 3.0 },
+        { "t": 3.55, "dur": 0.45, "pop_notif": 1.0 }
+      ],
+      "tokoh": [
+        {
+          "id": "luna",
+          "pos": [-0.18, 0.0, 2.62],
+          "skala": 0.92,
+          "hadap": "belakang",
+          "pose": "diam",
+          "ekspresi": "fokus",
+          "aksi": [
+            { "t": 1.48, "ke_pos": [0.48, 0.0, 2.62], "durasi": 0.72, "gaya": "geser" },
+            { "t": 1.52, "hadap": "depan" },
+            { "t": 3.62, "pose": "kaget_halus", "ekspresi": "kaget" }
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": { "pos": [0.22, 8.2, 5.45], "target": [0.10, 0.10, 0.25], "fov": 43 },
+        "gerak": [
+          { "t": 1.55, "dur": 1.55, "jenis": "pindah", "ke": { "pos": [0.22, 1.68, 6.65], "target": [-0.16, 0.78, 0.15], "fov": 41 }, "ease": "io" },
+          { "t": 3.62, "dur": 0.42, "jenis": "punch", "kuat": 0.07 }
+        ]
+      },
+      "sfx": [
+        { "t": 0.28, "jenis": "lipat" },
+        { "t": 0.75, "jenis": "lipat" },
+        { "t": 1.18, "jenis": "lipat" },
+        { "t": 3.62, "jenis": "notif" }
       ]
     }
   ]

@@ -143,11 +143,21 @@ class Aktor:
         cur = dict(self.keys[0])
         prev_pose = cur.get("pose", "diam")
         pose_t = 0.0
+        prev_hadap = cur.get("hadap", "depan")
+        hadap_t = -99.0
+        prev_pop = float(cur.get("pop_up", 1.0))
+        pop_t = -99.0
         for k in self.keys[1:]:
             if k["t"] <= t:
                 if "pose" in k and k["pose"] != cur.get("pose"):
                     prev_pose = cur.get("pose", "diam")
                     pose_t = k["t"]
+                if "hadap" in k and k["hadap"] != cur.get("hadap"):
+                    prev_hadap = cur.get("hadap", "depan")
+                    hadap_t = k["t"]
+                if "pop_up" in k and float(k["pop_up"]) != float(cur.get("pop_up", 1.0)):
+                    prev_pop = float(cur.get("pop_up", 1.0))
+                    pop_t = k["t"]
                 cur.update(k)
         pos, moving, gaya = self.pos_at(t)
         pose = cur.get("pose", "diam")
@@ -155,8 +165,20 @@ class Aktor:
         if moving:
             pose = prev_pose = gaya
             mix = 1.0
-        bt = (t + self.seed) % 3.4
-        blink = 1.0 if bt < 0.11 else 0.0
+        # Interpolasi putaran badan 3D halus saat hadap berubah (misal berbalik 180 derajat!)
+        hadap_val = cur.get("hadap", "depan")
+        if hadap_t > -50.0 and t < hadap_t + 0.36:
+            y0 = self.tk._yaw_from_hadap(prev_hadap)
+            y1 = self.tk._yaw_from_hadap(hadap_val)
+            dy = ((y1 - y0 + 180.0) % 360.0) - 180.0
+            if abs(dy) < 1e-3 and abs(y1 - y0) > 90.0:
+                dy = 180.0
+            hadap_val = y0 + dy * e_io(prog(t, hadap_t, hadap_t + 0.36))
+        pop_val = float(cur.get("pop_up", 1.0))
+        if pop_t > -50.0 and t < pop_t + 0.42:
+            pop_val = lerp(prev_pop, pop_val, e_io(prog(t, pop_t, pop_t + 0.42)))
+        bt = (t + self.seed) % 3.2
+        blink = 1.0 if bt < 0.12 else 0.0
         bicara = cur.get("bicara", False)
         if isinstance(bicara, list):
             bicara = any(a <= t <= b for a, b in bicara)
@@ -168,11 +190,11 @@ class Aktor:
             pose2=pose if mix < 1.0 else None,
             mix=e_io(mix) if mix < 1.0 else 0.0,
             expr=cur.get("ekspresi", "tenang"),
-            hadap=cur.get("hadap", "depan"),
+            hadap=hadap_val,
             lihat=tuple(cur.get("lihat", (0.0, 0.0))),
             blink=blink, open_amt=open_amt,
             bawa=cur.get("bawa"), ransel=bool(cur.get("ransel", False)),
-            pop_up=float(cur.get("pop_up", 1.0)),
+            pop_up=pop_val,
             t=t, amp=amp, phase=phase,
         )
         return pos, st, float(cur.get("skala", self.s))
@@ -204,7 +226,11 @@ class Adegan:
         self.actor_map = {a.id: a for a in self.actors}
         self.opsi = dict(spec.get("opsi", {}))
         for k in ("waktu", "jam", "alarm", "papan", "warna", "mode_pintu", "buka_pintu",
-                  "buka_pintu_kanan", "pop_jam", "pintu_tengah_pop", "pintu_buka_semua", "pop_notif"):
+                  "buka_pintu_kanan", "pop_jam", "pintu_tengah_pop", "pintu_buka_semua",
+                  "pop_notif", "flip_judul", "jatuh_pintu", "lipat_kartu",
+                  "pop_play", "pop_door", "pop_kota", "pop_gang", "pop_pintu_biru",
+                  "trans_malam", "drop_malam", "trans_fajar", "ray_scale",
+                  "domino_pintu", "rebah_labirin", "lipat_tahap"):
             if k in spec:
                 self.opsi[k] = spec[k]
         self.anim_opsi = [(self.when(a), a) for a in spec.get("animasi_opsi", [])]
