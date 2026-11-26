@@ -39,18 +39,20 @@ Bertanya hanya untuk penghalang nyata: tidak ada file suara di mode A, beberapa 
 
 ## Alur produksi
 
-1. **Cek lingkungan** — `bash $S/check_env.sh`. Ada `[GAGAL]` → jelaskan jujur, berhenti.
-2. **Proyek baru** — `python3 $S/proyek_baru.py <folder>/<topik>-<waktu> --vo <file> --naskah <file> --rasio 16:9 --judul "<Judul>"` (di chat: `/home/claude/stikman-projects/`). Mencetak `DURASI_VO`. Jangan menulis ke proyek user yang sudah ada.
+> **Renderer Global Terpadu:** Jika berkas `../render.py` ada di root repositori (bawaan `Aetheria-skills`), gunakan `python ../render.py` sebagai satu perintah global untuk semua skill (`baru --gaya stikman-cerita`, `qc`, `render` — otomatis menjalankan `render.py` + `audio.py` dan menyegarkan PATH `ffmpeg` Windows). Jika skill dipakai berdiri sendiri, gunakan `$S/render.py` & `$S/audio.py`.
+
+1. **Cek lingkungan** — `python ../render.py cek` (atau `bash $S/check_env.sh`). Ada `[GAGAL]` → jelaskan jujur, berhenti.
+2. **Proyek baru** — `python ../render.py baru <folder>/<topik>-<waktu> --gaya stikman-cerita --vo <file> --naskah <file> --rasio 16:9 --judul "<Judul>"` (atau `python3 $S/proyek_baru.py ...`). Mencetak `DURASI_VO`. Jangan menulis ke proyek user yang sudah ada.
 3. **Baca referensi** — `kamera.md`, `format-adegan.md`, lalu `karakter-dan-aksi.md` dan `dunia-dan-benda.md` seperlunya.
 4. **Rencana adegan** — satu baris per adegan: waktu | fungsi cerita | lokasi+waktu | tokoh & aksi | **kamera (ukuran awal → gerakan → alasan)** | ikon/teks/efek | transisi | musik. Aturan: hook di 3 detik pertama; tiap adegan satu hal baru; kamera berubah tiap ≤4 detik; tidak ada 3 adegan beruntun dengan bidikan/latar sama; gerakan besar di jeda napas narator, pemicu pada kata kunci.
 5. **Tulis `proyek.json`** (acuan: `templates/contoh-hari-siswa/proyek.json`; pakai `"tokoh": {"kribo": "kribo"}`). `narasi` semua adegan digabung = seluruh naskah, urut, tanpa terlewat. Tokoh utama (`kribo`) tetap sama di semua adegan.
 6. **QC visual dan kamera** (draf cepat):
-   - `python3 $S/render.py <proyek> --stills auto --draft` → **lihat** `out/qc/sheet.jpg` (3 frame per adegan: awal, tengah, akhir).
-   - Adegan dengan gerak kamera rumit/tracking: `--strip N --draft` → lihat `strip_NN.jpg`.
+   - `python ../render.py qc <proyek> --stills auto --draft` → **lihat** `out/qc/sheet.jpg` (3 frame per adegan: awal, tengah, akhir).
+   - Adegan dengan gerak kamera rumit/tracking: `python ../render.py qc <proyek> --strip N --draft` → lihat `strip_NN.jpg`.
    - Baca semua baris `[PERIKSA]` (frasa kata kunci yang tak ditemukan) dan perbaiki.
    - Periksa: tokoh terpotong/keluar frame, frame kosong di awal adegan, kepala menyentuh subtitle (bawah ±15%), balon menutupi wajah, ikon salah makna, posisi tokoh duduk/tidur tidak pas dengan perabot, teks salah ketik, tiga bidikan sama berturutan. Perbaiki `proyek.json`, ulangi sampai bersih.
-7. **Render** — `python3 $S/render.py <proyek>` (paralel, kualitas penuh). **Di chat setiap perintah dihentikan ±3 menit**: bila tercetak `BELUM SELESAI nn%`, jalankan **perintah yang sama persis** lagi; potongan yang sudah jadi dipakai ulang. Perkiraan: 1 menit video ≈ 3–6 menit render di 4 core. Setelah perbaikan kecil hapus hanya potongan terkait atau `--ulang`.
-8. **Audio & gabung** — `python3 $S/audio.py <proyek>`: musik per suasana adegan (dari field `musik`), efek suara dari event aksi/kamera, ducking di bawah VO, −16 LUFS, lalu gabung. Musik user: `--musik input/musik.mp3`; tanpa musik: `--musik none`.
+7. **Render & Audio** — `python ../render.py render <proyek>` (otomatis render paralel kualitas penuh + `audio.py` ducking −16 LUFS hingga MP4 final; tambah `--draft` untuk cepat, `--musik input/musik.mp3` atau `--musik none`). **Di chat setiap perintah dihentikan ±3 menit**: bila tercetak `BELUM SELESAI nn%`, jalankan **perintah yang sama persis** lagi; potongan yang sudah jadi dipakai ulang.
+8. **Mix ulang audio saja (opsional)** — `python ../render.py audio <proyek>` bila hanya mengubah musik/VO tanpa render ulang video.
 9. **Verifikasi** — `audio.py` mencetak `FINAL OK` + durasi/resolusi/fps/codec/jumlah sfx/VO utuh. `FINAL PERIKSA` = jangan kirim sebelum diperbaiki. Ambil 3–4 frame dari **file final** (ffmpeg) terutama detik 0–2 dan satu transisi, dan lihat.
 10. **Kirim** — `out/<Judul>_vN.mp4` (di chat otomatis disalin ke `/mnt/user-data/outputs`). Versi lama tak pernah ditimpa; revisi → `_v2`, `_v3`.
 

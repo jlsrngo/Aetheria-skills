@@ -23,13 +23,16 @@ Di Windows dengan Git Bash, jalankan `"C:\Program Files\Git\bin\bash.exe" script
 - **ffmpeg** + **ffprobe** dengan encoder `libx264`, `aac`, serta filter `sidechaincompress`
 - **Font** sudah terpasang di [assets/fonts/](assets/fonts/)
 
-## Alur Kerja Lengkap
+## Alur Kerja Lengkap (Pakai Renderer Global `../render.py`)
 
-### 1. Buat Folder Proyek Baru
+> **Renderer Global Terpadu:** Gunakan `python ../render.py` di root repositori (otomatis mendeteksi mesin `paperworld`, menyegarkan PATH `ffmpeg`, dan menjalankan render + audio sekaligus). Jika skill dipakai berdiri sendiri, gunakan `scripts/render.py` & `scripts/audio.py`.
+
+### 1. Cek Lingkungan & Buat Folder Proyek Baru
 ```bash
-python scripts/proyek_baru.py <nama-proyek>
+python ../render.py cek
+python ../render.py baru <nama-proyek> --gaya paperworld
 ```
-Menghasilkan folder proyek lengkap (`proyek.json`, `input/`, `out/`) dengan cast bawaan `luna`, `kribo`, `nadia`, dan `kucing`. Atau salin salah satu template:
+Menghasilkan folder proyek lengkap (`proyek.json` dengan `"mesin": "paperworld"`, `input/`, `out/`) dengan cast bawaan `luna`, `kribo`, `nadia`, dan `kucing`. Atau salin salah satu template:
 - [templates/contoh-satu-pintu-lagi/proyek.json](templates/contoh-satu-pintu-lagi/proyek.json) — vertikal `9:16` bergaya galeri motion pop-up (`meja_hp` → `kota_jam` → `ruang_pintu` → `panggung_kertas` → `labirin_pintu` → `lipat_meja`).
 - [templates/contoh-cerita-kribo/proyek.json](templates/contoh-cerita-kribo/proyek.json) — horizontal `16:9` kisah Kribo, Nadia, dan Luna melintasi pintu-pintu ajaib.
 
@@ -47,20 +50,21 @@ Baca panduan referensi sesuai kebutuhan:
 ### 4. Uji Komposisi & Lembar QC (Wajib)
 Render frame sampel cepat terlebih dahulu:
 ```bash
-python scripts/render.py <folder-proyek> --stills auto --draft
+python ../render.py qc <folder-proyek> --stills auto --draft
 ```
 Periksa `out/qc/sheet.jpg` dengan `read_file`! Pastikan tidak ada tokoh terpotong tepi, terhalang dinding pintu, melayang di luar pijakan, atau kartu teks bertabrakan dengan kamera.
 
-### 5. Render Penuh & Mixing Audio
+### 5. Render Penuh & Mixing Audio (1 Perintah Global)
 ```bash
-python scripts/render.py <folder-proyek> --ulang
-python scripts/audio.py <folder-proyek>
+python ../render.py render <folder-proyek> --ulang
+# atau mode cepat:
+python ../render.py render <folder-proyek> --draft --ulang
 ```
 Atau gunakan `--musik none --tanpa-sfx` bila memakai audio master yang sudah lengkap di `input/vo.*`.
-Skrip `audio.py` akan mencetak **`FINAL OK`** beserta ringkasan resolusi, fps, codec, dan durasi akhir di `out/`.
+Skrip akan mencetak **`FINAL OK`** beserta ringkasan resolusi, fps, codec, dan durasi akhir di `out/`.
 
 ## Galeri Karakter
 Untuk merender ulang lembar referensi tokoh ([assets/galeri-karakter.png](assets/galeri-karakter.png)):
 ```bash
-python scripts/galeri.py assets/galeri-karakter.png
+python ../render.py galeri paperworld paperworld/assets/galeri-karakter.png
 ```

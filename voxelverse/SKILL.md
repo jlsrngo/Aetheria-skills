@@ -37,16 +37,18 @@ Kamu adalah **penulis cerita, sutradara animasi & kamera 3D, penata cahaya, dan 
 
 ## Alur produksi
 
-1. **Cek lingkungan** — `bash $S/check_env.sh`. Jika ada `[GAGAL]`, laporkan jujur dan berhenti.
-2. **Proyek baru** — `python3 $S/proyek_baru.py <folder>/<topik> --vo <file> --naskah <file> --rasio 16:9 --judul "<Judul>"`.
+> **Renderer Global Terpadu:** Gunakan `python ../render.py` di root repositori (otomatis mendeteksi mesin `voxelverse`, menyegarkan PATH `ffmpeg`, dan menjalankan render + audio sekaligus). Jika skill dipakai berdiri sendiri, gunakan `$S/render.py` & `$S/audio.py`.
+
+1. **Cek lingkungan** — `python ../render.py cek` (atau `bash $S/check_env.sh`). Jika ada `[GAGAL]`, laporkan jujur dan berhenti.
+2. **Proyek baru** — `python ../render.py baru <folder>/<topik> --gaya voxelverse --vo <file> --naskah <file> --rasio 16:9 --judul "<Judul>"`.
 3. **Baca referensi** — baca `kamera.md`, `format-adegan.md`, dan `dunia-dan-benda.md`.
 4. **Rencana adegan** — susun alur adegan: hook 3 detik pertama, variasi sudut kamera 3D (minimal 4 jenis gerak berbeda untuk video ≥ 30 detik), pencahayaan & cuaca.
 5. **Tulis `proyek.json`** — gunakan acuan `templates/contoh-dunia-kecil/proyek.json` atau `templates/contoh-cerita-kribo/proyek.json`.
 6. **QC visual dan kamera**:
-   - `python3 $S/render.py <proyek> --stills auto --draft` → **lihat** `out/qc/sheet.jpg`.
-   - Untuk adegan gerak kamera kompleks (`terbang`, `orbit`, `crane`): `--strip N --draft` → lihat `out/qc/strip_NN.jpg`.
+   - `python ../render.py qc <proyek> --stills auto --draft` → **lihat** `out/qc/sheet.jpg`.
+   - Untuk adegan gerak kamera kompleks (`terbang`, `orbit`, `crane`): `python ../render.py qc <proyek> --strip N --draft` → lihat `out/qc/strip_NN.jpg`.
    - Periksa dan perbaiki semua baris `[PERIKSA]`, tokoh terpotong, atau sudut kamera menembus dinding.
-7. **Render penuh** — `python3 $S/render.py <proyek>`. Jika di lingkungan terbatas waktu dan tercetak `BELUM SELESAI nn%`, jalankan perintah yang sama persis untuk melanjutkan dari potongan terakhir.
-8. **Audio & gabung** — `python3 $S/audio.py <proyek>` (otomatis merangkai musik per adegan, SFX aksi/percikan/hujan, ducking VO, −16 LUFS).
+7. **Render penuh & Audio (1 perintah global)** — `python ../render.py render <proyek>` (otomatis render paralel + `audio.py` musik/SFX/hujan/ducking −16 LUFS; tambah `--draft` untuk cepat). Jika di lingkungan terbatas waktu dan tercetak `BELUM SELESAI nn%`, jalankan perintah yang sama persis untuk melanjutkan dari potongan terakhir.
+8. **Mix ulang audio saja (opsional)** — `python ../render.py audio <proyek>`.
 9. **Verifikasi akhir** — pastikan tercetak `FINAL OK`, lalu inspeksi 3–4 frame dari MP4 final sebelum mengirim ke user.
 10. **Bicara ke user** — Bahasa Indonesia ramah, singkat, jujur (jangan klaim sudah mendengar audio), akhiri dengan ringkasan judul, durasi, rasio, dan jumlah adegan.
