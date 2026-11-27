@@ -20,7 +20,9 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-FONT_DIR = os.path.normpath(os.path.join(HERE, "..", "assets", "fonts"))
+_LOCAL_FONT_DIR = os.path.normpath(os.path.join(HERE, "..", "assets", "fonts"))
+_GLOBAL_FONT_DIR = os.path.normpath(os.path.join(HERE, "..", "..", "aset_global", "fonts"))
+FONT_DIR = _GLOBAL_FONT_DIR if os.path.isdir(_GLOBAL_FONT_DIR) else _LOCAL_FONT_DIR
 
 # ------------------------------------------------------------------ palet kertas pastel & hangat
 OUT = (38, 32, 30)

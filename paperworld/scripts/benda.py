@@ -3,7 +3,7 @@
 benda.py - properti 3D Pop-Up Paper Craft berlapis detail (pintu lengkung, kartu pita,
            HP kertas bertumpuk, menara jam, jam weker, pensil, dan ikon kertas).
 """
-import os, math
+import os, math, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from paper import (
@@ -13,6 +13,11 @@ from paper import (
     clamp, gelap, terang, mix, e_spring, e_io, euler_mat, font,
     circle_2d, rrect_2d, coat_2d, arch_2d, star_2d,
 )
+
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from aset_global import draw_engineering_3d  # noqa: E402
 
 
 def _serif_font(size, italic=False, bold=False):
@@ -329,6 +334,9 @@ def draw_prop(sc, jenis, pos, rot=(0.0, 0.0, 0.0), s=1.0, t=0.0, **opsi):
     elif jenis == "payung":
         sc.box(np.array(pos) + mat @ np.array([0.0, 0.42 * s, 0.0]), (0.04 * s, 0.84 * s, 0.04 * s), OUT, mat=mat)
         sc.extrude_2d(((-0.48 * s, 0.0), (0.48 * s, 0.0), (0.24 * s, 0.22 * s), (-0.24 * s, 0.22 * s)), 0.42 * s, opsi.get("warna", MERAH), opsi.get("warna", MERAH), None, origin=np.array(pos) + mat @ np.array([0.0, 0.78 * s, 0.0]), mat=mat)
+
+    else:
+        draw_engineering_3d(sc, jenis, pos=pos, s=s, rot_y=rot[1] if len(rot) > 1 else 0.0, t=t, spec=opsi)
 
 
 def draw_icon_3d(sc, kind, pos, t=0.0, s=1.0):

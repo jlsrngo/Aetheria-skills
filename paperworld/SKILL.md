@@ -1,6 +1,6 @@
 ---
 name: paperworld
-description: Memproduksi video animasi 3D Pop-Up Paper Craft / diorama karton berlapis (paper cutout 3D, pintu pop-up, buku lipat, karakter karton berlapis, kamera 3D bebas) dengan rendering NumPy + Pillow + ffmpeg murni dalam Python. Gunakan saat pengguna meminta video animasi gaya paper craft 3D, buku pop-up, diorama kertas berlapis, atau alur cerita dengan tokoh karton 3D seperti Luna, Kribo, Nadia, dan Kucing Kertas.
+description: Gaya 3D Pop-Up Paper Craft (kertas berlapis, buku lipat, shadow map). Untuk video cerita & diorama kertas karton 3D pure-Python dengan pintu pop-up, tekstur kertas hangat, kamera 3D bebas, serta tokoh Luna, Kribo, Nadia, dan Kucing Kertas.
 ---
 
 # PaperWorld — Sutradara Video Animasi 3D Pop-Up Paper Craft
@@ -23,7 +23,15 @@ Di Windows dengan Git Bash, jalankan `"C:\Program Files\Git\bin\bash.exe" script
 - **ffmpeg** + **ffprobe** dengan encoder `libx264`, `aac`, serta filter `sidechaincompress`
 - **Font** sudah terpasang di [assets/fonts/](assets/fonts/)
 
-## Alur Kerja Lengkap (Pakai Renderer Global `../render.py`)
+## Tiga Jalur Masuk (Standar Produksi)
+
+| Yang Diberikan User | Langkah Awal |
+|---|---|
+| **A. VO + Naskah** | Langsung buat proyek & render utuh (default 9:16 untuk Reels/TikTok/Shorts; 16:9 untuk lanskap). |
+| **B. Video Referensi** | Bedah dulu dengan `/bedah-referensi` (`python ../render.py bedah <video> out_bedah`) untuk mengukur durasi, cut, gerakan kamera, & tempo. Ikuti hanya grammar formatnya; jangan salin mentah footage/audio/naskah pihak lain. |
+| **C. Hanya Ide/Topik** | Tulis naskah dengan anggaran durasi (**Indonesia: durasi × 6.3 suku kata**; **Inggris: durasi × 2.7 kata**), cek fakta bila edukatif, lalu minta VO atau buat draf bisu sesuai permintaan. |
+
+## Alur Kerja 6 Tahap (Renderer Global `../render.py`)
 
 > **Renderer Global Terpadu:** Gunakan `python ../render.py` di root repositori (otomatis mendeteksi mesin `paperworld`, menyegarkan PATH `ffmpeg`, dan menjalankan render + audio sekaligus). Jika skill dipakai berdiri sendiri, gunakan `scripts/render.py` & `scripts/audio.py`.
 
@@ -37,9 +45,9 @@ Menghasilkan folder proyek lengkap (`proyek.json` dengan `"mesin": "paperworld"`
 - [templates/contoh-cerita-kribo/proyek.json](templates/contoh-cerita-kribo/proyek.json) — horizontal `16:9` kisah Kribo, Nadia, dan Luna melintasi pintu-pintu ajaib.
 
 ### 2. Siapkan Voice-Over (Opsional)
-Letakkan berkas suara `input/vo.mp3` atau `input/vo.m4a` dan isi `"vo": "input/vo.m4a"` pada `proyek.json`. Jika `"vo": null`, durasi tiap adegan mengikuti `"durasi"` atau panjang narasi (`~135 wpm`).
+Letakkan berkas suara `input/vo.mp3` atau `input/vo.m4a` (bisa dirapikan jeda & loudness `-14 LUFS` lewat `python ../render.py rapikan-vo <vo_raw> input/vo.wav`) lalu isi `"vo": "input/vo.wav"` pada `proyek.json`. Jika `"vo": null`, durasi tiap adegan mengikuti `"durasi"` atau panjang narasi (`~135 wpm`).
 
-### 3. Susun Naskah & Koreografi `proyek.json`
+### 3. Susun Naskah, Koreografi & Pre-Render Gate
 Baca panduan referensi sesuai kebutuhan:
 - [cerita-dan-naskah.md](references/cerita-dan-naskah.md) — struktur naratif, pembagian adegan, aturan `ekor`, subtitle `kertas`, dan VO.
 - [format-adegan.md](references/format-adegan.md) — skema lengkap `proyek.json`, `animasi_opsi`, `benda`, `balon`, `teks`, `efek`, dan `sfx`.
@@ -47,21 +55,30 @@ Baca panduan referensi sesuai kebutuhan:
 - [dunia-dan-benda.md](references/dunia-dan-benda.md) — 12 set diorama 3D PaperWorld beserta koordinat landmark, 11 prop 3D, dan opsi animasinya.
 - [kamera.md](references/kamera.md) — gerakan kamera 3D (`push`, `pull`, `orbit`, `crane`, `terbang`, `ikut`, `potong`, `whip`), ukuran bidikan, dan transisi.
 
-### 4. Uji Komposisi & Lembar QC (Wajib)
+Setelah `proyek.json` ditulis, wajib jalankan **pre-render QA tanpa render**:
+```bash
+python ../render.py periksa <folder-proyek>
+```
+
+### 4. Uji Komposisi & Lembar QC (Wajib Lihat Gambar)
 Render frame sampel cepat terlebih dahulu:
 ```bash
 python ../render.py qc <folder-proyek> --stills auto --draft
+# Untuk aksi pintu/lipatan cepat, cek juga motion strip:
+python ../render.py qc <folder-proyek> --strip 1 --draft
 ```
 Periksa `out/qc/sheet.jpg` dengan `read_file`! Pastikan tidak ada tokoh terpotong tepi, terhalang dinding pintu, melayang di luar pijakan, atau kartu teks bertabrakan dengan kamera.
 
-### 5. Render Penuh & Mixing Audio (1 Perintah Global)
+### 5. Render Penuh, Verifikasi Final & Laporan Jujur
 ```bash
 python ../render.py render <folder-proyek> --ulang
 # atau mode cepat:
 python ../render.py render <folder-proyek> --draft --ulang
+# cek QA MP4 final (codec, FPS, sync audio-video, LUFS):
+python ../render.py periksa <folder-proyek>
 ```
 Atau gunakan `--musik none --tanpa-sfx` bila memakai audio master yang sudah lengkap di `input/vo.*`.
-Skrip akan mencetak **`FINAL OK`** beserta ringkasan resolusi, fps, codec, dan durasi akhir di `out/`.
+Pastikan tercetak **`FINAL OK`**, inspeksi 3–4 frame dari MP4 final, lalu sampaikan laporan ringkas dan jujur (termasuk bahwa agen tidak mendengarkan audio/menonton gerak langsung).
 
 ## Galeri Karakter
 Untuk merender ulang lembar referensi tokoh ([assets/galeri-karakter.png](assets/galeri-karakter.png)):
