@@ -1,0 +1,115 @@
+{
+  "mesin": "3D-stickman",
+  "judul": "Kribo Belajar Rahasia Pesawat N250",
+  "ukuran": [1080, 1920],
+  "fps": 30,
+  "vo": null,
+  "musik": "auto",
+  "mood_musik": "ceria",
+  "subtitle": true,
+  "gaya_subtitle": "kata",
+  "tokoh": {
+    "kribo": "kribo",
+    "habibie": "habibie"
+  },
+  "adegan": [
+    {
+      "latar": "kamar_belajar",
+      "waktu": "pagi",
+      "bulan": "AGUSTUS",
+      "tahun": "1995",
+      "sub_kalender": "TERBANG PERDANA",
+      "durasi": 3.5,
+      "narasi": "Pernah kepikiran nggak gimana Indonesia bikin pesawat sendiri?",
+      "tokoh": [
+        {
+          "id": "kribo",
+          "dasar": "kribo",
+          "pos": [-0.35, 0.0, 0.2],
+          "pose": "mikir",
+          "ekspresi": "mikir",
+          "hadap": "serong_kanan",
+          "bicara": true,
+          "aksi": [
+            {"t": 1.6, "pose": "ide", "ekspresi": "terpana", "efek": "ide"}
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {"ukuran": "sedang", "fokus": "kribo", "sudut": 12},
+        "gerak": [
+          {"t": 0.4, "dur": 2.4, "jenis": "push", "faktor": 0.80, "zoom": 6}
+        ]
+      }
+    },
+    {
+      "latar": "hanggar",
+      "waktu": "siang",
+      "banner": "HANGGAR N250 - BANDUNG",
+      "durasi": 3.8,
+      "narasi": "Kenalan dulu sama pesawat N250 Gatotkaca rancangan Prof Habibie!",
+      "transisi": {"jenis": "whip", "arah": "kiri", "dur": 0.35},
+      "tokoh": [
+        {
+          "id": "habibie",
+          "dasar": "habibie",
+          "pos": [-0.45, 0.0, 0.1],
+          "pose": "pegang_pesawat",
+          "bawa": "pesawat_mini",
+          "ekspresi": "bangga",
+          "hadap": "serong_kanan",
+          "bicara": true
+        },
+        {
+          "id": "kribo",
+          "dasar": "kribo",
+          "pos": [0.65, 0.0, 0.2],
+          "pose": "kaget",
+          "ekspresi": "terpana",
+          "hadap": "serong_kiri",
+          "aksi": [
+            {"t": 1.2, "pose": "sorak", "ekspresi": "semangat", "efek": "bintang"}
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {"ukuran": "penuh", "fokus": ["habibie", "kribo"], "sudut": -10},
+        "gerak": [
+          {"t": 0.2, "dur": 3.2, "jenis": "orbit", "derajat": 22}
+        ]
+      }
+    },
+    {
+      "latar": "gedung_sidang",
+      "waktu": "siang",
+      "tahun": "1998",
+      "kiri_lbl": "TAHUN",
+      "kiri_val": "1995",
+      "kanan_lbl": "PESAWAT",
+      "kanan_val": "N250",
+      "durasi": 3.6,
+      "narasi": "Bukan cuma terbang tinggi, tapi bukti anak bangsa mampu bersaing!",
+      "transisi": {"jenis": "fade", "dur": 0.35},
+      "tokoh": [
+        {
+          "id": "kribo",
+          "dasar": "kribo",
+          "pos": [-0.75, 0.28, -1.52],
+          "pose": "pidato",
+          "ekspresi": "semangat",
+          "hadap": "depan",
+          "bicara": true,
+          "aksi": [
+            {"t": 1.8, "pose": "jempol", "ekspresi": "senang"}
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {"ukuran": "sedang", "fokus": "kribo", "sudut": 8},
+        "gerak": [
+          {"t": 0.5, "dur": 2.6, "jenis": "crane", "naik": 0.25, "maju": -0.35}
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,196 @@
+# -*- coding: utf-8 -*-
+"""
+timing.py - jadwal adegan + perkiraan waktu tiap kata dari voiceover.
+"""
+import json, os, re, subprocess
+import numpy as np
+
+
+def durasi(path):
+    out = subprocess.run(
+        ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
+        capture_output=True, text=True,
+    ).stdout.strip()
+    return float(out)
+
+
+def jeda(path, db=-34, min_d=0.16):
+    r = subprocess.run(
+        ["ffmpeg", "-hide_banner", "-nostats", "-i", path, "-af", f"silencedetect=noise={db}dB:d={min_d}", "-f", "null", "-"],
+        capture_output=True, text=True,
+    ).stderr
+    st = [float(x) for x in re.findall(r"silence_start: ([\d.]+)", r)]
+    en = [float(x) for x in re.findall(r"silence_end: ([\d.]+)", r)]
+    D = durasi(path)
+    return [(max(0.0, s), en[i] if i < len(en) else D) for i, s in enumerate(st)]
+
+
+def bersih(teks):
+    return re.sub(r"\[[^\]]*\]", "", teks or "").strip()
+
+
+def kata_list(teks):
+    return [w for w in re.split(r"\s+", bersih(teks)) if w]
+
+
+def _bobot(sc):
+    n = sum(len(w) + 1 + (3 if w[-1:] in ",;:" else 6 if w[-1:] in ".?!" else 0) for w in kata_list(sc.get("narasi")))
+    return max(8, n)
+
+
+def jadwal(adegan, vo=None, tail=0.8):
+    n = len(adegan)
+    if n == 0:
+        return [], 0.0
+    if not vo:
+        ts, t = [], 0.0
+        for sc in adegan:
+            if "mulai" in sc:
+                t = float(sc["mulai"])
+            words = len(kata_list(sc.get("narasi")))
+            d = float(sc.get("durasi", max(2.8, words / 2.8 + 0.6)))
+            ts.append([t, t + d])
+            t += d
+        for i in range(n - 1):
+            ts[i][1] = ts[i + 1][0]
+        return [tuple(x) for x in ts], ts[-1][1]
+    D = durasi(vo)
+    sil = jeda(vo)
+    lead = sil[0][1] if sil and sil[0][0] < 0.05 else 0.0
+    end_speech = sil[-1][0] if sil and sil[-1][1] >= D - 0.05 else D
+    w = np.array([_bobot(s) for s in adegan], float)
+    cum = np.concatenate([[0], np.cumsum(w) / w.sum()])
+    seg, a = [], lead
+    for s, e in sil:
+        if e <= lead or s >= end_speech:
+            continue
+        if s > a:
+            seg.append((a, min(s, end_speech)))
+        a = max(a, e)
+    if a < end_speech:
+        seg.append((a, end_speech))
+    tot = sum(e - s for s, e in seg) or (end_speech - lead)
+
+    def at_speech(frac):
+        x = frac * tot
+        for s, e in seg:
+            if x <= e - s:
+                return s + x
+            x -= e - s
+        return end_speech
+
+    b = np.array([at_speech(c) for c in cum])
+    mids = [(s + e) / 2 for s, e in sil if lead < (s + e) / 2 < end_speech]
+    for i in range(1, n):
+        if "mulai" in adegan[i]:
+            b[i] = float(adegan[i]["mulai"])
+            continue
+        cand = [m for m in mids if abs(m - b[i]) < 1.8 and m > b[i - 1] + 1.0]
+        if cand:
+            b[i] = min(cand, key=lambda m: abs(m - b[i]))
+        b[i] = max(b[i], b[i - 1] + 1.2)
+    b[0] = 0.0
+    b[n] = D + tail
+    return [(float(b[i]), float(b[i + 1])) for i in range(n)], D + tail
+
+
+def kata_waktu(adegan, ts, vo=None, words_file=None):
+    out = []
+    if words_file and os.path.exists(words_file):
+        ext = json.load(open(words_file, encoding="utf-8"))
+        k = 0
+        for sc in adegan:
+            ws = kata_list(sc.get("narasi"))
+            out.append([(w, ext[k + i]["s"], ext[k + i]["e"]) for i, w in enumerate(ws) if k + i < len(ext)])
+            k += len(ws)
+        return out
+    sil = jeda(vo) if vo else []
+    for sc, (a, b) in zip(adegan, ts):
+        ws = kata_list(sc.get("narasi"))
+        if not ws:
+            out.append([])
+            continue
+        seg, p = [], a
+        for s, e in sil:
+            if e <= a or s >= b:
+                continue
+            if s > p:
+                seg.append((p, min(s, b)))
+            p = max(p, e)
+        if p < b:
+            seg.append((p, b))
+        if not seg:
+            seg = [(a, b)]
+        wts = [len(w) + 1 + (3 if w[-1:] in ",;:" else 6 if w[-1:] in ".?!" else 0) for w in ws]
+        tot_w = sum(wts)
+        tot_t = sum(e - s for s, e in seg)
+
+        def to_real(x):
+            for s, e in seg:
+                if x <= e - s + 1e-9:
+                    return s + x
+                x -= e - s
+            return seg[-1][1]
+
+        c = 0.0
+        row = []
+        for w, wt in zip(ws, wts):
+            core = wt - (3 if w[-1:] in ",;:" else 6 if w[-1:] in ".?!" else 0)
+            s0 = to_real(c / tot_w * tot_t)
+            e0 = to_real((c + core) / tot_w * tot_t)
+            row.append([w, s0, e0])
+            c += wt
+
+        # Snap batas kata setelah tanda baca (.!? / ,:;) ke jeda hening VO nyata agar subtitle & lipsync lebih presisi
+        local_sil = [(s, e) for s, e in sil if a + 0.05 < s < b - 0.05 and (e - s) >= 0.12]
+        used_j = set()
+        for sa, sb in sorted(local_sil, key=lambda p: -(p[1] - p[0])):
+            mid = (sa + sb) * 0.5
+            best = None
+            for j in range(1, len(row)):
+                if j in used_j:
+                    continue
+                prev_w = row[j - 1][0]
+                is_strong = bool(re.search(r"[.!?…]$", prev_w))
+                is_weak = bool(re.search(r"[,:;]$", prev_w))
+                reach = 0.85 if is_strong else (0.45 if is_weak else 0.18)
+                bonus = 0.35 if is_strong else (0.15 if is_weak else 0.0)
+                dist = abs((row[j - 1][2] + row[j][1]) * 0.5 - mid)
+                if dist < reach:
+                    score = dist - bonus
+                    if best is None or score < best[0]:
+                        best = (score, j)
+            if best is not None:
+                j = best[1]
+                used_j.add(j)
+                if sa > row[j - 1][1] + 0.05:
+                    row[j - 1][2] = sa
+                if sb < row[j][2] - 0.05:
+                    row[j][1] = sb
+
+        out.append([(w, float(s0), float(e0)) for w, s0, e0 in row])
+    return out
+
+
+def levels(vo, fps=30, total=None):
+    if not vo or not os.path.exists(vo):
+        return None
+    D = total or durasi(vo)
+    N = int(np.ceil(D * fps))
+    sr = 6000
+    raw = subprocess.run(
+        ["ffmpeg", "-v", "error", "-i", vo, "-ac", "1", "-ar", str(sr), "-f", "f32le", "-"],
+        capture_output=True,
+    ).stdout
+    a = np.frombuffer(raw, np.float32)
+    step = sr // fps
+    out = np.zeros(N, np.float32)
+    for i in range(N):
+        seg = a[i * step:(i + 1) * step]
+        if len(seg):
+            out[i] = float(np.sqrt(np.mean(seg ** 2)))
+    mx = np.percentile(out, 96) or 1e-4
+    out = np.clip((out - 0.06 * mx) / (0.85 * mx), 0, 1)
+    for i in range(1, N):
+        out[i] = 0.35 * out[i - 1] + 0.65 * out[i]
+    return out

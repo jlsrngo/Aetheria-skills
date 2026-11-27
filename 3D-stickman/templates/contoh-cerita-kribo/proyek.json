@@ -1,0 +1,84 @@
+{
+  "mesin": "3D-stickman",
+  "judul": "Pagi Seru Kribo dan Sari",
+  "ukuran": [1920, 1080],
+  "fps": 30,
+  "vo": null,
+  "musik": "auto",
+  "mood_musik": "hangat",
+  "subtitle": true,
+  "gaya_subtitle": "komik",
+  "tokoh": {
+    "kribo": "kribo",
+    "sari": "sari"
+  },
+  "adegan": [
+    {
+      "latar": "kamar_belajar",
+      "waktu": "pagi",
+      "bulan": "SENIN",
+      "tahun": "2026",
+      "sub_kalender": "SEMANGAT PAGI",
+      "durasi": 3.5,
+      "narasi": "Pagi itu Kribo menemukan catatan eksperimen lama di mejanya.",
+      "tokoh": [
+        {
+          "id": "kribo",
+          "dasar": "kribo",
+          "pos": [0.1, 0.0, -0.3],
+          "pose": "pegang_buku",
+          "bawa": "buku_terbuka",
+          "ekspresi": "kaget",
+          "hadap": "serong_kanan",
+          "bicara": true,
+          "aksi": [
+            {"t": 1.4, "pose": "ide", "ekspresi": "semangat", "efek": "ide"}
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {"ukuran": "sedang", "fokus": "kribo", "sudut": 14},
+        "gerak": [
+          {"t": 0.5, "dur": 2.5, "jenis": "push", "faktor": 0.82, "zoom": 5}
+        ]
+      }
+    },
+    {
+      "latar": "kampus",
+      "waktu": "pagi",
+      "banner": "FESTIVAL SAINS KAMPUS",
+      "durasi": 3.8,
+      "narasi": "Di gerbang kampus, Sari sudah menunggu sambil melambai ceria.",
+      "transisi": {"jenis": "geser", "arah": "kiri", "dur": 0.4},
+      "tokoh": [
+        {
+          "id": "sari",
+          "dasar": "sari",
+          "pos": [0.65, 0.0, 0.0],
+          "pose": "lambai",
+          "ekspresi": "senang",
+          "hadap": "serong_kiri",
+          "bicara": true
+        },
+        {
+          "id": "kribo",
+          "dasar": "kribo",
+          "pos": [-0.55, 0.0, 0.2],
+          "pose": "diam",
+          "ekspresi": "senang",
+          "hadap": "serong_kanan",
+          "masuk": {"dari": "kiri", "jarak": 2.8, "dur": 1.2, "gaya": "jalan"},
+          "aksi": [
+            {"t": 1.4, "pose": "jempol", "ekspresi": "tertawa", "efek": "hati"}
+          ]
+        }
+      ],
+      "kamera": {
+        "awal": {"ukuran": "penuh", "fokus": ["kribo", "sari"], "sudut": 8},
+        "gerak": [
+          {"t": 0.8, "dur": 2.6, "jenis": "orbit", "derajat": -18}
+        ]
+      }
+    }
+  ]
+}
