@@ -145,9 +145,37 @@ def kata_waktu(adegan, ts, vo=None, words_file=None):
             core = wt - (3 if w[-1:] in ",;:" else 6 if w[-1:] in ".?!" else 0)
             s0 = to_real(c / tot_w * tot_t)
             e0 = to_real((c + core) / tot_w * tot_t)
-            row.append((w, s0, e0))
+            row.append([w, s0, e0])
             c += wt
-        out.append(row)
+
+        # Snap batas kata setelah tanda baca (.!? / ,:;) ke jeda hening VO nyata
+        local_sil = [(s, e) for s, e in sil if a + 0.05 < s < b - 0.05 and (e - s) >= 0.12]
+        used_j = set()
+        for sa, sb in sorted(local_sil, key=lambda p: -(p[1] - p[0])):
+            mid = (sa + sb) * 0.5
+            best = None
+            for j in range(1, len(row)):
+                if j in used_j:
+                    continue
+                prev_w = row[j - 1][0]
+                is_strong = bool(re.search(r"[.!?…]$", prev_w))
+                is_weak = bool(re.search(r"[,:;]$", prev_w))
+                reach = 0.85 if is_strong else (0.45 if is_weak else 0.18)
+                bonus = 0.35 if is_strong else (0.15 if is_weak else 0.0)
+                dist = abs((row[j - 1][2] + row[j][1]) * 0.5 - mid)
+                if dist < reach:
+                    score = dist - bonus
+                    if best is None or score < best[0]:
+                        best = (score, j)
+            if best is not None:
+                j = best[1]
+                used_j.add(j)
+                if sa > row[j - 1][1] + 0.05:
+                    row[j - 1][2] = sa
+                if sb < row[j][2] - 0.05:
+                    row[j][1] = sb
+
+        out.append([(w, float(s0), float(e0)) for w, s0, e0 in row])
     return out
 
 

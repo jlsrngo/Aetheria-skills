@@ -3,7 +3,7 @@
 benda.py - properti 3D Voxel (monitor kode, keyboard, tram, lampu, mug, gadget)
            serta ikon emosi komik 3D (bohlam, tanda seru, hati, zzz, ...).
 """
-import math
+import math, os, sys
 from PIL import Image, ImageDraw
 from voxel import (
     OUT, PUTIH, KRIM, HITAM, MERAH, MERAH_TUA, BIRU, BIRU_TUA, BIRU_MUDA, TEAL,
@@ -11,6 +11,11 @@ from voxel import (
     clamp, euler_mat, font,
 )
 import numpy as np
+
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from aset_global import draw_engineering_3d  # noqa: E402
 
 
 def _code_texture(progress=1.0, spark=False, build_mode=False):
@@ -238,6 +243,9 @@ def draw_prop(sc, jenis, pos, rot=(0.0, 0.0, 0.0), s=1.0, t=0.0, **opsi):
     elif jenis == "pensil":
         _box_local(sc, pos, mat, (0.0, 0.06 * s, 0.0), (0.03 * s, 0.22 * s, 0.03 * s), KUNING)
         _box_local(sc, pos, mat, (0.0, 0.19 * s, 0.0), (0.032 * s, 0.04 * s, 0.032 * s), PINK)
+
+    else:
+        draw_engineering_3d(sc, jenis, pos=pos, s=s, rot_y=rot[1] if len(rot) > 1 else 0.0, t=t, spec=opsi)
 
 
 # ------------------------------------------------------------------ ikon emosi 3D

@@ -1,6 +1,6 @@
 ---
 name: voxelverse
-description: Pembuat video CERITA & MOTION 3D Voxel / Low-Poly Diorama murni Python (NumPy + Pillow + ffmpeg, tanpa browser/WebGL eksternal). Mendukung karakter 3D Voxel artikulasi penuh termasuk "kribo" (afro hitam penuh, kacamata kotak, kaos teal + dasi kupu-kupu, sneaker hitam-putih), "arka" (coder hoodie teal berkacamata), "robo" (robot lampu meja oranye bercahaya), dan "nadia" (hijab hitam modern, blazer krem), plus 12 set diorama 3D (studio_kode, kota_hujan dengan pantulan aspal basah & tram, kamar, sekolah_luar, kelas, kafe, taman, atap_kota, dll). Kamera 3D sinematik (orbit, crane, fly_through/terbang, tracking/ikut, bahu_kiri, luar_jendela, balik_wajah, punch, goyang, rack focus), pencahayaan PointLight dinamis + bloom, percikan listrik 3D di kabel, hujan/salju 3D, lipsync VO, musik orisinal sinematik/lofi + hujan, dan subtitle per kata. Keluaran MP4 H.264+AAC 30 fps (16:9 atau 9:16). Gunakan setiap kali user ingin membuat animasi 3D voxel, diorama kota hujan, video coding seperti game/Remotion versi Python, atau cerita 3D VoxelVerse dengan Kribo, Arka, Robo, atau Nadia. Seluruh komunikasi dengan user memakai Bahasa Indonesia.
+description: Gaya 3D Voxel / Low-Poly (lampu neon, bloom, hujan/salju, kota malam). Untuk video cerita, coding, & diorama voxel 3D pure-Python dengan 12 set (studio_kode, kota_hujan, atap_kota), kamera sinematik, serta tokoh Kribo, Arka, Robo, dan Nadia.
 ---
 
 # VOXELVERSE — Video Cerita & Diorama 3D Voxel dengan Sutradara Kamera
@@ -30,25 +30,23 @@ Kamu adalah **penulis cerita, sutradara animasi & kamera 3D, penata cahaya, dan 
 
 `S=<folder skill ini>/scripts` di bawah. Jangan mengubah berkas di dalam folder skill saat mengerjakan proyek user; jika butuh set/pose kustom, salin `scripts/` ke folder proyek user.
 
-## Dua mode masuk
+## Tiga Jalur Masuk (Standar Produksi)
 
-**A. Zero-prompt:** user melampirkan VO (`.mp3/.wav/.m4a`) + naskah (`.txt/.md` atau ditempel) lalu memanggil `/voxelverse`. Itu izin penuh membuat satu video utuh: langsung pilih rasio (default 16:9; 9:16 jika disebut Reels/TikTok/Shorts/vertikal).
-**B. Hanya ide/topik:** tulis naskah cerita singkat/sinematik, tampilkan, dan dalam pesan yang sama minta **satu kali** file VO + rasio. Boleh langsung membuat **draf bisu** (`"vo": null`) bila user meminta.
+- **A. Zero-prompt (VO + Naskah):** user melampirkan VO (`.mp3/.wav/.m4a`) + naskah (`.txt/.md` atau ditempel) lalu memanggil `/voxelverse`. Langsung pilih rasio (default 16:9; 9:16 jika disebut Reels/TikTok/Shorts/vertikal) dan buat video utuh.
+- **B. Video Referensi:** jalankan `/bedah-referensi` (`python ../render.py bedah <video> out_bedah`) lebih dulu untuk mengukur pacing, cut, kamera 3D, dan audio. Ambil hanya grammar formatnya; jangan menyalin mentah konten/audio/karakter asli.
+- **C. Hanya Ide/Topik:** cek fakta bila edukatif, tulis naskah dengan anggaran durasi (**Indonesia: durasi × 6.3 suku kata**; **Inggris: durasi × 2.7 kata**), tampilkan, dan minta **satu kali** file VO + rasio (atau langsung buat draf bisu `"vo": null` bila diminta).
 
-## Alur produksi
+## Alur Produksi 6 Tahap (Renderer Global `../render.py`)
 
 > **Renderer Global Terpadu:** Gunakan `python ../render.py` di root repositori (otomatis mendeteksi mesin `voxelverse`, menyegarkan PATH `ffmpeg`, dan menjalankan render + audio sekaligus). Jika skill dipakai berdiri sendiri, gunakan `$S/render.py` & `$S/audio.py`.
 
 1. **Cek lingkungan** — `python ../render.py cek` (atau `bash $S/check_env.sh`). Jika ada `[GAGAL]`, laporkan jujur dan berhenti.
-2. **Proyek baru** — `python ../render.py baru <folder>/<topik> --gaya voxelverse --vo <file> --naskah <file> --rasio 16:9 --judul "<Judul>"`.
-3. **Baca referensi** — baca `kamera.md`, `format-adegan.md`, dan `dunia-dan-benda.md`.
-4. **Rencana adegan** — susun alur adegan: hook 3 detik pertama, variasi sudut kamera 3D (minimal 4 jenis gerak berbeda untuk video ≥ 30 detik), pencahayaan & cuaca.
-5. **Tulis `proyek.json`** — gunakan acuan `templates/contoh-dunia-kecil/proyek.json` atau `templates/contoh-cerita-kribo/proyek.json`.
-6. **QC visual dan kamera**:
-   - `python ../render.py qc <proyek> --stills auto --draft` → **lihat** `out/qc/sheet.jpg`.
-   - Untuk adegan gerak kamera kompleks (`terbang`, `orbit`, `crane`): `python ../render.py qc <proyek> --strip N --draft` → lihat `out/qc/strip_NN.jpg`.
-   - Periksa dan perbaiki semua baris `[PERIKSA]`, tokoh terpotong, atau sudut kamera menembus dinding.
-7. **Render penuh & Audio (1 perintah global)** — `python ../render.py render <proyek>` (otomatis render paralel + `audio.py` musik/SFX/hujan/ducking −16 LUFS; tambah `--draft` untuk cepat). Jika di lingkungan terbatas waktu dan tercetak `BELUM SELESAI nn%`, jalankan perintah yang sama persis untuk melanjutkan dari potongan terakhir.
-8. **Mix ulang audio saja (opsional)** — `python ../render.py audio <proyek>`.
-9. **Verifikasi akhir** — pastikan tercetak `FINAL OK`, lalu inspeksi 3–4 frame dari MP4 final sebelum mengirim ke user.
-10. **Bicara ke user** — Bahasa Indonesia ramah, singkat, jujur (jangan klaim sudah mendengar audio), akhiri dengan ringkasan judul, durasi, rasio, dan jumlah adegan.
+2. **Siapkan VO & Proyek baru** — rapikan VO mentah bila banyak jeda panjang dengan `python ../render.py rapikan-vo <vo_raw> input/vo.wav`; lalu buat proyek:
+   `python ../render.py baru <folder>/<topik> --gaya voxelverse --vo <file> --naskah <file> --rasio 16:9 --judul "<Judul>"`.
+3. **Baca referensi & Tulis `proyek.json`** — baca `kamera.md`, `format-adegan.md`, dan `dunia-dan-benda.md`. Susun hook 3 detik pertama, variasi ≥4 gerak kamera 3D, pencahayaan & cuaca; gunakan acuan `templates/contoh-dunia-kecil/proyek.json` atau `templates/contoh-cerita-kribo/proyek.json`.
+4. **Pre-render QA tanpa render** — wajib jalankan `python ../render.py periksa <proyek>` sebelum render untuk cek VO, durasi, adegan terlalu singkat (`<0.6s`), dan lompatan kamera 3D ekstrem.
+5. **QC visual dan kamera (wajib lihat gambar)**:
+   - `python ../render.py qc <proyek> --stills auto --draft` → **lihat** `out/qc/sheet.jpg` dengan `read_file`.
+   - Untuk gerak kamera kompleks (`terbang`, `orbit`, `crane`): `python ../render.py qc <proyek> --strip N --draft` → lihat `out/qc/strip_NN.jpg`.
+   - Perbaiki semua `[PERIKSA]`, tokoh terpotong, atau sudut kamera menembus dinding sebelum render penuh.
+6. **Render penuh, Verifikasi akhir & Laporan jujur** — jalankan `python ../render.py render <proyek>` (tambah `--draft` untuk cepat; `python ../render.py audio <proyek>` bila hanya mix ulang audio). Pastikan tercetak `FINAL OK`, jalankan `python ../render.py periksa <proyek>` (cek codec, FPS, sync, LUFS), inspeksi 3–4 frame MP4 final, lalu sampaikan ringkasan ramah dalam Bahasa Indonesia (judul, durasi, rasio, jumlah adegan) tanpa mengklaim telah mendengar audio/menonton gerak langsung.
