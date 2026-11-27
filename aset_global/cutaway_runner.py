@@ -13,8 +13,10 @@ import shutil
 import subprocess
 import sys
 
+import numpy as np
 from PIL import Image
 
+from .sinematografi import SinematografiRig, apply_cinematic_modifiers, terapkan_sinemaskop
 from .studio_cutaway import (
     CutawayScene,
     _e3d,
@@ -23,6 +25,7 @@ from .studio_cutaway import (
     build_style_tanah,
     render_style_preview,
 )
+from .transisi import blend_transisi, norm_transisi
 
 STYLE_MAP = {
     "strata3d": "tanah",
@@ -81,19 +84,40 @@ def render_scene_frame(proj, adegan, t_local, W, H, skill_name, aa=1.5):
                 sc.add_hud_callout(h.get("pos", [0.5, 0.35]), h.get("teks", "LABEL"),
                                    bg=tuple(h.get("bg", [214, 52, 46])), size=int(h.get("ukuran", 26)))
 
-    # Interpolasi kamera halus
+    # Sinematografi global (mendukung kamera.shot, kamera.gerak, orbit/spiral/crane/dolly_zoom, maupun awal->akhir)
     dcam = DEFAULT_CAM[style]
     kam = adegan.get("kamera") or {}
-    c0 = kam.get("awal") or dcam
-    c1 = kam.get("akhir") or c0
     dur = max(0.1, float(adegan.get("durasi", 4.0)))
-    u = max(0.0, min(1.0, t_local / dur))
-    u_s = u * u * (3.0 - 2.0 * u)
-    pos = _lerp3(c0.get("pos", dcam["pos"]), c1.get("pos", dcam["pos"]), u_s)
-    tgt = _lerp3(c0.get("target", dcam["target"]), c1.get("target", dcam["target"]), u_s)
-    fov = _lerp(float(c0.get("fov", dcam["fov"])), float(c1.get("fov", dcam["fov"])), u_s)
-    cam = _e3d.Cam3D(pos=tuple(pos), target=tuple(tgt), fov=fov)
-    return sc.render_frame(cam, W, H, t=t_local, aa=aa)
+
+    def _when(obj, key="t", default=0.0):
+        if isinstance(obj, (int, float)):
+            return float(obj)
+        return float(obj[key]) if key in obj else float(default)
+
+    def _resolve_tgt(spec, _t):
+        return tuple(float(v) for v in spec.get("target", dcam["target"]))
+
+    def _pose_spec(spec, prev=None, _t=0.0):
+        if prev is None:
+            pos = np.array(dcam["pos"], dtype=np.float32)
+            tgt = np.array(dcam["target"], dtype=np.float32)
+            fov, roll, blur = float(dcam["fov"]), 0.0, 0.0
+        else:
+            pos, tgt = np.array(prev[0], dtype=np.float32), np.array(prev[1], dtype=np.float32)
+            fov, roll, blur = float(prev[2]), float(prev[3]), float(prev[4])
+        if prev is None or "pos" in spec:
+            roll, blur = 0.0, 0.0
+        if "target" in spec:
+            tgt = np.array(spec["target"], dtype=np.float32)
+        return apply_cinematic_modifiers(pos, tgt, fov, roll, blur, spec)
+
+    rig = SinematografiRig(kam, dur, _when, _pose_spec, _resolve_tgt)
+    pos, tgt, fov, roll, blur = rig.eval(t_local)
+    cam = _e3d.Cam3D(pos=tuple(pos), target=tuple(tgt), fov=fov, roll=roll, blur=blur)
+    img = sc.render_frame(cam, W, H, t=t_local, aa=aa)
+    if adegan.get("sinemaskop") or proj.get("sinemaskop"):
+        img = terapkan_sinemaskop(img)
+    return img
 
 
 def make_new_project(skill_name, projdir, rasio="9:16", judul="Proyek Cutaway"):
@@ -165,7 +189,7 @@ def cli_render(skill_name, argv=None):
             print("[STILL]", p_out)
         return
 
-    # Render animasi ke ffmpeg pipe -> video.mp4
+    # Render animasi + transisi global antar adegan ke ffmpeg pipe -> video.mp4
     mp4_out = os.path.join(out_dir, "video.mp4")
     ffmpeg = shutil.which("ffmpeg") or "ffmpeg"
     cmd = [
@@ -175,14 +199,32 @@ def cli_render(skill_name, argv=None):
         "-movflags", "+faststart", mp4_out,
     ]
     proc = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-    total_f = 0
+    spans = []
+    cur_t = 0.0
     for ad in adegan_list:
         dur = max(0.1, float(ad.get("durasi", 3.0)))
-        n_f = max(1, int(round(dur * fps)))
-        for k in range(n_f):
-            im = render_scene_frame(proj, ad, k / fps, W, H, skill_name, aa=1.25 if args.draft else 1.5)
-            proc.stdin.write(im.tobytes())
-            total_f += 1
+        spans.append((cur_t, cur_t + dur, ad))
+        cur_t += dur
+    total_f = max(1, int(round(cur_t * fps)))
+    aa_val = 1.25 if args.draft else 1.5
+    for f_idx in range(total_f):
+        T = f_idx / float(fps)
+        si = 0
+        while si + 1 < len(spans) and T >= spans[si + 1][0]:
+            si += 1
+        s0, _, ad_cur = spans[si]
+        im = None
+        if si + 1 < len(spans):
+            nxt_s0, _, ad_nxt = spans[si + 1]
+            tr = norm_transisi(ad_nxt.get("transisi", "potong"))
+            if tr["dur"] > 0 and T >= nxt_s0 - tr["dur"] * 0.5:
+                p = max(0.0, min(1.0, (T - (nxt_s0 - tr["dur"] * 0.5)) / tr["dur"]))
+                A = render_scene_frame(proj, ad_cur, T - s0, W, H, skill_name, aa=aa_val)
+                B = render_scene_frame(proj, ad_nxt, max(0.0, T - nxt_s0), W, H, skill_name, aa=aa_val)
+                im = blend_transisi(A, B, p, tr)
+        if im is None:
+            im = render_scene_frame(proj, ad_cur, T - s0, W, H, skill_name, aa=aa_val)
+        proc.stdin.write(im.tobytes())
     proc.stdin.close()
     rc = proc.wait()
     if rc != 0:
