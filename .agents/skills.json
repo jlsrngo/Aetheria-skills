@@ -5,7 +5,12 @@
       "include_only": [
         "stikman-cerita",
         "paperworld",
-        "voxelverse"
+        "voxelverse",
+        "3D-stickman",
+        "strata3d",
+        "hydro3d",
+        "mechlab3d",
+        "bedah-referensi"
       ]
     }
   ]

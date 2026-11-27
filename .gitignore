@@ -8,5 +8,11 @@ voxelverse/galeri.png
 voxelverse/uji-*.png
 paperworld/galeri.png
 paperworld/uji-*.png
+3D-stickman/galeri.png
+3D-stickman/uji-*.png
 demo-*/
 proyek-*/
+*_bedah/
+urls.sh
+*.teardown.wav
+*.blend1
