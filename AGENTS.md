@@ -31,7 +31,7 @@ Seluruh skill aktif otomatis melalui [`.agents/skills.json`](.agents/skills.json
 **Aturan pemilihan skill:**
 1. Selalu baca `SKILL.md` milik skill terkait sebelum membuat proyek atau merender.
 2. Jika user melampirkan **video referensi**, **WAJIB** jalankan `/bedah-referensi` (`python render.py bedah <video> out_bedah`) terlebih dahulu untuk mengukur ritme, kamera, audio, dan gaya subtitle sebelum menyusun naskah/adegan.
-3. Gunakan aset & font bersama dari `aset_global/` (jangan menduplikasi font atau aset engineering ke dalam folder skill).
+3. Gunakan aset, font, sinematografi multi-shot (`aset_global/sinematografi.py`), dan 22 transisi global (`aset_global/transisi.py`) dari `aset_global/` (jangan menduplikasi font atau aset engineering ke dalam folder skill; baca [`aset_global/SINEMATOGRAFI-DAN-TRANSISI.md`](aset_global/SINEMATOGRAFI-DAN-TRANSISI.md)).
 
 ---
 
