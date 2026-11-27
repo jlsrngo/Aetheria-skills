@@ -30,42 +30,82 @@ PRESET = {
                    badan_lebar=2.05, pinggul_lebar=1.8, bahu_x=76.0, lengan_besar=1.25,
                    hip_y=-105.0, kaki_tebal=2.4, kaki_lebar=1.7, sepatu_besar=1.25, tangan_besar=1.22,
                    bawah="celana", bawah_warna=(46, 46, 52)),
-    "raka":   dict(nama="Raka", rambut="jambul", rambut_warna=HITAM, kemeja=PUTIH, dasi=BIRU, bawah="celana", bawah_warna=HITAM),
+    "raka":   dict(nama="Raka", rambut="jambul", rambut_warna=HITAM, kemeja=PUTIH, dasi=BIRU,
+                   badan_lebar=1.85, pinggul_lebar=1.68, bahu_x=73.0, lengan_besar=1.18,
+                   hip_y=-112.0, kaki_tebal=2.15, kaki_lebar=1.55, sepatu_besar=1.2, tangan_besar=1.16,
+                   bawah="celana", bawah_warna=(46, 46, 52)),
     "nadia":  dict(nama="Nadia", hijab=(32, 32, 40), hijab_tua=(76, 78, 92), hijab_gaya="modern",
                    kulit=(255, 224, 196), kacamata="bulat", mata_chibi=True, bulu_mata=False,
                    kemeja=(224, 194, 154), kemeja_dalam=PUTIH, blazer=True, krah=False, kancing=False, dasi=None,
                    lengan_tebal=True, lengan_panjang=True,
-                   badan_lebar=1.45, pinggul_lebar=1.4, bahu_x=52.0, lengan_besar=1.0,
-                   hip_y=-138.0, kaki_tebal=1.55, kaki_lebar=1.18, sepatu_besar=1.12, tangan_besar=0.98,
+                   badan_lebar=1.74, pinggul_lebar=1.64, bahu_x=68.0, lengan_besar=1.14,
+                   hip_y=-114.0, kaki_tebal=2.0, kaki_lebar=1.48, sepatu_besar=1.18, tangan_besar=1.12,
                    bawah="rok", bawah_warna=(44, 44, 52), sepatu=(68, 52, 46)),
-    "bimo":   dict(nama="Bimo", rambut="keriting", rambut_warna=(62, 40, 34), kemeja=PUTIH, dasi=BIRU, bawah="celana", bawah_warna=HITAM),
-    "dimas":  dict(nama="Dimas", rambut="rapi", rambut_warna=HITAM, kacamata=True, kemeja=PUTIH, dasi=BIRU, bawah="celana", bawah_warna=HITAM),
-    "sari":   dict(nama="Sari", hijab=(250, 250, 252), hijab_tua=ABU, kemeja=PUTIH, dasi=MERAH, bawah="rok", bawah_warna=HITAM, bulu_mata=True),
-    "tika":   dict(nama="Tika", rambut="kuncir", rambut_warna=HITAM, kemeja=PUTIH, dasi=MERAH, bawah="rok", bawah_warna=HITAM, bulu_mata=True),
-    "ayah":   dict(nama="Ayah", rambut="rapi", rambut_warna=(70, 70, 80), kumis=True, kemeja=(200, 224, 250), dasi=None, bawah="celana", bawah_warna=NAVY, skala=1.08),
-    "ibu":    dict(nama="Ibu", hijab=HIJAU, hijab_tua=HIJAU_TUA, kemeja=(250, 236, 214), dasi=None, bawah="rok", bawah_warna=COKLAT_TUA, bulu_mata=True, skala=1.04),
-    "guru":   dict(nama="Pak Guru", rambut="uban", rambut_warna=(205, 205, 212), kacamata=True, kumis=True, kemeja=(236, 232, 214), dasi=MERAH_TUA, bawah="celana", bawah_warna=NAVY, skala=1.06),
-    "bu_guru": dict(nama="Bu Guru", hijab=UNGU, hijab_tua=UNGU_TUA, kacamata=True, kemeja=(240, 232, 250), dasi=None, bawah="rok", bawah_warna=UNGU_TUA, bulu_mata=True, skala=1.04),
-    "kakek":  dict(nama="Kakek", rambut="botak", peci=True, kumis=True, jenggot=True, kemeja=(250, 250, 250), dasi=None, bawah="celana", bawah_warna=(90, 70, 60), skala=0.98, uban=True),
-    "adik":   dict(nama="Adik", rambut="bob", rambut_warna=HITAM, kemeja=(255, 226, 120), dasi=None, bawah="rok", bawah_warna=PINK_TUA, bulu_mata=True, skala=0.8),
+    "bimo":   dict(nama="Bimo", rambut="keriting", rambut_warna=(62, 40, 34), kemeja=PUTIH, dasi=BIRU,
+                   badan_lebar=1.85, pinggul_lebar=1.68, bahu_x=73.0, lengan_besar=1.18,
+                   hip_y=-112.0, kaki_tebal=2.15, kaki_lebar=1.55, sepatu_besar=1.2, tangan_besar=1.16,
+                   bawah="celana", bawah_warna=(46, 46, 52)),
+    "dimas":  dict(nama="Dimas", rambut="rapi", rambut_warna=HITAM, kacamata=True, kemeja=PUTIH, dasi=BIRU,
+                   badan_lebar=1.85, pinggul_lebar=1.68, bahu_x=73.0, lengan_besar=1.18,
+                   hip_y=-112.0, kaki_tebal=2.15, kaki_lebar=1.55, sepatu_besar=1.2, tangan_besar=1.16,
+                   bawah="celana", bawah_warna=(46, 46, 52)),
+    "sari":   dict(nama="Sari", hijab=(250, 250, 252), hijab_tua=ABU, kemeja=PUTIH, dasi=MERAH,
+                   badan_lebar=1.74, pinggul_lebar=1.64, bahu_x=68.0, lengan_besar=1.14,
+                   hip_y=-114.0, kaki_tebal=2.0, kaki_lebar=1.48, sepatu_besar=1.18, tangan_besar=1.12,
+                   bawah="rok", bawah_warna=(44, 44, 52), bulu_mata=True),
+    "tika":   dict(nama="Tika", rambut="kuncir", rambut_warna=HITAM, kemeja=PUTIH, dasi=MERAH,
+                   badan_lebar=1.74, pinggul_lebar=1.64, bahu_x=68.0, lengan_besar=1.14,
+                   hip_y=-114.0, kaki_tebal=2.0, kaki_lebar=1.48, sepatu_besar=1.18, tangan_besar=1.12,
+                   bawah="rok", bawah_warna=(44, 44, 52), bulu_mata=True),
+    "ayah":   dict(nama="Ayah", rambut="rapi", rambut_warna=(70, 70, 80), kumis=True, kemeja=(200, 224, 250), dasi=None,
+                   badan_lebar=1.92, pinggul_lebar=1.74, bahu_x=75.0, lengan_besar=1.2,
+                   hip_y=-110.0, kaki_tebal=2.2, kaki_lebar=1.6, sepatu_besar=1.2, tangan_besar=1.18,
+                   bawah="celana", bawah_warna=NAVY, skala=1.08),
+    "ibu":    dict(nama="Ibu", hijab=HIJAU, hijab_tua=HIJAU_TUA, kemeja=(250, 236, 214), dasi=None,
+                   badan_lebar=1.76, pinggul_lebar=1.66, bahu_x=68.0, lengan_besar=1.14,
+                   hip_y=-114.0, kaki_tebal=2.0, kaki_lebar=1.48, sepatu_besar=1.18, tangan_besar=1.12,
+                   bawah="rok", bawah_warna=COKLAT_TUA, bulu_mata=True, skala=1.04),
+    "guru":   dict(nama="Pak Guru", rambut="uban", rambut_warna=(205, 205, 212), kacamata=True, kumis=True, kemeja=(236, 232, 214), dasi=MERAH_TUA,
+                   badan_lebar=1.92, pinggul_lebar=1.74, bahu_x=75.0, lengan_besar=1.2,
+                   hip_y=-110.0, kaki_tebal=2.2, kaki_lebar=1.6, sepatu_besar=1.2, tangan_besar=1.18,
+                   bawah="celana", bawah_warna=NAVY, skala=1.06),
+    "bu_guru": dict(nama="Bu Guru", hijab=UNGU, hijab_tua=UNGU_TUA, kacamata=True, kemeja=(240, 232, 250), dasi=None,
+                    badan_lebar=1.76, pinggul_lebar=1.66, bahu_x=68.0, lengan_besar=1.14,
+                    hip_y=-114.0, kaki_tebal=2.0, kaki_lebar=1.48, sepatu_besar=1.18, tangan_besar=1.12,
+                    bawah="rok", bawah_warna=UNGU_TUA, bulu_mata=True, skala=1.04),
+    "kakek":  dict(nama="Kakek", rambut="botak", peci=True, kumis=True, jenggot=True, kemeja=(250, 250, 250), dasi=None,
+                   badan_lebar=1.88, pinggul_lebar=1.7, bahu_x=73.0, lengan_besar=1.18,
+                   hip_y=-112.0, kaki_tebal=2.15, kaki_lebar=1.55, sepatu_besar=1.18, tangan_besar=1.16,
+                   bawah="celana", bawah_warna=(90, 70, 60), skala=0.98, uban=True),
+    "adik":   dict(nama="Adik", rambut="bob", rambut_warna=HITAM, kemeja=(255, 226, 120), dasi=None,
+                   badan_lebar=1.72, pinggul_lebar=1.62, bahu_x=67.0, lengan_besar=1.12,
+                   hip_y=-114.0, kaki_tebal=1.95, kaki_lebar=1.45, sepatu_besar=1.16, tangan_besar=1.12,
+                   bawah="rok", bawah_warna=PINK_TUA, bulu_mata=True, skala=0.8),
     "otak":   dict(nama="Sang Otak", kepala="otak", kulit=(250, 174, 198), mata_chibi=True, bulu_mata=False,
                    kemeja=(242, 248, 255), krah=True, kancing=True, dasi=(66, 178, 232),
                    lengan_tebal=True, lengan_panjang=True, sepatu_sneaker=True,
-                   badan_lebar=1.45, pinggul_lebar=1.4, bahu_x=54.0, lengan_besar=1.0,
-                   hip_y=-138.0, kaki_tebal=1.65, kaki_lebar=1.25, sepatu_besar=1.15, tangan_besar=1.02,
+                   badan_lebar=1.82, pinggul_lebar=1.68, bahu_x=72.0, lengan_besar=1.16,
+                   hip_y=-112.0, kaki_tebal=2.1, kaki_lebar=1.52, sepatu_besar=1.2, tangan_besar=1.15,
                    bawah="celana", bawah_warna=(54, 68, 96), sepatu=(52, 62, 86)),
     "virus":  dict(nama="Virus", kepala="virus", kulit=(112, 204, 88), wajah_maskulin=True, bulu_mata=False,
                    kemeja=(66, 138, 64), krah=False, kancing=False, dasi=None,
-                   lengan_tebal=True, lengan_besar=0.95, badan_lebar=1.35, pinggul_lebar=1.3, bahu_x=48.0,
-                   hip_y=-142.0, kaki_tebal=1.5, kaki_lebar=1.2, sepatu_besar=1.05, tangan_besar=0.95,
+                   lengan_tebal=True, lengan_besar=1.12, badan_lebar=1.76, pinggul_lebar=1.62, bahu_x=68.0,
+                   hip_y=-114.0, kaki_tebal=2.0, kaki_lebar=1.48, sepatu_besar=1.16, tangan_besar=1.12,
                    bawah="celana", bawah_warna=(44, 86, 48), sepatu=(36, 62, 40), skala=0.84),
     "sel_imun": dict(nama="Sel Imun", kepala="sel_imun", kulit=(236, 248, 255), mata_chibi=True, bulu_mata=False,
                      kemeja=(78, 172, 242), krah=False, kancing=False, dasi=None, perisai_dada=True,
                      lengan_tebal=True, lengan_panjang=True, sepatu_sneaker=True,
-                     badan_lebar=1.5, pinggul_lebar=1.42, bahu_x=54.0, lengan_besar=1.02,
-                     hip_y=-136.0, kaki_tebal=1.7, kaki_lebar=1.28, sepatu_besar=1.15, tangan_besar=1.02,
+                     badan_lebar=1.84, pinggul_lebar=1.7, bahu_x=72.0, lengan_besar=1.16,
+                     hip_y=-112.0, kaki_tebal=2.1, kaki_lebar=1.52, sepatu_besar=1.2, tangan_besar=1.15,
                      bawah="celana", bawah_warna=(52, 108, 176), sepatu=(44, 86, 148), skala=0.94),
+    "bos": dict(nama="Bos", rambut="botak", telinga=True, kacamata="bulat", mata_sclera=True,
+                kulit=(248, 214, 194), kemeja=(48, 52, 64), kemeja_dalam=PUTIH, blazer=True, dasi=MERAH,
+                lengan_tebal=True, lengan_panjang=True,
+                badan_lebar=1.95, pinggul_lebar=1.75, bahu_x=76.0, lengan_besar=1.22,
+                hip_y=-108.0, kaki_tebal=2.25, kaki_lebar=1.62, sepatu_besar=1.22, tangan_besar=1.2,
+                bawah="celana", bawah_warna=(44, 46, 56), sepatu=HITAM),
 }
+PRESET["formal"] = dict(PRESET["bos"])
 
 
 def casting(spec):
@@ -76,6 +116,16 @@ def casting(spec):
     base.update({k: (tuple(v) if isinstance(v, list) and len(v) == 3 and all(isinstance(i, int) for i in v) else v)
                  for k, v in spec.items() if k != "dasar"})
     base.setdefault("skala", 1.0)
+    base.setdefault("lengan_tebal", True)
+    base.setdefault("badan_lebar", 1.82)
+    base.setdefault("pinggul_lebar", 1.66)
+    base.setdefault("bahu_x", 68.0)
+    base.setdefault("lengan_besar", 1.18)
+    base.setdefault("tangan_besar", 1.16)
+    base.setdefault("hip_y", -114.0)
+    base.setdefault("kaki_tebal", 2.15)
+    base.setdefault("kaki_lebar", 1.55)
+    base.setdefault("sepatu_besar", 1.2)
     return base
 
 
@@ -235,109 +285,154 @@ class Tokoh:
         def TT(pts):
             return [T(*q) for q in pts]
 
-        ow = 4.2 * s           # tebal garis tepi (satuan dunia)
+        ow = 4.6 * s           # tebal garis tepi (satuan dunia)
         kemeja = warna(p.get("kemeja"), PUTIH)
         kulit = warna(p.get("kulit"), PUTIH)
         dasi = warna(p.get("dasi"))
         bawah_c = warna(p.get("bawah_warna"), HITAM)
         sepatu = warna(p.get("sepatu"), HITAM)
-        # proporsi badan: preset chibi kekar (kribo) memakai torso/hip/kaki lebih lebar
-        bw = float(p.get("badan_lebar", 1.0))
+        # proporsi badan: seluruh tokoh memakai gaya chibi berisi & garis tepi seragam
+        bw = float(p.get("badan_lebar", 1.82))
         hipb = float(p.get("pinggul_lebar", bw))
-        hy = float(p.get("hip_y", HIP_Y))
-        kt = float(p.get("kaki_tebal", 1.0))
-        sm = float(p.get("sepatu_besar", 1.0))
+        hy = float(p.get("hip_y", -114.0))
+        kt = float(p.get("kaki_tebal", 2.15))
+        sm = float(p.get("sepatu_besar", 1.2))
 
         # ransel (bagian belakang)
         if st.get("ransel"):
             rc = warna(st["ransel"], UNGU) if not isinstance(st["ransel"], bool) else UNGU
-            c.blob(TT([(-70, -258), (-84, -230), (-80, -176), (-52, -150), (52, -150), (80, -176), (84, -230), (70, -258), (0, -270)]),
+            rw = max(1.0, bw * 0.62)
+            c.blob(TT([(-70 * rw, -258), (-84 * rw, -230), (-80 * rw, -176), (-52 * rw, -150),
+                       (52 * rw, -150), (80 * rw, -176), (84 * rw, -230), (70 * rw, -258), (0, -270)]),
                    rc, ow, OUT)
-            c.ell(*T(-74, -214), 14 * s, 26 * s, gelap(rc, 0.18), ow * .8)
-            c.ell(*T(74, -214), 14 * s, 26 * s, gelap(rc, 0.18), ow * .8)
+            c.ell(*T(-74 * rw, -214), 14 * s, 26 * s, gelap(rc, 0.18), ow * .85)
+            c.ell(*T(74 * rw, -214), 14 * s, 26 * s, gelap(rc, 0.18), ow * .85)
 
         # ---- kaki
         hipy = hy + dy
         hip = [T(-20, hy), T(20, hy)]
         feet, knees, hip = self._legs(st, T, sit)
         skirt = p.get("bawah") == "rok"
-        legw = (9.5 if skirt else 15) * kt
-        legc = HITAM if skirt else bawah_c
+        legw = (12.8 if skirt else 15.0) * kt
+        legc = (60, 58, 70) if (skirt and (p.get("hijab") or bawah_c == HITAM)) else (gelap(bawah_c, .42) if skirt else bawah_c)
         legoc = OUT
         for i in (0, 1):
             ax, ay = hip[i]
             kx, ky = knees[i]
             fx, fy = feet[i]
-            if skirt:
-                c.line([(ax, ay), (kx, ky), (fx, fy)], HITAM if bawah_c == HITAM else gelap(bawah_c, .55), legw * s, True)
-            else:
-                c.line([(ax, ay), (kx, ky), (fx, fy)], legoc, (legw + 2 * 4.0) * s)
-                c.line([(ax, ay), (kx, ky), (fx, fy)], legc, legw * s)
+            c.line([(ax, ay), (kx, ky), (fx, fy)], legoc, (legw + 2 * 4.2) * s)
+            c.line([(ax, ay), (kx, ky), (fx, fy)], legc, legw * s)
             if p.get("sepatu_sneaker"):
                 toe = -1 if i == 0 else 1          # ujung sepatu menghadap keluar -> simetris
                 shoe_x, shoe_y = fx + toe * fl * 7 * s * sm, fy - 4 * s * sm
-                c.ell(shoe_x, shoe_y, 27 * s * sm, 13 * s * sm, sepatu, ow * .6, OUT)
-                c.ell(fx + toe * fl * 16 * s * sm, shoe_y, 10.5 * s * sm, 9.5 * s * sm, PUTIH, ow * .45, OUT)
+                c.ell(shoe_x, shoe_y, 27 * s * sm, 13 * s * sm, sepatu, ow * .82, OUT)
+                c.ell(fx + toe * fl * 16 * s * sm, shoe_y, 10.5 * s * sm, 9.5 * s * sm, PUTIH, ow * .65, OUT)
                 c.line([(fx - toe * fl * 21 * s * sm, fy + 6 * s * sm),
-                        (fx + toe * fl * 22 * s * sm, fy + 6 * s * sm)], PUTIH, 3.8 * s * sm)
+                        (fx + toe * fl * 22 * s * sm, fy + 6 * s * sm)], PUTIH, 4.2 * s * sm)
             else:
                 toe = (-1 if i == 0 else 1) if bw > 1.2 else 1
-                c.ell(fx + toe * fl * 7 * s * sm, fy - 4 * s * sm, 27 * s * sm, 13 * s * sm, sepatu, ow * .6, OUT)
+                c.ell(fx + toe * fl * 7 * s * sm, fy - 4 * s * sm, 27 * s * sm, 13 * s * sm, sepatu, ow * .82, OUT)
         if skirt:
-            hem = hy + 74 + dy * 0.9
-            sw = max(1.0, hipb * 0.92)
+            hem = hy + 64 + dy * 0.9
+            sw = max(1.0, hipb * 0.94)
             c.poly(TT([(-36 * sw, hy - 12), (36 * sw, hy - 12), (60 * sw, hem - 4)] + bezier((60 * sw, hem - 4), (0, hem + 22), (-60 * sw, hem - 4), 10)[1:-1] + [(-60 * sw, hem - 4)]),
                    bawah_c, ow, OUT)
         if not skirt and bw > 1.2:
             c.poly(TT([(-34 * hipb, hy - 14), (34 * hipb, hy - 14),
                        (34 * hipb, hy + 22), (-34 * hipb, hy + 22)]), bawah_c, ow, OUT)
+        elif not skirt and p.get("blazer"):
+            px_w = max(26.0 * hipb, 20.0 * float(p.get("kaki_lebar", 1.0)) + 7.5 * kt)
+            c.poly(TT([(-px_w, hy - 14), (px_w, hy - 14), (px_w, hy + 6), (-px_w, hy + 6)]), bawah_c, ow, OUT)
+            for i in (0, 1):
+                c.line([hip[i], knees[i]], legc, legw * s)
         # ---- torso
-        c.blob(TT([(-43 * bw, SHOULDER_Y + 6), (-30 * bw, SHOULDER_Y - 3), (30 * bw, SHOULDER_Y - 3),
-                   (43 * bw, SHOULDER_Y + 6), (38 * hipb, hy - 44), (35 * hipb, hy - 12),
-                   (0, hy - 7), (-35 * hipb, hy - 12), (-38 * hipb, hy - 44)]),
-               kemeja, ow, OUT, n=5)
         if p.get("blazer"):
             inner_c = warna(p.get("kemeja_dalam"), PUTIH)
-            lap_c = terang(kemeja, 0.08)
-            c.poly(TT([(-19 * bw, SHOULDER_Y + 4), (19 * bw, SHOULDER_Y + 4),
-                       (13 * hipb, hy - 10), (-13 * hipb, hy - 10)]), inner_c, ow * .65, OUT)
+            lum = 0.299 * kemeja[0] + 0.587 * kemeja[1] + 0.114 * kemeja[2]
+            lap_c = gelap(kemeja, 0.14) if lum > 180 else terang(kemeja, 0.08)
+            btn_y = min(hy - 26, SHOULDER_Y + 66)
+            nx = min(19 * bw, 22.0)
+            c.poly(TT([(-nx - 6, SHOULDER_Y), (nx + 6, SHOULDER_Y),
+                       (8, btn_y + 8), (-8, btn_y + 8)]), inner_c, ow * .78, OUT)
+            if p.get("krah", True) and not p.get("dasi_kupu"):
+                c.poly(TT([(-4, SHOULDER_Y - 2), (-20, SHOULDER_Y - 1), (-13, SHOULDER_Y + 19)]), inner_c, ow * .8, OUT)
+                c.poly(TT([(4, SHOULDER_Y - 2), (20, SHOULDER_Y - 1), (13, SHOULDER_Y + 19)]), inner_c, ow * .8, OUT)
+            if dasi and not p.get("dasi_kupu"):
+                c.poly(TT([(-4.5, SHOULDER_Y + 18), (4.5, SHOULDER_Y + 18),
+                           (10.5, SHOULDER_Y + 52), (0, SHOULDER_Y + 66), (-10.5, SHOULDER_Y + 52)]), dasi, ow * .8, OUT)
+                c.poly(TT([(-7, SHOULDER_Y + 8), (7, SHOULDER_Y + 8),
+                           (5, SHOULDER_Y + 18), (-5, SHOULDER_Y + 18)]), dasi, ow * .8, OUT)
             for sg in (-1, 1):
-                c.poly(TT([(sg * 16 * bw, SHOULDER_Y + 4),
-                           (sg * 34 * bw, SHOULDER_Y + 14),
-                           (sg * 29 * bw, SHOULDER_Y + 34),
-                           (sg * 35 * bw, SHOULDER_Y + 42),
-                           (sg * 13 * hipb, hy - 14),
-                           (sg * 14 * bw, SHOULDER_Y + 26)]), lap_c, ow * .75, OUT)
+                c.poly(TT([
+                    (sg * nx, SHOULDER_Y - 1),
+                    (sg * 31 * bw, SHOULDER_Y - 3),
+                    (sg * 43 * bw, SHOULDER_Y + 6),
+                    (sg * 41 * bw, SHOULDER_Y + 34),
+                    (sg * 38 * hipb, hy - 38),
+                    (sg * 35 * hipb, hy - 12),
+                    (sg * 22 * hipb, hy - 9),
+                    (sg * 2, hy - 10),
+                    (0, btn_y),
+                ]), kemeja, ow, OUT)
+                c.poly(TT([
+                    (sg * (nx - 1), SHOULDER_Y - 1),
+                    (sg * (nx + 13 * bw * 0.72), SHOULDER_Y + 13),
+                    (sg * (nx + 8 * bw * 0.72), SHOULDER_Y + 23),
+                    (sg * (nx + 14 * bw * 0.72), SHOULDER_Y + 32),
+                    (sg * 1.5, btn_y),
+                    (sg * (nx - 4), SHOULDER_Y + 19),
+                ]), lap_c, ow * .78, OUT)
+                c.line(TT([(sg * (nx + 8 * bw * 0.72), SHOULDER_Y + 23), (sg * (nx - 4), SHOULDER_Y + 18)]), OUT, ow * .62)
+            c.ell(*T(0, btn_y + 6), 3.3 * s, 3.3 * s, OUT)
+            if hy - btn_y > 32:
+                c.ell(*T(0, btn_y + 20), 3.1 * s, 3.1 * s, OUT)
+        else:
+            c.blob(TT([(-43 * bw, SHOULDER_Y + 6), (-30 * bw, SHOULDER_Y - 3), (30 * bw, SHOULDER_Y - 3),
+                       (43 * bw, SHOULDER_Y + 6), (38 * hipb, hy - 44), (35 * hipb, hy - 12),
+                       (0, hy - 7), (-35 * hipb, hy - 12), (-38 * hipb, hy - 44)]),
+                   kemeja, ow, OUT, n=5)
         if p.get("kemeja_garis"):
             gc = warna(p["kemeja_garis"], BIRU)
             for yy in (-215, -192, -170):
-                c.line(TT([(-38, yy), (38, yy)]), gc, 6 * s, False)
+                if yy < hy - 14:
+                    c.line(TT([(-36 * bw, yy), (36 * bw, yy)]), gc, 6 * s, False)
         if p.get("perisai_dada"):
             # lencana perisai putih-biru di dada sel imun
             by = SHOULDER_Y + 46
-            c.poly(TT([(0, by - 22), (22, by - 14), (18, by + 10), (0, by + 24), (-18, by + 10), (-22, by - 14)]), PUTIH, ow * .7, OUT)
+            c.poly(TT([(0, by - 22), (22, by - 14), (18, by + 10), (0, by + 24), (-18, by + 10), (-22, by - 14)]), PUTIH, ow * .8, OUT)
             c.line(TT([(0, by - 10), (0, by + 10)]), BIRU, 5.5 * s, False)
             c.line(TT([(-10, by), (10, by)]), BIRU, 5.5 * s, False)
         # krah + dasi (dasi kupu-kupu menggantikan krah/dasi biasa)
-        if p.get("krah", True) and not p.get("dasi_kupu"):
-            c.poly(TT([(0, SHOULDER_Y + 24), (-22, SHOULDER_Y - 2), (-4, SHOULDER_Y - 2)]), PUTIH, ow * .7, OUT)
-            c.poly(TT([(0, SHOULDER_Y + 24), (22, SHOULDER_Y - 2), (4, SHOULDER_Y - 2)]), PUTIH, ow * .7, OUT)
-        if p.get("dasi_kupu"):
+        if not p.get("blazer"):
+            if p.get("krah", True) and not p.get("dasi_kupu"):
+                c.poly(TT([(-4, SHOULDER_Y - 2), (-20, SHOULDER_Y - 1), (-13, SHOULDER_Y + 19)]), PUTIH, ow * .82, OUT)
+                c.poly(TT([(4, SHOULDER_Y - 2), (20, SHOULDER_Y - 1), (13, SHOULDER_Y + 19)]), PUTIH, ow * .82, OUT)
+            if p.get("dasi_kupu"):
+                bc = warna(p.get("dasi"), HITAM)
+                by = SHOULDER_Y + 12
+                boww = 18
+                c.poly(TT([(0, by), (-boww, by - 10), (-boww, by + 10)]), bc, ow * .82, OUT)
+                c.poly(TT([(0, by), (boww, by - 10), (boww, by + 10)]), bc, ow * .82, OUT)
+                c.poly(TT([(-6, by - 7), (6, by - 7), (6, by + 7), (-6, by + 7)]), gelap(bc, .12), ow * .8, OUT)
+            elif dasi:
+                c.poly(TT([(-4.5, SHOULDER_Y + 18), (4.5, SHOULDER_Y + 18),
+                           (10.5, SHOULDER_Y + 52), (0, SHOULDER_Y + 66), (-10.5, SHOULDER_Y + 52)]), dasi, ow * .82, OUT)
+                c.poly(TT([(-7, SHOULDER_Y + 8), (7, SHOULDER_Y + 8),
+                           (5, SHOULDER_Y + 18), (-5, SHOULDER_Y + 18)]), dasi, ow * .82, OUT)
+            elif p.get("kancing", True):
+                for yy in (-222, -200, -178):
+                    if yy < hy - 16:
+                        c.ell(*T(0, yy), 3.4 * s, 3.4 * s, OUT)
+        elif p.get("dasi_kupu"):
             bc = warna(p.get("dasi"), HITAM)
             by = SHOULDER_Y + 12
             boww = 18
-            c.poly(TT([(0, by), (-boww, by - 10), (-boww, by + 10)]), bc, ow * .75, OUT)
-            c.poly(TT([(0, by), (boww, by - 10), (boww, by + 10)]), bc, ow * .75, OUT)
-            c.poly(TT([(-6, by - 7), (6, by - 7), (6, by + 7), (-6, by + 7)]), gelap(bc, .12), ow * .7, OUT)
-        elif dasi:
-            c.poly(TT([(-8, SHOULDER_Y + 10), (8, SHOULDER_Y + 10), (6, SHOULDER_Y + 22), (-6, SHOULDER_Y + 22)]), dasi, ow * .7, OUT)
-            c.poly(TT([(-6, SHOULDER_Y + 22), (6, SHOULDER_Y + 22), (11, SHOULDER_Y + 52), (0, SHOULDER_Y + 66), (-11, SHOULDER_Y + 52)]), dasi, ow * .7, OUT)
-        elif p.get("kancing", True):
-            for yy in (-222, -200, -178):
-                c.ell(*T(0, yy), 3.2 * s, 3.2 * s, OUT)
+            c.poly(TT([(0, by), (-boww, by - 10), (-boww, by + 10)]), bc, ow * .82, OUT)
+            c.poly(TT([(0, by), (boww, by - 10), (boww, by + 10)]), bc, ow * .82, OUT)
+            c.poly(TT([(-6, by - 7), (6, by - 7), (6, by + 7), (-6, by + 7)]), gelap(bc, .12), ow * .8, OUT)
         if st.get("tali_ransel"):
             for sgn in (-1, 1):
-                c.line(TT([(sgn * 30, SHOULDER_Y), (sgn * 30, hy - 14)]), warna(st["ransel"], UNGU) if not isinstance(st["ransel"], bool) else UNGU, 9 * s, False)
+                c.line(TT([(sgn * 26 * bw, SHOULDER_Y), (sgn * 26 * bw, hy - 14)]), warna(st["ransel"], UNGU) if not isinstance(st["ransel"], bool) else UNGU, 9.5 * s, False)
 
         # ---- hijab: drape di bawah dagu
         if p.get("hijab"):
@@ -360,8 +455,8 @@ class Tokoh:
                 c.curve(TT([(96, -262), (60, -236)]), hjd, 4 * s)
             # dasi tampak di bawah drape
             if dasi and not p.get("dasi_kupu"):
-                c.poly(TT([(-7, -190), (7, -190), (5, -178), (-5, -178)]), dasi, ow * .7, OUT)
-                c.poly(TT([(-5, -178), (5, -178), (10, -150), (0, -138), (-10, -150)]), dasi, ow * .7, OUT)
+                c.poly(TT([(-4, -180), (4, -180), (9, -152), (0, -140), (-9, -152)]), dasi, ow * .7, OUT)
+                c.poly(TT([(-6, -190), (6, -190), (4.5, -180), (-4.5, -180)]), dasi, ow * .7, OUT)
 
         # ---- lengan (bawah di depan badan; yang terangkat/ke wajah digambar setelah kepala agar tidak tertelan kepala/afro)
         arms = st["arms"]
@@ -390,8 +485,8 @@ class Tokoh:
     def _legs(self, st, T, sit):
         stance = st.get("legs", "stand")
         ph, amp = st.get("phase", 0.0), st.get("amp", 0.0)
-        kl = float(self.p.get("kaki_lebar", 1.0))
-        hy = float(self.p.get("hip_y", HIP_Y))
+        kl = float(self.p.get("kaki_lebar", 1.55))
+        hy = float(self.p.get("hip_y", -114.0))
         feet, knees, hips = [], [], []
         for sgn in (-1, 1):
             hx = sgn * 20 * kl
@@ -417,40 +512,53 @@ class Tokoh:
     # ------------------------------------------------------------ lengan
     def _arm(self, c, T, s, sgn, a, e, hk, sleeve, ow, dy):
         ar, br = math.radians(a), math.radians(a + e)
-        bahu = float(self.p.get("bahu_x", SHOULDER_X))
+        bahu = float(self.p.get("bahu_x", 68.0))
         sh = (sgn * bahu, SHOULDER_Y + 4)
         el = (sh[0] + sgn * math.sin(ar) * UP_ARM, sh[1] + math.cos(ar) * UP_ARM)
         hd = (el[0] + sgn * math.sin(br) * FORE_ARM, el[1] + math.cos(br) * FORE_ARM)
         S, E, H = T(*sh), T(*el), T(*hd)
-        tebal = bool(self.p.get("lengan_tebal"))
-        lb = float(self.p.get("lengan_besar", 1.0)) if tebal else 1.0
-        tb = float(self.p.get("tangan_besar", 1.0))
+        tebal = bool(self.p.get("lengan_tebal", True))
+        lb = float(self.p.get("lengan_besar", 1.18)) if tebal else 1.0
+        tb = float(self.p.get("tangan_besar", 1.16))
         skin = warna(self.p.get("kulit"), PUTIH)
-        # lengan kartun berisi (tube kulit / lengan panjang blazer) atau lengan garis tipis seperti preset lama
+        arm_ow = 4.2 * s
+        # lengan kartun berisi (tube kulit / lengan panjang blazer)
         if self.p.get("lengan_panjang"):
             arm_w = 19 * lb
-            c.line([S, E, H], OUT, (arm_w + 2 * 3.4) * s)
-            c.line([S, E, H], sleeve, arm_w * s)
+            if self.p.get("manset") or self.p.get("blazer"):
+                dx, dy_ = H[0] - E[0], H[1] - E[1]
+                dl = max(1e-5, math.hypot(dx, dy_))
+                ux, uy = dx / dl, dy_ / dl
+                r_hand = 17.5 * tb * s
+                c0 = (H[0] - ux * (r_hand + 13.0 * s), H[1] - uy * (r_hand + 13.0 * s))
+                c1 = (H[0] - ux * (r_hand + 1.5 * s), H[1] - uy * (r_hand + 1.5 * s))
+                c.tube(c0, c1, (arm_w - 3.5) * s, PUTIH, 3.8 * s, OUT)
+                H_slv = (H[0] - ux * (r_hand + 19.5 * s), H[1] - uy * (r_hand + 19.5 * s))
+                c.line([S, E, H_slv], OUT, (arm_w + 2 * 4.2) * s)
+                c.line([S, E, H_slv], sleeve, arm_w * s)
+            else:
+                c.line([S, E, H], OUT, (arm_w + 2 * 4.2) * s)
+                c.line([S, E, H], sleeve, arm_w * s)
         else:
             if tebal:
                 arm_w = 16 * lb
-                c.line([S, E, H], OUT, (arm_w + 2 * 3.4) * s)
+                c.line([S, E, H], OUT, (arm_w + 2 * 4.2) * s)
                 c.line([S, E, H], skin, arm_w * s)
             else:
                 c.line([S, E, H], OUT, 6.5 * s)
             sl = (sh[0] + (el[0] - sh[0]) * 0.46, sh[1] + (el[1] - sh[1]) * 0.46)
-            c.tube(S, T(*sl), (24 * lb if tebal else 19) * s, sleeve, 3.4 * s)
+            c.tube(S, T(*sl), (22 * lb if tebal else 19) * s, sleeve, arm_ow)
         # tangan
         dirv = (H[0] - E[0], H[1] - E[1])
         ang = math.atan2(dirv[1], dirv[0])
         r = 17.5 * tb * s
         if hk == "p":
             fe = (H[0] + math.cos(ang) * 30 * s * tb, H[1] + math.sin(ang) * 30 * s * tb)
-            c.tube(H, fe, 9 * tb * s, skin, 3.2 * s)
+            c.tube(H, fe, 9 * tb * s, skin, 3.8 * s)
         if hk == "t":
-            c.tube((H[0], H[1] - 6 * s), (H[0] + sgn * 2 * s, H[1] - 24 * s * tb), 10 * tb * s, skin, 3.2 * s)
+            c.tube((H[0], H[1] - 6 * s), (H[0] + sgn * 2 * s, H[1] - 24 * s * tb), 10 * tb * s, skin, 3.8 * s)
         rr = r * (0.92 if hk == "f" else 1.0)
-        c.ell(H[0], H[1], rr, rr, skin, 3.6 * s, OUT)
+        c.ell(H[0], H[1], rr, rr, skin, 4.2 * s, OUT)
         return {"pos": H, "ang": ang, "elbow": E}
 
     # ------------------------------------------------------------ kepala
@@ -586,6 +694,10 @@ class Tokoh:
             hjd2 = warna(p.get("hijab_tua"), gelap(warna(p["hijab"]), .15))
             c.curve(HH([(-74, -14), (-44, -56), (0, -76), (44, -56), (74, -14)]), hjd2, 3.0 * s)
         else:
+            if p.get("telinga") and not hij and kepala not in ("otak", "virus", "sel_imun"):
+                skin_c = warna(p.get("kulit"), PUTIH)
+                for sg in (-1, 1):
+                    c.ell(*H(sg * face_rx, 6), 15 * s, 19 * s, skin_c, ow, OUT)
             face = HH(_ellpts(0, 0, face_rx, face_ry, 34))
             c.poly(face, warna(p.get("kulit"), PUTIH), ow, OUT)
             # rambut depan
@@ -650,6 +762,22 @@ class Tokoh:
                         c.poly(HH(_ellpts(ex_ - 4.5, eye_y + 2 + hh * .36, 2.4, 2.4, 8)), PUTIH)
                     if eyes == "half":
                         c.line(HH([(ex_ - ew_c - 3, eye_y + 2 - hh * .4), (ex_ + ew_c + 3, eye_y + 2 - hh * .4)]), OUT, 4.6 * s)
+                elif p.get("mata_sclera") and eyes in ("oval", "wide", "spark", "half", "wink"):
+                    sc = 1.18 if eyes == "wide" else 1.0
+                    ew_s = 14.5 * sc
+                    eh_s = 16.5 * sc * (1 - 0.9 * blink)
+                    c.poly(HH(_ellpts(ex_, eye_y + 2, ew_s, max(1.8, eh_s), 20)), PUTIH, 3.8 * s, OUT)
+                    pr = (5.0 if eyes == "wide" else 6.2) * (1.0 if blink < 0.5 else 0.4)
+                    px_, py_ = ex_ + lx_ * 4.5, eye_y + 2 + ly_ * 3.0
+                    c.poly(HH(_ellpts(px_, py_, pr, pr * (1 - 0.85 * blink), 14)), OUT)
+                    if eh_s > 6 and blink < 0.5:
+                        c.poly(HH(_ellpts(px_ - 2.0, py_ - 2.2, 2.2, 2.2, 8)), PUTIH)
+                    if eyes == "half" and blink < 0.5:
+                        lid_top = arc_pts(ex_, eye_y + 2, ew_s + 0.5, eh_s + 0.5, 185, 355, 12)
+                        c.poly(HH(lid_top + [(ex_ + ew_s + 0.5, eye_y + 1), (ex_ - ew_s - 0.5, eye_y + 1)]),
+                               warna(p.get("kulit"), PUTIH))
+                        c.poly(HH(_ellpts(ex_, eye_y + 2, ew_s, eh_s, 20)), None, 3.8 * s, OUT)
+                        c.line(HH([(ex_ - ew_s - 2, eye_y + 1), (ex_ + ew_s + 2, eye_y + 1)]), OUT, 4.0 * s)
                 else:
                     sc = 1.3 if eyes == "wide" else 1.0
                     hh = eh * sc * (1 - 0.9 * blink)
@@ -689,16 +817,18 @@ class Tokoh:
                 c.line(HH([(gx, eye_y - 4), (gx + sg * 12 * fs, eye_y - 8)]), OUT, 4.2 * s)
         elif p.get("kacamata") == "bulat":
             for ex_ in ec:
-                c.poly(HH(_ellpts(ex_ + fx0, eye_y + 2, r_bulat, r_bulat, 26)), None, 3.4 * s, OUT)
+                c.poly(HH(_ellpts(ex_ + fx0, eye_y + 2, r_bulat, r_bulat, 26)), None, 4.4 * s, OUT)
             c.curve(HH([(ec[0] + fx0 + r_bulat, eye_y + 1), (fx0, eye_y - 3),
-                        (ec[1] + fx0 - r_bulat, eye_y + 1)]), OUT, 3.2 * s, n=6)
+                        (ec[1] + fx0 - r_bulat, eye_y + 1)]), OUT, 4.2 * s, n=6)
             for sg in (-1, 1):
                 gx = ec[0 if sg < 0 else 1] + fx0 + sg * r_bulat
-                c.line(HH([(gx, eye_y - 1), (gx + sg * 11 * fs, eye_y - 5)]), OUT, 3.0 * s)
+                tx = sg * (face_rx - 1) if p.get("telinga") else (gx + sg * 11 * fs)
+                ty = 2 if p.get("telinga") else (eye_y - 5)
+                c.line(HH([(gx, eye_y - 1), (tx, ty)]), OUT, 4.0 * s)
         elif p.get("kacamata"):
             for ex_ in ec:
-                c.poly(HH(_ellpts(ex_ + fx0, eye_y, 30, 30, 22)), (255, 255, 255, 70), ow * .9, OUT)
-            c.line(HH([(ec[0] + 30 + fx0, eye_y - 4), (ec[1] - 30 + fx0, eye_y - 4)]), OUT, 4 * s)
+                c.poly(HH(_ellpts(ex_ + fx0, eye_y, 30, 30, 22)), (255, 255, 255, 70), ow * .95, OUT)
+            c.line(HH([(ec[0] + 30 + fx0, eye_y - 4), (ec[1] - 30 + fx0, eye_y - 4)]), OUT, 4.6 * s)
 
         # alis
         br = ex.get("brow")
@@ -717,7 +847,7 @@ class Tokoh:
                 sg = -1 if i == 0 else 1
                 by = eye_y - 34
                 c.line(HH([(bx + fx0 + sg * 14, by), (bx + fx0 - sg * 14, by + 2)]), OUT, 5.2 * s)
-        elif chibi_eye:
+        elif chibi_eye or p.get("mata_sclera"):
             # alis melengkung lembut di atas kacamata bulat
             for i, bx in enumerate(ec):
                 sg = -1 if i == 0 else 1
@@ -791,24 +921,24 @@ class Tokoh:
                 a = 196 + (344 - 196) * i / 14
                 rr = HEAD_R * (0.74 + 0.08 * math.sin(i * 1.7))
                 inner.append((math.cos(math.radians(a)) * rr * 1.0, math.sin(math.radians(a)) * rr * 1.0 + 6))
-            c.poly(HH(outer + inner), hc, ow * .8, OUT)
+            c.poly(HH(outer + inner), hc, ow * .9, OUT)
         elif r == "keriting":
             for i, a in enumerate(range(200, 345, 18)):
                 rr = HEAD_R * 0.8
-                c.ell(*H(math.cos(math.radians(a)) * rr, math.sin(math.radians(a)) * rr + 4), 26 * s, 26 * s, hc, ow * .8, OUT)
+                c.ell(*H(math.cos(math.radians(a)) * rr, math.sin(math.radians(a)) * rr + 4), 26 * s, 26 * s, hc, ow * .9, OUT)
         elif r in ("rapi", "uban"):
             top = arc_pts(0, 0, HEAD_R + 5, HEAD_R + 5, 188, 352, 20)
             fringe = [(70, -50), (40, -62), (10, -48), (-18, -60), (-48, -46), (-72, -52)]
-            c.poly(HH(top + fringe), hc, ow * .8, OUT)
+            c.poly(HH(top + fringe), hc, ow * .9, OUT)
         elif r == "bob":
             top = arc_pts(0, 0, HEAD_R + 6, HEAD_R + 6, 176, 364, 22)
             fr = [(88, 4), (80, -48), (40, -58), (0, -48), (-40, -58), (-80, -48), (-88, 4)]
-            c.poly(HH(top + fr), hc, ow * .8, OUT)
+            c.poly(HH(top + fr), hc, ow * .9, OUT)
         elif r == "kuncir":
             top = arc_pts(0, 0, HEAD_R + 4, HEAD_R + 4, 190, 350, 18)
             fr = [(74, -46), (44, -64), (14, -50), (-14, -66), (-48, -50), (-76, -50)]
-            c.poly(HH(top + fr), hc, ow * .8, OUT)
-            c.ell(*H(0, -HEAD_R - 22), 24 * s, 24 * s, hc, ow * .8, OUT)
+            c.poly(HH(top + fr), hc, ow * .9, OUT)
+            c.ell(*H(0, -HEAD_R - 22), 24 * s, 24 * s, hc, ow * .9, OUT)
 
     def _mouth(self, c, st, ex, HH, s, ow, fs, fx0, fy0):
         kind = ex.get("mouth", "open")

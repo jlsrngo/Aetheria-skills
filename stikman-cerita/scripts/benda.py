@@ -5,8 +5,13 @@ benda.py - benda genggam, properti bebas, dan ikon komik (tanda seru, zzz, bohla
 gambar(c, jenis, x, y, s=1, rot=0, t=0, **opsi)
   (x, y) = titik pegang / pusat benda di koordinat dunia, rot = derajat searah jarum jam.
 """
-import math
+import math, os, sys
 from stik import *
+
+_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+from aset_global import draw_engineering_2d  # noqa: E402
 
 OW = 4.0
 
@@ -344,6 +349,8 @@ IKON = {"tanda_seru": tanda_seru, "seru": tanda_seru, "tanya": tanya, "hati": ha
 
 
 def gambar(c, jenis, x, y, s=1.0, rot=0.0, t=0.0, **opsi):
+    if draw_engineering_2d(c, jenis, x, y, s=s, rot=rot, t=t, **opsi):
+        return True
     fn = BENDA.get(jenis) or IKON.get(jenis)
     if fn is None:
         return False
