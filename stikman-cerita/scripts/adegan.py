@@ -204,11 +204,20 @@ class Aktor:
             for kk in ("sit", "lean", "tilt"):
                 base[kk] = lerp(old[kk], base[kk], q)
         hadap = d.get("hadap", "depan")
-        flip = -1 if hadap == "kiri" else 1
-        look = (0.8 * (1 if hadap == "kanan" else -1 if hadap == "kiri" else 0), 0.0)
+        hadap_s = str(hadap).lower() if hadap is not None else "depan"
+        flip = -1 if hadap_s in ("kiri", "miring_kiri", "3/4_kiri", "samping_kiri", "side_kiri") else 1
+        if hadap_s in ("kanan", "kiri", "miring", "miring_kanan", "miring_kiri", "3/4", "3/4_kanan", "3/4_kiri", "tiga_perempat"):
+            hadap_mode = "miring"
+        elif hadap_s in ("samping", "samping_kanan", "samping_kiri", "side", "side_kanan", "side_kiri"):
+            hadap_mode = "samping"
+        else:
+            hadap_mode = "depan"
+        look = (0.35 if hadap_mode == "miring" else 0.0, 0.0)
         if "lihat" in d and d["lihat"] is not None:
             look = tuple(d["lihat"])
         walking = gaya in ("jalan", "lari") and mv is not None
+        if walking and hadap_s in ("kanan", "kiri", "miring", "miring_kanan", "miring_kiri"):
+            hadap_mode = "samping"
         hop = 0.0
         squash = (1.0, 1.0)
         phase, amp = 0.0, 0.0
@@ -257,7 +266,16 @@ class Aktor:
         talk = None
         if level is not None and (self.talk_level(t)):
             talk = clamp(level)
-        st = dict(x=x, y=y, s=self.s * d.get("skala", 1.0), flip=flip, expr=d.get("ekspresi", "senang"), look=look, blink=blink,
+            # micro-gesture natural saat berbicara agar karakter tidak mematung kaku
+            if not walking and pose_name in ("diam", "santai"):
+                g_w = math.sin(t * 4.2 + self.seed) * 0.5 + 0.5
+                base["tilt"] = base.get("tilt", 0.0) + math.sin(t * 3.1 + self.seed) * 2.4 * (0.4 + 0.6 * talk)
+                base["lean"] = base.get("lean", 0.0) + math.sin(t * 1.8 + self.seed) * 1.2
+                if g_w > 0.35:
+                    r_a, r_e, r_h = base["arms"]["R"]
+                    lift_t = (g_w - 0.35) * 22.0 * (0.3 + 0.7 * talk)
+                    base["arms"]["R"] = (r_a + lift_t, r_e - lift_t * 1.4, r_h)
+        st = dict(x=x, y=y, s=self.s * d.get("skala", 1.0), flip=flip, hadap=hadap_mode, expr=d.get("ekspresi", "senang"), look=look, blink=blink,
                   phase=phase, amp=amp, hop=hop, squash=squash, talk=talk,
                   ransel=d.get("ransel"), tali_ransel=d.get("ransel"), bawa=d.get("bawa"))
         st.update(base)
