@@ -154,7 +154,13 @@ class Film:
             nxt = self.scenes[i + 1]
             if tr["dur"] > 0 and T >= nxt.start - tr["dur"] / 2:
                 p = clamp((T - (nxt.start - tr["dur"] / 2)) / tr["dur"])
-                return blend(self.scenes[i].render(T - self.scenes[i].start, finish=finish), nxt.render(T - nxt.start, finish=finish), p, tr)
+                return blend(self.scenes[i].render(T - self.scenes[i].start, finish=finish), nxt.render(max(0.0, T - nxt.start), finish=finish), p, tr)
+        if i > 0:
+            tr = self.trans_of(i)
+            prev = self.scenes[i - 1]
+            if tr["dur"] > 0 and T < self.scenes[i].start + tr["dur"] / 2:
+                p = clamp((T - (self.scenes[i].start - tr["dur"] / 2)) / tr["dur"])
+                return blend(prev.render(min(prev.dur, T - prev.start), finish=finish), self.scenes[i].render(T - self.scenes[i].start, finish=finish), p, tr)
         return self.scenes[i].render(T - self.scenes[i].start, finish=finish)
 
     def frame(self, f, finish=True):

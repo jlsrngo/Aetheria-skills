@@ -222,6 +222,14 @@ def cli_render(skill_name, argv=None):
                 A = render_scene_frame(proj, ad_cur, T - s0, W, H, skill_name, aa=aa_val)
                 B = render_scene_frame(proj, ad_nxt, max(0.0, T - nxt_s0), W, H, skill_name, aa=aa_val)
                 im = blend_transisi(A, B, p, tr)
+        if im is None and si > 0:
+            prev_s0, prev_s1, ad_prev = spans[si - 1]
+            tr = norm_transisi(ad_cur.get("transisi", "potong"))
+            if tr["dur"] > 0 and T < s0 + tr["dur"] * 0.5:
+                p = max(0.0, min(1.0, (T - (s0 - tr["dur"] * 0.5)) / tr["dur"]))
+                A = render_scene_frame(proj, ad_prev, min(prev_s1 - prev_s0, T - prev_s0), W, H, skill_name, aa=aa_val)
+                B = render_scene_frame(proj, ad_cur, T - s0, W, H, skill_name, aa=aa_val)
+                im = blend_transisi(A, B, p, tr)
         if im is None:
             im = render_scene_frame(proj, ad_cur, T - s0, W, H, skill_name, aa=aa_val)
         proc.stdin.write(im.tobytes())
