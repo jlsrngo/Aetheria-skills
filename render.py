@@ -28,6 +28,10 @@ ENGINES = {
     "stikman-cerita": os.path.join(REPO_ROOT, "stikman-cerita", "scripts"),
     "paperworld": os.path.join(REPO_ROOT, "paperworld", "scripts"),
     "voxelverse": os.path.join(REPO_ROOT, "voxelverse", "scripts"),
+    "3D-stickman": os.path.join(REPO_ROOT, "3D-stickman", "scripts"),
+    "strata3d": os.path.join(REPO_ROOT, "strata3d", "scripts"),
+    "hydro3d": os.path.join(REPO_ROOT, "hydro3d", "scripts"),
+    "mechlab3d": os.path.join(REPO_ROOT, "mechlab3d", "scripts"),
 }
 
 ENGINE_ALIASES = {
@@ -44,6 +48,21 @@ ENGINE_ALIASES = {
     "voxel": "voxelverse",
     "vv": "voxelverse",
     "3d": "voxelverse",
+    "3d-stickman": "3D-stickman",
+    "3dstickman": "3D-stickman",
+    "stickman-3d": "3D-stickman",
+    "stikman-3d": "3D-stickman",
+    "3ds": "3D-stickman",
+    "strata3d": "strata3d",
+    "strata": "strata3d",
+    "tanah": "strata3d",
+    "hydro3d": "hydro3d",
+    "hydro": "hydro3d",
+    "air": "hydro3d",
+    "mechlab3d": "mechlab3d",
+    "mechlab": "mechlab3d",
+    "mesin": "mechlab3d",
+    "crv": "mechlab3d",
 }
 
 PAPER_LATAR = {
@@ -52,6 +71,7 @@ PAPER_LATAR = {
     "meja", "kota", "kamar_pintu", "panggung", "labirin", "lipat",
 }
 VOXEL_LATAR = {"studio_kode", "kota_hujan", "atap_kota", "halte"}
+STICK3D_LATAR = {"kamar_belajar", "ruang_kerja", "warung", "hanggar", "gedung_sidang", "kampus", "bank_kas", "jalan_kota", "halte_bus"}
 STIKMAN_LATAR = {"ruang_otak", "dalam_tubuh", "ruang_tamu", "jalan", "kantin", "lapangan", "rumah", "meja_makan"}
 
 
@@ -62,7 +82,7 @@ def resolve_engine_name(raw):
 
 
 def detect_engine(projdir, explicit=None):
-    """Deteksi otomatis mesin skill (paperworld / voxelverse / stikman-cerita) dari proyek.json."""
+    """Deteksi otomatis mesin skill (3D-stickman / paperworld / voxelverse / stikman-cerita) dari proyek.json."""
     eng = resolve_engine_name(explicit)
     if eng:
         return eng
@@ -81,6 +101,8 @@ def detect_engine(projdir, explicit=None):
 
     if str(proj.get("gaya_subtitle", "")).lower() == "kertas" or str(proj.get("mood_musik", "")).lower() == "kertas":
         return "paperworld"
+    if str(proj.get("gaya_subtitle", "")).lower() == "kata":
+        return "3D-stickman"
 
     tokoh_keys = {str(k).lower() for k in (proj.get("tokoh") or {}).keys()}
     tokoh_vals = set()
@@ -107,6 +129,8 @@ def detect_engine(projdir, explicit=None):
 
     if latars & PAPER_LATAR or "luna" in all_chars:
         return "paperworld"
+    if latars & STICK3D_LATAR or (all_chars & {"habibie", "presiden"}):
+        return "3D-stickman"
     if latars & VOXEL_LATAR or has_voxel_feat or (all_chars & {"arka", "robo"}):
         return "voxelverse"
     if latars & STIKMAN_LATAR:
@@ -167,7 +191,7 @@ def _engine_script(engine, name):
 def cmd_baru(args, extra):
     engine = resolve_engine_name(args.gaya)
     if not engine:
-        raise SystemExit(f"[ERROR] Gaya tidak dikenal: '{args.gaya}'. Pilih: paperworld | stikman-cerita | voxelverse")
+        raise SystemExit(f"[ERROR] Gaya tidak dikenal: '{args.gaya}'. Pilih: paperworld | stikman-cerita | voxelverse | 3D-stickman")
     projdir = os.path.abspath(args.proyek)
     script = _engine_script(engine, "proyek_baru.py")
     _run([sys.executable, script, projdir] + extra)
@@ -239,12 +263,42 @@ def cmd_audio(args, extra):
 def cmd_galeri(args, extra):
     engine = resolve_engine_name(args.gaya)
     if not engine:
-        raise SystemExit(f"[ERROR] Gaya tidak dikenal: '{args.gaya}'. Pilih: paperworld | stikman-cerita | voxelverse")
+        raise SystemExit(f"[ERROR] Gaya tidak dikenal: '{args.gaya}'. Pilih: paperworld | stikman-cerita | voxelverse | 3D-stickman")
     g_script = _engine_script(engine, "galeri.py")
     cmd = [sys.executable, g_script]
     if args.output:
         cmd.append(os.path.abspath(args.output))
     _run(cmd + extra)
+
+
+def cmd_bedah(args, extra):
+    script = os.path.join(REPO_ROOT, "bedah-referensi", "scripts", "bedah.py")
+    if not os.path.exists(script):
+        raise SystemExit(f"[ERROR] Script bedah.py tidak ditemukan: {script}")
+    cmd = [sys.executable, script, "ringkas", os.path.abspath(args.video)]
+    if args.out_dir:
+        cmd.append(os.path.abspath(args.out_dir))
+    if args.fps is not None:
+        cmd += ["--fps", str(args.fps)]
+    if args.cols is not None:
+        cmd += ["--cols", str(args.cols)]
+    if args.rows is not None:
+        cmd += ["--rows", str(args.rows)]
+    _run(cmd + extra)
+
+
+def cmd_rapikan_vo(args, _extra):
+    import tools_global as TG
+    TG.rapikan_vo(os.path.abspath(args.input), os.path.abspath(args.output),
+                  target_s=args.target, max_pause=args.max_jeda, env=_build_env())
+
+
+def cmd_periksa(args, _extra):
+    import tools_global as TG
+    projdir = os.path.abspath(args.proyek)
+    engine = detect_engine(projdir, args.gaya)
+    vid = os.path.abspath(args.video) if args.video else None
+    TG.periksa_proyek(projdir, engine, video_path=vid, env=_build_env())
 
 
 def cmd_cek(_args, _extra):
@@ -264,12 +318,17 @@ def cmd_cek(_args, _extra):
     for name, sdir in ENGINES.items():
         skill_md = os.path.join(os.path.dirname(sdir), "SKILL.md")
         ok = os.path.exists(skill_md) and os.path.exists(os.path.join(sdir, "render.py"))
-        print(f"  - /{name:15s} : {'SIAP' if ok else 'TIDAK LENGKAP'}")
+        print(f"  - /{name:25s} : {'SIAP (pure-Python)' if ok else 'TIDAK LENGKAP'}")
+    for extra_sk, note in (
+        ("bedah-referensi", "SIAP (lokal pure-Python + ffmpeg)"),
+    ):
+        ok = os.path.exists(os.path.join(REPO_ROOT, extra_sk, "SKILL.md"))
+        print(f"  - /{extra_sk:25s} : {note if ok else 'TIDAK DITEMUKAN'}")
 
 
 def main(argv=None):
     raw = list(sys.argv[1:] if argv is None else argv)
-    known = {"baru", "qc", "render", "audio", "galeri", "cek", "-h", "--help"}
+    known = {"baru", "qc", "render", "audio", "galeri", "bedah", "rapikan-vo", "periksa", "cek", "-h", "--help"}
     # Shorthand: `python render.py <folder-proyek> [--stills auto] [--draft]`
     if raw and raw[0] not in known and not raw[0].startswith("-"):
         if "--stills" in raw or "--strip" in raw:
@@ -279,13 +338,13 @@ def main(argv=None):
 
     ap = argparse.ArgumentParser(
         prog="python render.py",
-        description="Renderer Global Aetheria (stikman-cerita · paperworld · voxelverse)",
+        description="Renderer Global Aetheria (stikman-cerita · paperworld · voxelverse · 3D-stickman · bedah-referensi)",
     )
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p_baru = sub.add_parser("baru", help="Buat folder proyek baru untuk gaya tertentu")
     p_baru.add_argument("proyek", help="Nama/path folder proyek baru")
-    p_baru.add_argument("--gaya", "--mesin", dest="gaya", required=True, help="paperworld | stikman-cerita | voxelverse")
+    p_baru.add_argument("--gaya", "--mesin", dest="gaya", required=True, help="paperworld | stikman-cerita | voxelverse | 3D-stickman")
     p_baru.set_defaults(func=cmd_baru)
 
     p_qc = sub.add_parser("qc", help="Render stills/strip QC (deteksi mesin otomatis)")
@@ -314,11 +373,32 @@ def main(argv=None):
     p_aud.set_defaults(func=cmd_audio)
 
     p_gal = sub.add_parser("galeri", help="Render galeri karakter untuk gaya tertentu")
-    p_gal.add_argument("gaya", help="paperworld | stikman-cerita | voxelverse")
+    p_gal.add_argument("gaya", help="paperworld | stikman-cerita | voxelverse | 3D-stickman")
     p_gal.add_argument("output", nargs="?", default=None, help="Path file PNG keluaran (opsional)")
     p_gal.set_defaults(func=cmd_galeri)
 
-    p_cek = sub.add_parser("cek", help="Periksa Python, NumPy, Pillow, ffmpeg, dan status skill")
+    p_bed = sub.add_parser("bedah", help="Bedah video referensi (probe + sheets + motion + audio)")
+    p_bed.add_argument("video", help="Path video referensi (mp4/mov/mkv)")
+    p_bed.add_argument("out_dir", nargs="?", default=None, help="Folder keluaran contact sheet & laporan.json")
+    p_bed.add_argument("--fps", type=float, default=1.0, help="FPS contact sheet (default 1.0)")
+    p_bed.add_argument("--cols", type=int, default=5, help="Jumlah kolom contact sheet")
+    p_bed.add_argument("--rows", type=int, default=4, help="Jumlah baris contact sheet")
+    p_bed.set_defaults(func=cmd_bedah)
+
+    p_vo = sub.add_parser("rapikan-vo", help="Rapikan jeda VO + tempo + normalisasi -14 LUFS")
+    p_vo.add_argument("input", help="File VO mentah (mp3/wav/m4a)")
+    p_vo.add_argument("output", help="File WAV hasil olahan")
+    p_vo.add_argument("--target", type=float, default=None, help="Target durasi detik (tempo maks 1.10x)")
+    p_vo.add_argument("--max-jeda", type=float, default=0.30, help="Batas jeda terpanjang setelah kompresi (detik)")
+    p_vo.set_defaults(func=cmd_rapikan_vo)
+
+    p_qa = sub.add_parser("periksa", help="Pre-render QA proyek.json + cek video MP4 final")
+    p_qa.add_argument("proyek", help="Folder proyek berisi proyek.json")
+    p_qa.add_argument("--video", default=None, help="Path MP4 spesifik untuk dicek (opsional)")
+    p_qa.add_argument("--gaya", "--mesin", dest="gaya", default=None, help="Paksa mesin tertentu (opsional)")
+    p_qa.set_defaults(func=cmd_periksa)
+
+    p_cek = sub.add_parser("cek", help="Periksa Python, NumPy, Pillow, ffmpeg, dan status semua skill")
     p_cek.set_defaults(func=cmd_cek)
 
     args, extra = ap.parse_known_args(raw)
