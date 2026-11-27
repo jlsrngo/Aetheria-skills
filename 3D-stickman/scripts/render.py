@@ -22,9 +22,9 @@ _OUT_H = None
 CHUNK = 90
 
 
-def _init(projdir, rw, rh, ow, oh):
+def _init(projdir, rw, rh, ow, oh, ss=1.5):
     global _FILM, _OUT_W, _OUT_H
-    _FILM = Film(projdir, ukuran=(rw, rh))
+    _FILM = Film(projdir, ss=ss, ukuran=(rw, rh))
     _OUT_W, _OUT_H = ow, oh
 
 
@@ -82,9 +82,12 @@ def main():
     os.makedirs(out, exist_ok=True)
     proj = json.load(open(os.path.join(projdir, "proyek.json"), encoding="utf-8"))
     ow, oh = [int(v) for v in proj.get("ukuran", [1080, 1920])]
-    rw, rh = (int(ow * 0.65) // 2 * 2, int(oh * 0.65) // 2 * 2) if a.draft else (ow, oh)
+    if a.draft:
+        rw, rh, aa_ss = int(ow * 0.45) // 2 * 2, int(oh * 0.45) // 2 * 2, 1.0
+    else:
+        rw, rh, aa_ss = ow, oh, 1.5
 
-    F = Film(projdir, ukuran=(rw, rh))
+    F = Film(projdir, ss=aa_ss, ukuran=(rw, rh))
     for w in F.warnings:
         print("[PERIKSA]", w)
 
@@ -139,7 +142,7 @@ def main():
     print(f"render {F.N} frame ({F.total:.1f} dtk) {ow}x{oh}@{F.fps} | sisa {len(todo)}/{len(jobs)} potongan | {a.jobs} proses", flush=True)
     if todo:
         ctx = get_context("spawn")
-        pool = ctx.Pool(min(a.jobs, len(todo)), initializer=_init, initargs=(projdir, rw, rh, ow, oh))
+        pool = ctx.Pool(min(a.jobs, len(todo)), initializer=_init, initargs=(projdir, rw, rh, ow, oh, aa_ss))
         it = pool.imap_unordered(_chunk, todo)
         done = 0
         try:

@@ -47,6 +47,31 @@ def norm(s):
     return re.sub(r"[^\w\s]", "", (s or "").lower().replace("-", " ")).split()
 
 
+_HADAP_DEG = {
+    "depan": 0.0, "serong_kanan": 24.0, "serong_kiri": -24.0,
+    "kanan": 78.0, "kiri": -78.0, "belakang": 180.0,
+}
+_WALK_STYLES = ("jalan", "jalan_santai", "mengendap", "lari", "mundur")
+_WALK_FREQ = {
+    "lari": 9.8,
+    "jalan": 6.8,
+    "jalan_santai": 5.2,
+    "mengendap": 4.4,
+    "mundur": 5.6,
+}
+
+
+def _hadap_to_deg(v):
+    if isinstance(v, (int, float)):
+        return float(v)
+    return _HADAP_DEG.get(str(v), 0.0)
+
+
+def _lerp_angle_deg(a0, a1, u):
+    d = ((a1 - a0 + 180.0) % 360.0) - 180.0
+    return a0 + d * u
+
+
 class Aktor:
     def __init__(self, sc, spec, cast):
         self.sc = sc
@@ -69,20 +94,31 @@ class Aktor:
             self.x0 = float(spec.get("x", 0.0))
             self.y0 = float(spec.get("y", 0.0))
             self.z0 = float(spec.get("z", 0.0))
-        self.seed = (hash(self.id) % 97) / 10.0
+        self.seed = (sum(ord(ch) * (i + 1) for i, ch in enumerate(self.id)) % 97) / 10.0
 
-        base_state = {k: spec[k] for k in ("pose", "ekspresi", "hadap", "bawa", "bicara", "lihat") if k in spec}
+        base_state = {k: spec[k] for k in ("pose", "ekspresi", "hadap", "bawa", "buku_kiri", "buku_kanan", "buku_isi", "bicara", "lihat", "gerak") if k in spec}
         base_state.setdefault("pose", "diam")
         base_state.setdefault("ekspresi", "senang")
         base_state.setdefault("hadap", "depan")
+        base_state.setdefault("gerak", "aktif")
         base_state["t"] = 0.0
         self.keys = [base_state]
         self.moves = []
         self.icons = []
         self.t_in = None
         self.t_out = None
+        self.patrol = spec.get("mondar_mandir")
 
         acts = [(sc.when(a), a) for a in spec.get("aksi", [])]
+        # Dukungan multi-waypoint "jalur": [{"ke_pos": [...], "durasi": 2.0, "gaya": "jalan", "jeda": 0.4}, ...]
+        jalur = spec.get("jalur")
+        if isinstance(jalur, list) and jalur:
+            t_cur = float(spec.get("jalur_mulai", 0.0))
+            for wp in jalur:
+                t_wp = sc.when(wp) if ("t" in wp or "kata" in wp) else t_cur
+                acts.append((t_wp, wp))
+                t_cur = t_wp + float(wp.get("durasi", 1.4)) + float(wp.get("jeda", 0.25))
+
         mk = spec.get("masuk")
         if mk:
             t0 = sc.when(mk)
@@ -96,8 +132,8 @@ class Aktor:
                 dz = -jarak if dr == "belakang" else jarak if dr == "depan" else 0.0
                 self.moves.append(dict(t0=t0, t1=t0 + dur, p0=(self.x0 + dx, self.y0, self.z0 + dz), p1=(self.x0, self.y0, self.z0), gaya=gaya))
                 h_in = "kanan" if dr == "kiri" else "kiri" if dr == "kanan" else "depan" if dr == "belakang" else "belakang"
-                self.keys.append(dict(t=t0, hadap=h_in))
-                self.keys.append(dict(t=t0 + dur, hadap=mk.get("hadap_akhir", base_state["hadap"])))
+                self.keys.append(dict(t=t0, hadap=h_in, durasi_putar=0.05))
+                self.keys.append(dict(t=t0 + dur, hadap=mk.get("hadap_akhir", base_state["hadap"]), durasi_putar=float(mk.get("durasi_putar", 0.45))))
         xk = spec.get("keluar")
         if xk:
             t0 = sc.when(xk)
@@ -112,7 +148,7 @@ class Aktor:
         acts.sort(key=lambda z: z[0])
         cur = (self.x0, self.y0, self.z0)
         for t, a in acts:
-            st = {k: a[k] for k in ("pose", "ekspresi", "hadap", "bawa", "bicara", "lihat", "skala") if k in a}
+            st = {k: a[k] for k in ("pose", "ekspresi", "hadap", "durasi_putar", "durasi_pose", "bawa", "buku_kiri", "buku_kanan", "buku_isi", "bicara", "lihat", "skala", "gerak") if k in a}
             if st:
                 st["t"] = t
                 self.keys.append(st)
@@ -125,14 +161,16 @@ class Aktor:
                     ty = float(a.get("ke_y", p0[1]))
                     tz = float(a.get("ke_z", p0[2]))
                 dist = math.dist(p0, (tx, ty, tz))
-                dur = float(a.get("durasi", max(0.5, dist / 1.4)))
-                gaya = a.get("gaya", "jalan" if dist > 0.2 else "geser")
+                dur = float(a.get("durasi", max(0.5, dist / 1.15)))
+                gaya = a.get("gaya", "jalan" if dist > 0.18 else "geser")
                 self.moves.append(dict(t0=t, t1=t + dur, p0=p0, p1=(tx, ty, tz), gaya=gaya))
-                if dist > 0.2 and "hadap" not in a and gaya in ("jalan", "lari", "lompat"):
+                if dist > 0.18 and "hadap" not in a and gaya in ("jalan", "jalan_santai", "mengendap", "lari", "lompat"):
                     dx, dz = tx - p0[0], tz - p0[2]
-                    self.keys.append(dict(t=t, hadap=math.degrees(math.atan2(dx, dz))))
-                    if a.get("hadap_akhir"):
-                        self.keys.append(dict(t=t + dur, hadap=a["hadap_akhir"]))
+                    self.keys.append(dict(t=t, hadap=math.degrees(math.atan2(dx, dz)), durasi_putar=float(a.get("durasi_putar", 0.35))))
+                    if a.get("hadap_akhir") is not None:
+                        self.keys.append(dict(t=t + dur, hadap=a["hadap_akhir"], durasi_putar=float(a.get("durasi_putar", 0.45))))
+                elif a.get("hadap_akhir") is not None:
+                    self.keys.append(dict(t=t + dur, hadap=a["hadap_akhir"], durasi_putar=float(a.get("durasi_putar", 0.45))))
                 cur = (tx, ty, tz)
             if "efek" in a:
                 self.icons.append((t, t + float(a.get("efek_dur", 1.8)), a["efek"]))
@@ -143,55 +181,116 @@ class Aktor:
         p = (self.x0, self.y0, self.z0)
         moving = False
         gaya = "diam"
+        move_q = 1.0
+        patrol_yaw = None
         for m in self.moves:
             if t < m["t0"]:
                 break
             if t <= m["t1"]:
                 q = prog(t, m["t0"], m["t1"])
-                e = e_io(q) if m["gaya"] in ("geser", "lompat") else q
+                e = e_io(q) if m["gaya"] in ("geser", "lompat", "mundur") else (0.12 * e_io(q) + 0.88 * q)
                 p = lerp3(m["p0"], m["p1"], e)
                 if m["gaya"] == "lompat":
                     p = (p[0], p[1] + math.sin(math.pi * q) * 0.42, p[2])
-                moving = m["gaya"] in ("jalan", "lari")
+                moving = m["gaya"] in _WALK_STYLES
                 gaya = m["gaya"]
+                move_q = q
                 break
             p = m["p1"]
-        return p, moving, gaya
+
+        # Mondar-mandir kontinu jika diaktifkan dan tidak sedang menjalankan move eksplisit
+        if not moving and isinstance(self.patrol, dict):
+            jarak = float(self.patrol.get("jarak", 0.65))
+            siklus = max(1.2, float(self.patrol.get("siklus", 4.6)))
+            sumbu = str(self.patrol.get("sumbu", "x")).lower()
+            g_pat = self.patrol.get("gaya", "jalan_santai")
+            u = ((t + self.seed * 0.25) % siklus) / siklus
+            if u < 0.5:
+                f = e_io(u * 2.0)
+                off = lerp(-jarak, +jarak, f)
+                vel = math.sin(math.pi * (u * 2.0))
+                patrol_yaw = 78.0 if sumbu == "x" else 0.0
+            else:
+                f = e_io((u - 0.5) * 2.0)
+                off = lerp(+jarak, -jarak, f)
+                vel = math.sin(math.pi * ((u - 0.5) * 2.0))
+                patrol_yaw = -78.0 if sumbu == "x" else 180.0
+            p = (p[0] + off, p[1], p[2]) if sumbu == "x" else (p[0], p[1], p[2] + off)
+            if vel > 0.14:
+                moving = True
+                gaya = g_pat
+                move_q = 0.5
+        return p, moving, gaya, move_q, patrol_yaw
 
     def state_at(self, t, level):
         cur = dict(self.keys[0])
         prev_pose = cur.get("pose", "diam")
         pose_t = 0.0
+        pose_dur = 0.36
+        prev_yaw = _hadap_to_deg(cur.get("hadap", "depan"))
+        cur_yaw = prev_yaw
+        yaw_t = -1.0
+        yaw_dur = 0.48
         for k in self.keys[1:]:
             if k["t"] <= t:
                 if "pose" in k and k["pose"] != cur.get("pose"):
                     prev_pose = cur.get("pose", "diam")
                     pose_t = k["t"]
+                    pose_dur = max(0.08, float(k.get("durasi_pose", 0.36)))
+                if "hadap" in k:
+                    ny = _hadap_to_deg(k["hadap"])
+                    if abs(((ny - cur_yaw + 180.0) % 360.0) - 180.0) > 1.0:
+                        prev_yaw = cur_yaw
+                        cur_yaw = ny
+                        yaw_t = k["t"]
+                        yaw_dur = max(0.05, float(k.get("durasi_putar", 0.48)))
                 cur.update(k)
-        pos, moving, gaya = self.pos_at(t)
+
+        pos, moving, gaya, move_q, patrol_yaw = self.pos_at(t)
+        if yaw_t >= 0.0 and t < yaw_t + yaw_dur:
+            yu = e_io(prog(t, yaw_t, yaw_t + yaw_dur))
+            hadap_deg = _lerp_angle_deg(prev_yaw, cur_yaw, yu)
+        else:
+            hadap_deg = cur_yaw
+        if patrol_yaw is not None:
+            hadap_deg = patrol_yaw
+
         pose = cur.get("pose", "diam")
-        mix = prog(t, pose_t, pose_t + 0.26) if pose_t > 0 else 1.0
+        mix = prog(t, pose_t, pose_t + pose_dur) if pose_t > 0 else 1.0
         if moving:
-            pose, prev_pose, mix = gaya, gaya, 1.0
+            # Transisi masuk/keluar jalan halus di 12% awal dan akhir langkah
+            edge_mix = min(1.0, move_q / 0.12, (1.0 - move_q) / 0.12) if 0.0 < move_q < 1.0 else 1.0
+            if edge_mix < 0.99:
+                prev_pose, pose, mix = pose, gaya, edge_mix
+            else:
+                pose, prev_pose, mix = gaya, gaya, 1.0
+
         blink = 1.0 if ((t + self.seed) % 3.1) < 0.12 else 0.0
         bicara = cur.get("bicara", False)
         if isinstance(bicara, list):
             bicara = any(a <= t <= b for a, b in bicara)
         open_amt = level if bicara else 0.0
+        walk_freq = _WALK_FREQ.get(gaya if moving else pose, 6.4)
         st = TK.state(
             pose=prev_pose if mix < 1.0 else pose,
             pose2=pose if mix < 1.0 else None,
             mix=e_io(mix) if mix < 1.0 else 0.0,
             expr=cur.get("ekspresi", "senang"),
-            hadap=cur.get("hadap", "depan"),
+            hadap=hadap_deg,
             lihat=tuple(cur.get("lihat", (0.0, 0.0))),
             blink=blink,
             open_amt=open_amt,
+            bicara=bool(bicara),
             bawa=cur.get("bawa"),
             t=t,
-            amp=1.0 if moving else 0.0,
-            phase=t * (9.5 if gaya == "lari" else 6.8),
+            seed=self.seed,
+            gerak=cur.get("gerak", "aktif"),
+            amp=1.0 if moving else (0.78 if pose in _WALK_STYLES else 0.0),
+            phase=(t + self.seed * 0.3) * walk_freq,
         )
+        for bk in ("buku_kiri", "buku_kanan", "buku_isi"):
+            if bk in cur:
+                st[bk] = cur[bk]
         return pos, st, float(cur.get("skala", self.s))
 
     def draw(self, sc, t, level):
@@ -551,7 +650,7 @@ class Adegan:
         for ak in self.actors:
             ak.draw(sc, t, level)
         cam = self.cam_at(t)
-        img = sc.render(cam, self.W, self.H, t=t)
+        img = sc.render(cam, self.W, self.H, t=t, aa=float(getattr(self.film, "ss", 1.5)))
         return self._draw_2d_overlays(img, cam, t)
 
     def events(self):

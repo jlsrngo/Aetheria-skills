@@ -30,9 +30,22 @@
 
 Alias yang didukung: `senyum`, `kecewa`, `bingung`, `skeptis`, `ketawa`, `heran`, `kesal`, `takut`, `takjub`, `serius`, `nangis`, `jatuh_cinta`, `mabuk`, `iseng`, `euforia`, `heboh`, `menang`, `mengamuk`, `geram`, `hampa`, `gemetar`, `stres`, `depresi`, `down`, `malas`, `bete`, `puas`, `nangis_diam`, `sedih_berat`.
 
-## Pose 3D Stickman
+## Pose & Siklus Gerak 3D Stickman (55+ Pose)
 
-`diam`, `santai`, `lambai`, `lambai2`, `tunjuk`, `tunjuk_kiri`, `tunjuk_atas`, `ide`, `pinggang`, `jempol`, `silang`, `sorak`, `peregangan`, `garuk`, `mikir`, `dagu`, `kaget`, `sedih`, `marah`, `kepal`, `menyerahkan`, `angkat_tangan`, `angkat_bahu`, `tepuk`, `menguap`, `pegang_dada`, `hormat`, `membungkuk`, `pegang_hp`, `pegang_buku`, `pegang_pesawat`, `pegang_kopi`, `pidato`, `jalan`, `lari`, `duduk`, `duduk_santai`, `duduk_ketik`, `duduk_nulis`, `duduk_kopi`, `duduk_sorak`, `tidur`.
+- **Pose berdiri & ekspresi:** `diam`, `semangat`, `santai`, `lambai`, `lambai2`, `tunjuk`, `tunjuk_kiri`, `tunjuk_atas`, `ide`, `pinggang`, `jempol`, `silang`, `sorak`, `peregangan`, `garuk`, `mikir`, `dagu`, `kaget`, `sedih`, `marah`, `kepal`, `menyerahkan`, `angkat_tangan`, `angkat_bahu`, `tepuk`, `menguap`, `pegang_dada`, `hormat`, `membungkuk`, `pegang_hp`, `pegang_buku`, `pegang_pesawat`, `pegang_kopi`, `pidato`.
+- **Siklus & pose gerak aktif (anti-kaku):**
+  - **Lokomosi (tekuk lutut per-kaki + torso counter-twist):** `jalan`, `jalan_santai`, `mengendap`, `mundur`, `lari`.
+  - **Gesture & reaksi dinamis:** `bicara_aktif` (tangan bergantian menjelaskan), `mengamati` (menyapu pandangan sambil pegang dagu), `gelisah` (menoleh kiri-kanan waspada), `mengancam` (condong maju menunjuk tegas), `terkejut_mundur` (tersentak defensif), `gemetar` (gemetar takut/dingin), `menoleh` (menengok curiga), `angguk` (mengangguk setuju), `geleng` (menggeleng menolak).
+- **Pose duduk & tidur:** `duduk`, `duduk_santai`, `duduk_ketik`, `duduk_nulis`, `duduk_kopi`, `duduk_sorak`, `tidur`.
+
+## Tingkat Keluwesan Gerak (`gerak` per aktor)
+
+| Nilai `gerak` | Efek |
+|---|---|
+| `"aktif"` *(default)* | Pernapasan, ayunan berat badan, gerak kepala alami & gesture bicara otomatis |
+| `"ekspresif"` | Gerak tubuh, kepala & ayunan gesture lebih tegas (cocok untuk presenter/antagonis dramatis) |
+| `"tenang"` | Gerak idle lembut & halus |
+| `"kaku"` | Matikan gerak idle otomatis (hanya pose murni) |
 
 ## Ikon Emosi 3D (`efek` pada aksi tokoh)
 

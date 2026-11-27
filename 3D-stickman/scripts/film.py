@@ -11,7 +11,7 @@ from adegan import Adegan
 
 
 class Film:
-    def __init__(self, projdir, ss=1, ukuran=None):
+    def __init__(self, projdir, ss=1.5, ukuran=None):
         self.dir = projdir
         self.proj = json.load(open(os.path.join(projdir, "proyek.json"), encoding="utf-8"))
         W, H = ukuran or self.proj.get("ukuran", [1080, 1920])

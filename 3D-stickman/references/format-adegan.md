@@ -30,9 +30,11 @@
 - `durasi`: detik (dipakai jika `vo: null`).
 - `opsi` (atau langsung di root adegan): `tahun`, `bulan`, `sub_kalender`, `banner`, `judul`, `baris1`, `baris2`, `harga`, `kiri_lbl`, `kiri_val`, `kanan_lbl`, `kanan_val`, `judul_poster`, `bus`, `bus_x`.
 - `tokoh`: daftar aktor di adegan.
-  - `id`, `dasar`, `pos` `[x, y, z]` (atau `x`, `y`, `z`), `skala`, `pose`, `ekspresi`, `hadap` (`depan`, `serong_kanan`, `serong_kiri`, `kanan`, `kiri`, `belakang`), `bawa` (`buku_terbuka`, `pesawat_mini`, `kopi`, `hp`), `bicara` (`true` atau `[[t0, t1]]`).
-  - `aksi`: daftar event berurutan `{"kata": "...", "pose": "...", "ekspresi": "...", "efek": "ide", "ke_pos": [x,y,z], "durasi": 1.0}` (bisa pakai `t` detik jika tanpa VO).
-  - `masuk` / `keluar`: `{"dari": "kiri", "gaya": "jalan", "dur": 0.9}` / `{"ke": "kanan", "dur": 1.0}`.
+  - `id`, `dasar`, `pos` `[x, y, z]` (atau `x`, `y`, `z`), `skala`, `pose`, `ekspresi`, `hadap` (`depan`, `serong_kanan`, `serong_kiri`, `kanan`, `kiri`, `belakang`, atau sudut derajat angka), `gerak` (`"aktif"` default, `"ekspresif"`, `"tenang"`, `"kaku"`), `bawa` (`buku_terbuka`, `pesawat_mini`, `kopi`, `hp`), `bicara` (`true` atau `[[t0, t1]]`).
+  - `aksi`: daftar event berurutan `{"kata": "...", "pose": "...", "ekspresi": "...", "hadap": "...", "durasi_putar": 0.6, "durasi_pose": 0.4, "efek": "ide", "ke_pos": [x,y,z], "durasi": 1.6, "gaya": "jalan"|"jalan_santai"|"mengendap"|"mundur"|"lari"|"lompat"|"geser", "hadap_akhir": "depan"}` (bisa pakai `t` detik jika tanpa VO). Perubahan `hadap` otomatis berputar mulus (tidak patah).
+  - `jalur`: daftar waypoint berjalan berurutan `[{"ke_pos": [x,y,z], "durasi": 1.8, "gaya": "jalan_santai", "jeda": 0.4}, ...]`.
+  - `mondar_mandir`: gerak patroli otomatis `{"jarak": 0.7, "sumbu": "x"|"z", "siklus": 4.5, "gaya": "jalan_santai"}`.
+  - `masuk` / `keluar`: `{"dari": "kiri", "gaya": "jalan", "dur": 0.9, "hadap_akhir": "depan"}` / `{"ke": "kanan", "gaya": "jalan_santai", "dur": 1.2}`.
 - `benda`: properti tambahan `{"jenis": "kalender"|"poster"|"peta"|"papan_tulis"|"layar_led"|"pesawat"|"karung"|"bendera"|"podium"|"buku"|"laptop"|"kopi", "pos": [x,y,z], ...}`.
 - `kamera`: `{"awal": {"ukuran": "sedang", "fokus": "kribo", "sudut": 10}, "gerak": [...]}`.
 - `balon`: `[{"tokoh": "kribo", "teks": "Halo!", "t": 0.2, "sampai": 2.5}]`.

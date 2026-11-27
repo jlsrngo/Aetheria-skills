@@ -187,7 +187,7 @@ def draw_layar_led(sc, pos, judul="BERITA HARI INI", kiri_lbl="KURS", kiri_val="
                      _tex_layar_led(judul, kiri_lbl, kiri_val, kanan_lbl, kanan_val), emissive=0.75)
 
 
-def draw_open_book(sc, pos, s=1.0, kiri="PRESIDEN KE-3", kanan="MASA JABATAN", isi="21 MEI 1998|sampai|20 OKT 1999"):
+def draw_open_book(sc, pos, s=1.0, kiri="CATATAN", kanan="BAB 1", isi="FAKTA|PENTING|HARI INI"):
     x, y, z = pos
     sc.box((x, y, z), (0.62 * s, 0.38 * s, 0.03 * s), COKLAT_TUA, rot=(-16, 0, 0), outline=True, outline_w=0.008 * s)
     pts = _wall_quad(0.0, 0.0, 0.02 * s, 0.58 * s, 0.35 * s, 0.0) @ euler_mat(-16, 0, 0).T + np.array([x, y, z], dtype=np.float32)

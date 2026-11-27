@@ -216,50 +216,63 @@ def get_expr(name):
     return EKSPRESI.get(EKSPRESI_ALIAS.get(name, name), EKSPRESI["senang"])
 
 
-# ------------------------------------------------------------------ 40+ pose stickman 3D
+# ------------------------------------------------------------------ 50+ pose & siklus gerak stickman 3D
 POSE = {
     "diam":             dict(l_arm=(6, 0, -20), r_arm=(6, 0, 20), l_leg=(0, 0, -9.5), r_leg=(0, 0, 9.5)),
-    "semangat":         dict(l_arm=(6, 0, -24), r_arm=(-32, 0, 64), r_fore=(-84,), l_leg=(0, 0, -10.0), r_leg=(0, 0, 10.0), head=(6, -6, 8)),
+    "semangat":         dict(l_arm=(6, 0, -24), r_arm=(-32, 0, 64), r_fore=(-84,), l_leg=(0, 0, -10.0), r_leg=(0, 0, 10.0), head=(6, -6, 8), energy=1.0),
     "santai":           dict(l_arm=(10, 0, -14), r_arm=(-16, 0, 18), r_fore=(-35,), body=(0, 6, 0)),
     "lambai":           dict(l_arm=(8, 0, -12), r_arm=(-136, 0, 32), r_fore=(-26,), wave_r=1),
-    "lambai2":          dict(l_arm=(-136, 0, -32), r_arm=(-136, 0, 32), l_fore=(-26,), r_fore=(-26,), wave_r=1),
-    "tunjuk":           dict(l_arm=(10, 0, -12), r_arm=(-88, -14, 10), r_fore=(-6,), body=(0, -10, 0)),
-    "tunjuk_kiri":      dict(l_arm=(-88, 14, -10), r_arm=(10, 0, 12), l_fore=(-6,), body=(0, 10, 0)),
-    "tunjuk_atas":      dict(l_arm=(8, 0, -10), r_arm=(-152, 0, 16), r_fore=(-10,), head=(10, 0, 0)),
-    "ide":              dict(l_arm=(-18, 0, -18), r_arm=(-134, 10, 16), r_fore=(-45,), head=(8, -6, 4)),
+    "lambai2":          dict(l_arm=(-136, 0, -32), r_arm=(-136, 0, 32), l_fore=(-26,), r_fore=(-26,), wave_r=1, wave_l=1),
+    "tunjuk":           dict(l_arm=(10, 0, -12), r_arm=(-88, -14, 10), r_fore=(-6,), body=(0, -10, 0), point_r=1),
+    "tunjuk_kiri":      dict(l_arm=(-88, 14, -10), r_arm=(10, 0, 12), l_fore=(-6,), body=(0, 10, 0), point_l=1),
+    "tunjuk_atas":      dict(l_arm=(8, 0, -10), r_arm=(-152, 0, 16), r_fore=(-10,), head=(10, 0, 0), point_r=1),
+    "ide":              dict(l_arm=(-18, 0, -18), r_arm=(-134, 10, 16), r_fore=(-45,), head=(8, -6, 4), energy=0.7),
     "pinggang":         dict(l_arm=(-16, 0, -48), r_arm=(-16, 0, 48), l_fore=(-56,), r_fore=(-56,)),
     "jempol":           dict(l_arm=(10, 0, -12), r_arm=(-82, -14, 18), r_fore=(-36,)),
     "silang":           dict(l_arm=(-48, 35, -10), r_arm=(-48, -35, 10), l_fore=(-55,), r_fore=(-55,)),
-    "sorak":            dict(l_arm=(-154, 0, -26), r_arm=(-154, 0, 26), l_fore=(-16,), r_fore=(-16,)),
+    "sorak":            dict(l_arm=(-154, 0, -26), r_arm=(-154, 0, 26), l_fore=(-16,), r_fore=(-16,), cheer=1),
     "peregangan":       dict(l_arm=(-166, 0, -18), r_arm=(-166, 0, 18), l_fore=(-10,), r_fore=(-10,), head=(8, 0, 0)),
-    "garuk":            dict(l_arm=(8, 0, -10), r_arm=(-126, -18, 22), r_fore=(-85,), head=(-4, 8, -6)),
-    "mikir":            dict(l_arm=(-26, 20, -20), r_arm=(-74, -25, 12), r_fore=(-86,), head=(-6, 10, -5)),
-    "dagu":             dict(l_arm=(-40, 24, -18), r_arm=(-76, -24, 10), r_fore=(-90,)),
-    "kaget":            dict(l_arm=(-108, 0, -34), r_arm=(-108, 0, 34), l_fore=(-35,), r_fore=(-35,), body=(-8, 0, 0)),
+    "garuk":            dict(l_arm=(8, 0, -10), r_arm=(-126, -18, 22), r_fore=(-85,), head=(-4, 8, -6), scratch=1),
+    "mikir":            dict(l_arm=(-26, 20, -20), r_arm=(-74, -25, 12), r_fore=(-86,), head=(-6, 10, -5), scan=0.45),
+    "dagu":             dict(l_arm=(-40, 24, -18), r_arm=(-76, -24, 10), r_fore=(-90,), scan=0.55),
+    "kaget":            dict(l_arm=(-108, 0, -34), r_arm=(-108, 0, 34), l_fore=(-35,), r_fore=(-35,), body=(-8, 0, 0), shiver=0.45),
     "sedih":            dict(l_arm=(14, 0, -6), r_arm=(14, 0, 6), body=(12, 0, 0), head=(-16, 0, 0)),
-    "marah":            dict(l_arm=(-35, 0, -24), r_arm=(-35, 0, 24), l_fore=(-45,), r_fore=(-45,), body=(8, 0, 0)),
-    "kepal":            dict(l_arm=(-55, 0, -18), r_arm=(-55, 0, 18), l_fore=(-55,), r_fore=(-55,)),
+    "marah":            dict(l_arm=(-35, 0, -24), r_arm=(-35, 0, 24), l_fore=(-45,), r_fore=(-45,), body=(8, 0, 0), tense=1.0),
+    "kepal":            dict(l_arm=(-55, 0, -18), r_arm=(-55, 0, 18), l_fore=(-55,), r_fore=(-55,), tense=0.65),
     "menyerahkan":      dict(l_arm=(-68, 14, -8), r_arm=(-68, -14, 8), l_fore=(-18,), r_fore=(-18,), body=(8, 0, 0)),
-    "angkat_tangan":    dict(l_arm=(8, 0, -10), r_arm=(-160, 0, 12)),
+    "angkat_tangan":    dict(l_arm=(8, 0, -10), r_arm=(-160, 0, 12), wave_r=0.35),
     "angkat_bahu":      dict(l_arm=(-38, 0, -42), r_arm=(-38, 0, 42), l_fore=(-62,), r_fore=(-62,), head=(0, 0, 6)),
-    "tepuk":            dict(l_arm=(-65, 28, -10), r_arm=(-65, -28, 10), l_fore=(-45,), r_fore=(-45,)),
+    "tepuk":            dict(l_arm=(-65, 28, -10), r_arm=(-65, -28, 10), l_fore=(-45,), r_fore=(-45,), clap=1),
     "menguap":          dict(l_arm=(8, 0, -10), r_arm=(-96, -25, 10), r_fore=(-85,), head=(10, 0, 0)),
     "pegang_dada":      dict(l_arm=(10, 0, -10), r_arm=(-58, -32, 12), r_fore=(-75,)),
-    "hormat":           dict(l_arm=(6, 0, -8), r_arm=(-122, -16, 22), r_fore=(-95,)),
+    "hormat":           dict(l_arm=(6, 0, -8), r_arm=(-122, -16, 22), r_fore=(-95,), body=(8, 0, 0)),
     "membungkuk":       dict(l_arm=(22, 0, -8), r_arm=(22, 0, 8), body=(28, 0, 0), head=(-12, 0, 0)),
     "pegang_hp":        dict(l_arm=(-50, 18, -12), r_arm=(-64, -20, 12), r_fore=(-42,)),
     "pegang_buku":      dict(l_arm=(-60, 20, -10), r_arm=(-60, -20, 10), l_fore=(-38,), r_fore=(-38,)),
     "pegang_pesawat":   dict(l_arm=(-52, 22, -10), r_arm=(-62, -18, 10), l_fore=(-36,), r_fore=(-42,)),
     "pegang_kopi":      dict(l_arm=(10, 0, -12), r_arm=(-62, -16, 12), r_fore=(-56,)),
-    "pidato":           dict(l_arm=(-48, 10, -18), r_arm=(-108, -10, 22), l_fore=(-30,), r_fore=(-30,), head=(4, 0, 0)),
+    "pidato":           dict(l_arm=(-48, 10, -18), r_arm=(-108, -10, 22), l_fore=(-30,), r_fore=(-30,), head=(4, 0, 0), talk_g=0.9),
+    # --- Siklus & pose gerak aktif (berjalan, mengendap, gesture, reaksi dramatis) ---
     "jalan":            dict(walk=1),
+    "jalan_santai":     dict(walk=0.72, body=(-2, 0, 0)),
+    "mengendap":        dict(sneak=1, body=(14, 0, 0), head=(-6, 0, 0)),
+    "mundur":           dict(backwalk=1, l_arm=(-34, 0, -22), r_arm=(-34, 0, 22), l_fore=(-42,), r_fore=(-42,), body=(-6, 0, 0)),
     "lari":             dict(run=1),
+    "bicara_aktif":     dict(l_arm=(-44, 14, -20), r_arm=(-58, -14, 22), l_fore=(-52,), r_fore=(-56,), talk_g=1.25),
+    "mengamati":        dict(l_arm=(-36, 22, -18), r_arm=(-78, -24, 12), r_fore=(-92,), body=(4, -6, 0), scan=1.0),
+    "gelisah":          dict(l_arm=(-24, 12, -18), r_arm=(-28, -12, 18), l_fore=(-36,), r_fore=(-42,), scan=1.1, shiver=0.35),
+    "mengancam":        dict(l_arm=(-38, 0, -24), r_arm=(-92, -10, 14), l_fore=(-48,), r_fore=(-14,), body=(10, -12, 0), head=(-4, 10, 0), tense=0.95, point_r=1.0),
+    "terkejut_mundur":  dict(l_arm=(-96, 14, -28), r_arm=(-96, -14, 28), l_fore=(-46,), r_fore=(-46,), body=(-12, 0, 0), head=(6, 0, 0), shiver=0.55),
+    "gemetar":          dict(l_arm=(-42, 26, -12), r_arm=(-42, -26, 12), l_fore=(-72,), r_fore=(-72,), body=(10, 0, 0), head=(-10, 0, 0), shiver=1.0),
+    "menoleh":          dict(l_arm=(8, 0, -16), r_arm=(-14, 0, 16), r_fore=(-24,), body=(0, 16, 0), head=(0, 28, -4), scan=0.45),
+    "angguk":           dict(l_arm=(8, 0, -16), r_arm=(-24, 0, 18), r_fore=(-36,), nod=1.0),
+    "geleng":           dict(l_arm=(-18, 0, -22), r_arm=(-18, 0, 22), l_fore=(-30,), r_fore=(-30,), shake=1.0),
     "duduk":            dict(sit=1, l_arm=(-24, 0, -10), r_arm=(-24, 0, 10), l_fore=(-30,), r_fore=(-30,)),
     "duduk_santai":     dict(sit=1, l_arm=(-18, 0, -18), r_arm=(-32, 0, 16), body=(-8, 0, 0)),
     "duduk_ketik":      dict(sit=1, type=1, body=(8, 0, 0), head=(-10, 0, 0)),
     "duduk_nulis":      dict(sit=1, l_arm=(-54, 15, -10), r_arm=(-64, -15, 10), l_fore=(-38,), r_fore=(-38,), body=(10, 0, 0), head=(-12, 0, 0)),
     "duduk_kopi":       dict(sit=1, l_arm=(-24, 0, -10), r_arm=(-68, -14, 10), r_fore=(-52,)),
-    "duduk_sorak":      dict(sit=1, l_arm=(-154, 0, -24), r_arm=(-154, 0, 24)),
+    "duduk_sorak":      dict(sit=1, l_arm=(-154, 0, -24), r_arm=(-154, 0, 24), cheer=0.8),
     "tidur":            dict(lie=1, l_arm=(8, 0, -14), r_arm=(8, 0, 14)),
 }
 
@@ -268,10 +281,18 @@ def state(**kw):
     st = dict(
         pose="diam", pose2=None, mix=0.0, expr="senang", hadap="depan",
         lihat=(0.0, 0.0), blink=0.0, open_amt=0.0, bawa=None, ransel=False,
-        t=0.0, phase=0.0, amp=0.0,
+        t=0.0, phase=0.0, amp=0.0, seed=0.0, gerak="aktif", bicara=False,
     )
     st.update(kw)
     return st
+
+
+_POSE_FLAGS = (
+    "sit", "lie", "walk", "run", "sneak", "backwalk", "type",
+    "wave_r", "wave_l", "point_r", "point_l", "talk_g",
+    "scan", "shiver", "tense", "cheer", "clap", "scratch",
+    "nod", "shake", "energy",
+)
 
 
 def _interp_pose(p1, p2, m):
@@ -281,41 +302,98 @@ def _interp_pose(p1, p2, m):
         out[k] = tuple(lerp(a[i] if i < len(a) else 0.0, b[i] if i < len(b) else 0.0, m) for i in range(3))
     for k in ("l_fore", "r_fore"):
         out[k] = lerp(p1.get(k, (0.0,))[0], p2.get(k, (0.0,))[0], m)
-    for k in ("sit", "lie", "walk", "run", "type", "wave_r"):
+    for k in _POSE_FLAGS:
         out[k] = lerp(float(p1.get(k, 0.0)), float(p2.get(k, 0.0)), m)
     return out
+
+
+_GERAK_MULT = {
+    "kaku": 0.0,
+    "tenang": 0.55,
+    "aktif": 1.0,
+    "ekspresif": 1.45,
+}
 
 
 def _pose_angles(st):
     p1 = POSE.get(st["pose"], POSE["diam"])
     p2 = POSE.get(st["pose2"], p1) if st.get("pose2") else p1
     p = _interp_pose(p1, p2, float(st.get("mix", 0.0)))
-    t, ph, amp = float(st.get("t", 0.0)), float(st.get("phase", 0.0)), float(st.get("amp", 0.0))
+    t = float(st.get("t", 0.0))
+    ph = float(st.get("phase", 0.0))
+    amp = float(st.get("amp", 0.0))
+    seed = float(st.get("seed", 0.0))
+    g_raw = st.get("gerak", "aktif")
+    g_mult = float(g_raw) if isinstance(g_raw, (int, float)) else _GERAK_MULT.get(str(g_raw).lower(), 1.0)
+    ts = t + seed * 1.37
+    has_prop = bool(st.get("bawa"))
 
     l_arm, r_arm = list(p["l_arm"]), list(p["r_arm"])
     l_leg, r_leg = list(p["l_leg"]), list(p["r_leg"])
     l_fore, r_fore = p["l_fore"], p["r_fore"]
     body, head = list(p["body"]), list(p["head"])
-    hip_drop, knee_bend = 0.0, 0.0
+    hip_drop = 0.0
+    l_knee, r_knee = 0.0, 0.0
 
-    if p["walk"] > 0.05 or p["run"] > 0.05:
-        w = max(p["walk"], p["run"])
-        r_mult = 1.55 if p["run"] > 0.1 else 1.0
-        s = math.sin(ph) * (0.45 + 0.55 * amp) * w * r_mult
-        l_leg[0] += s * 36.0
-        r_leg[0] -= s * 36.0
-        l_arm[0] -= s * 32.0
-        r_arm[0] += s * 32.0
-        l_fore -= abs(s) * 18.0 * r_mult
-        r_fore -= abs(s) * 18.0 * r_mult
-        hip_drop -= abs(math.cos(ph)) * 0.03 * w
-        body[0] += 8.0 * p["run"]
+    # --- 1. Siklus gerak kaki-tangan: jalan, jalan_santai, mengendap, mundur, lari ---
+    loco = max(p["walk"], p["run"], p["sneak"], p["backwalk"])
+    if loco > 0.05:
+        is_run = p["run"] > 0.15
+        is_sneak = p["sneak"] > 0.15
+        is_back = p["backwalk"] > 0.15
+        dir_s = -1.0 if is_back else 1.0
+        r_mult = 1.48 if is_run else (0.78 if is_sneak else (0.76 if is_back else 1.0))
+        stride = (0.58 + 0.42 * amp) * loco * r_mult
+        s = math.sin(ph) * stride * dir_s
+        c = math.cos(ph) * stride
 
+        # Ayunan paha berlawanan + tekuk lutut per-kaki yang alami (kaki melangkah menekuk!)
+        l_leg[0] += s * 34.0
+        r_leg[0] -= s * 34.0
+        if is_sneak:
+            l_leg[0] -= 18.0 * p["sneak"]
+            r_leg[0] -= 18.0 * p["sneak"]
+            l_knee += (28.0 + max(0.0, math.cos(ph)) * 28.0) * p["sneak"]
+            r_knee += (28.0 + max(0.0, -math.cos(ph)) * 28.0) * p["sneak"]
+            hip_drop -= (0.065 + abs(math.cos(ph)) * 0.025) * p["sneak"]
+        else:
+            knee_amp = 54.0 if is_run else (30.0 if is_back else 38.0)
+            l_knee += max(0.0, math.cos(ph) * dir_s) * knee_amp * stride
+            r_knee += max(0.0, -math.cos(ph) * dir_s) * knee_amp * stride
+            hip_drop -= (0.015 + abs(math.cos(ph)) * (0.042 if is_run else 0.026)) * loco
+
+        # Kaki sedikit membuka saat melangkah agar tidak bertabrakan
+        l_leg[2] = lerp(l_leg[2], -5.5, loco)
+        r_leg[2] = lerp(r_leg[2], +5.5, loco)
+
+        # Counter-twist torso & sway bahu/pinggul organik
+        body[1] += -s * (10.5 if is_run else 7.5)
+        body[2] += math.sin(ph) * (3.6 if is_run else 2.6) * loco
+        body[0] += (10.0 * p["run"]) + (3.2 * p["walk"]) + abs(c) * 1.8 * loco
+        head[1] += s * 3.8
+        head[0] += math.sin(ph * 2.0) * 1.8 * loco
+
+        # Ayunan lengan alami (tidak menimpa pose mundur defensif atau tangan pembawa properti)
+        if not is_back:
+            arm_amp = 42.0 if is_run else (22.0 if is_sneak else 34.0)
+            l_arm[0] -= s * arm_amp
+            l_arm[2] = lerp(l_arm[2], -14.0, loco)
+            l_fore -= (14.0 + max(0.0, -s) * 24.0) * (1.35 if is_run else 1.0) * loco
+            if not has_prop:
+                r_arm[0] += s * arm_amp
+                r_arm[2] = lerp(r_arm[2], +14.0, loco)
+                r_fore -= (14.0 + max(0.0, s) * 24.0) * (1.35 if is_run else 1.0) * loco
+        else:
+            l_arm[0] += math.sin(ph) * 8.0 * loco
+            r_arm[0] -= math.sin(ph) * 8.0 * loco
+
+    # --- 2. Duduk & mengetik ---
     if p["sit"] > 0.05:
         m = p["sit"]
         l_leg[0] = lerp(l_leg[0], -86.0, m)
         r_leg[0] = lerp(r_leg[0], -86.0, m)
-        knee_bend = 86.0 * m
+        l_knee = lerp(l_knee, 86.0, m)
+        r_knee = lerp(r_knee, 86.0, m)
         hip_drop -= 0.05 * m
 
     if p["type"] > 0.05:
@@ -325,26 +403,131 @@ def _pose_angles(st):
         l_fore = lerp(l_fore, -48.0 + math.sin(t * 22.0) * 10.0, m)
         r_fore = lerp(r_fore, -48.0 + math.cos(t * 22.0) * 10.0, m)
 
+    # --- 3. Siklus ekspresi tubuh (melambai, menunjuk, tepuk, sorak, garuk, gelisah, gemetar, angguk, geleng) ---
     if p["wave_r"] > 0.05:
         r_arm[2] += math.sin(t * 10.5) * 18.0 * p["wave_r"]
         r_fore += math.sin(t * 10.5 + 0.6) * 14.0 * p["wave_r"]
+    if p["wave_l"] > 0.05:
+        l_arm[2] -= math.sin(t * 10.5 + 0.4) * 18.0 * p["wave_l"]
+        l_fore += math.sin(t * 10.5 + 1.0) * 14.0 * p["wave_l"]
+    if p["point_r"] > 0.05 and not has_prop:
+        r_arm[0] += math.sin(ts * 4.2) * 5.5 * p["point_r"]
+        r_fore += math.sin(ts * 4.2 - 0.5) * 4.5 * p["point_r"]
+    if p["point_l"] > 0.05:
+        l_arm[0] += math.sin(ts * 4.2) * 5.5 * p["point_l"]
+        l_fore += math.sin(ts * 4.2 - 0.5) * 4.5 * p["point_l"]
+    if p["talk_g"] > 0.05 and loco < 0.35:
+        tg = p["talk_g"] * max(0.55, g_mult)
+        l_arm[0] += math.sin(ts * 3.4) * 14.0 * tg
+        l_arm[2] -= abs(math.sin(ts * 2.1)) * 7.5 * tg
+        l_fore += math.sin(ts * 3.4 - 0.7) * 16.0 * tg
+        if not has_prop:
+            r_arm[0] += math.cos(ts * 3.1 + 0.5) * 15.0 * tg
+            r_arm[2] += abs(math.cos(ts * 2.3)) * 7.5 * tg
+            r_fore += math.cos(ts * 3.1 - 0.3) * 16.0 * tg
+        body[1] += math.sin(ts * 1.9) * 5.0 * tg
+        head[0] += math.sin(ts * 4.4) * 4.0 * tg
+    if p["scan"] > 0.05:
+        sc_m = p["scan"]
+        head[1] += math.sin(ts * 1.45) * 17.0 * sc_m
+        head[2] += math.cos(ts * 1.1) * 4.5 * sc_m
+        body[1] += math.sin(ts * 1.45 - 0.4) * 5.5 * sc_m
+    if p["shiver"] > 0.05:
+        sh = p["shiver"]
+        body[2] += math.sin(t * 24.0) * 2.4 * sh
+        head[2] += math.cos(t * 26.0) * 2.8 * sh
+        l_arm[2] += math.sin(t * 22.0) * 3.2 * sh
+        r_arm[2] -= math.sin(t * 22.0) * 3.2 * sh
+    if p["tense"] > 0.05:
+        tn = p["tense"]
+        body[0] += math.sin(ts * 3.8) * 3.2 * tn
+        l_arm[0] += math.sin(ts * 4.6) * 6.0 * tn
+        if not has_prop:
+            r_arm[0] += math.cos(ts * 4.6) * 6.0 * tn
+        head[0] += math.sin(ts * 3.8) * 2.5 * tn
+    if p["cheer"] > 0.05:
+        ch = p["cheer"]
+        bounce = abs(math.sin(ts * 6.2))
+        hip_drop += bounce * 0.055 * ch
+        l_arm[2] -= bounce * 10.0 * ch
+        r_arm[2] += bounce * 10.0 * ch
+        head[0] += math.sin(ts * 6.2) * 5.0 * ch
+    if p["clap"] > 0.05:
+        cl = abs(math.sin(t * 9.5)) * p["clap"]
+        l_arm[1] += (1.0 - cl) * 16.0
+        r_arm[1] -= (1.0 - cl) * 16.0
+        l_fore -= cl * 10.0
+        r_fore -= cl * 10.0
+    if p["scratch"] > 0.05:
+        r_fore += math.sin(t * 11.0) * 12.0 * p["scratch"]
+        head[2] += math.sin(t * 5.5) * 3.5 * p["scratch"]
+    if p["nod"] > 0.05:
+        head[0] += math.sin(ts * 5.2) * 11.0 * p["nod"]
+        body[0] += math.sin(ts * 5.2 - 0.3) * 3.2 * p["nod"]
+    if p["shake"] > 0.05:
+        head[1] += math.sin(ts * 6.8) * 16.0 * p["shake"]
+        body[1] += math.sin(ts * 6.8 - 0.4) * 3.5 * p["shake"]
+    if p["energy"] > 0.05:
+        en = p["energy"]
+        hip_drop += math.sin(ts * 4.2) * 0.015 * en
+        body[2] += math.sin(ts * 2.6) * 3.2 * en
 
-    if st.get("open_amt", 0.0) > 0.15 and p["sit"] < 0.5 and p["lie"] < 0.5:
-        head[0] += math.sin(t * 6.0) * 2.4
-        head[2] += math.sin(t * 4.2) * 1.6
+    # --- 4. Gesture bicara otomatis saat lipsync/bicara aktif ---
+    open_amt = float(st.get("open_amt", 0.0))
+    is_talking = bool(st.get("bicara", False)) or open_amt > 0.12
+    if is_talking and p["lie"] < 0.5 and g_mult > 0.05:
+        t_amp = max(0.35, min(1.0, open_amt * 1.4)) * g_mult
+        head[0] += math.sin(ts * 5.8) * 3.6 * t_amp
+        head[1] += math.sin(ts * 2.5) * 4.5 * t_amp
+        head[2] += math.sin(ts * 3.7) * 2.6 * t_amp
+        if loco < 0.25 and p["talk_g"] < 0.4:
+            # Lengan kiri (dan kanan jika tidak pegang properti) ikut ber-gesture ringan
+            l_arm[0] -= (6.0 + math.sin(ts * 3.6) * 10.0) * t_amp * 0.65
+            l_fore -= (8.0 + math.sin(ts * 3.6 - 0.5) * 10.0) * t_amp * 0.65
+            if not has_prop and p["wave_r"] < 0.2 and p["point_r"] < 0.2:
+                r_arm[0] -= (5.0 + math.cos(ts * 3.2) * 9.0) * t_amp * 0.60
+                r_fore -= (7.0 + math.cos(ts * 3.2 - 0.4) * 9.0) * t_amp * 0.60
+            body[0] += math.sin(ts * 2.9) * 2.2 * t_amp
 
-    if p["sit"] < 0.1 and p["lie"] < 0.1 and p["walk"] < 0.1 and p["run"] < 0.1:
+    # --- 5. Gerak idle organik otomatis (pernapasan + weight shift + micro-gesture anti-patung!) ---
+    if p["lie"] < 0.5 and g_mult > 0.01:
+        breath = math.sin(ts * 2.05)
+        sway = math.sin(ts * 0.92)
+        look_drift = math.sin(ts * 0.68 + 0.9)
+        if loco < 0.25:
+            hip_drop += breath * 0.012 * g_mult
+            body[0] += breath * 1.8 * g_mult
+            body[1] += sway * 4.2 * g_mult
+            body[2] += sway * 2.4 * g_mult
+            # Bahu & lengan sedikit bernapas dan ikut ayunan berat badan
+            l_arm[2] -= (breath * 2.4 + sway * 1.5) * g_mult
+            l_arm[0] += sway * 3.0 * g_mult
+            l_fore -= abs(breath) * 2.8 * g_mult
+            if not has_prop:
+                r_arm[2] += (breath * 2.4 - sway * 1.5) * g_mult
+                r_arm[0] -= sway * 3.0 * g_mult
+                r_fore -= abs(breath) * 2.8 * g_mult
+            if p["sit"] < 0.2:
+                # Shifting berat badan tipis di lutut & paha
+                l_knee += max(0.0, sway) * 4.5 * g_mult
+                r_knee += max(0.0, -sway) * 4.5 * g_mult
+        # Kepala selalu punya gerak hidup lembut
+        head[0] += breath * 2.0 * g_mult
+        head[1] += look_drift * 5.2 * g_mult
+        head[2] += math.sin(ts * 1.15 + 0.5) * 2.6 * g_mult
+
+    if p["sit"] < 0.1 and p["lie"] < 0.1 and loco < 0.1:
         if abs(l_leg[2]) < 1.0 and abs(r_leg[2]) < 1.0:
             l_leg[2] = -9.5
             r_leg[2] = +9.5
 
-    head[1] += math.sin(t * 1.45) * 1.5
     return dict(
         l_arm=tuple(l_arm), r_arm=tuple(r_arm),
         l_leg=tuple(l_leg), r_leg=tuple(r_leg),
         l_fore=l_fore, r_fore=r_fore,
         body=tuple(body), head=tuple(head),
-        hip_drop=hip_drop, knee_bend=knee_bend, lie=p["lie"],
+        hip_drop=hip_drop, knee_bend=max(l_knee, r_knee),
+        l_knee=l_knee, r_knee=r_knee, lie=p["lie"],
     )
 
 
@@ -1232,7 +1415,14 @@ class TokohStick3D:
             if side == "r" and st.get("bawa"):
                 bawa = st["bawa"]
                 if bawa == "buku_terbuka":
-                    BD.draw_open_book(sc, wri + f_mat @ np.array([-0.12 * s, 0.02 * s, 0.10 * s]), s=s)
+                    BD.draw_open_book(
+                        sc,
+                        wri + f_mat @ np.array([-0.12 * s, 0.02 * s, 0.10 * s]),
+                        s=s,
+                        kiri=st.get("buku_kiri", "CATATAN"),
+                        kanan=st.get("buku_kanan", "BAB 1"),
+                        isi=st.get("buku_isi", "FAKTA|PENTING|HARI INI"),
+                    )
                 elif bawa == "pesawat_mini":
                     BD.draw_airplane_mini(sc, wri + f_mat @ np.array([-0.08 * s, 0.06 * s, 0.08 * s]), s=0.65 * s)
                 elif bawa == "kopi":
@@ -1255,10 +1445,10 @@ class TokohStick3D:
         if is_rok:
             with sc.part():
                 self._draw_skirt(sc, root_pos, root_mat, body_mat, hip_y, s, pants, ol)
-            for sign, leg_deg in ((-1.0, ang["l_leg"]), (+1.0, ang["r_leg"])):
+            for sign, leg_deg, kb in ((-1.0, ang["l_leg"], ang.get("l_knee", ang["knee_bend"])), (+1.0, ang["r_leg"], ang.get("r_knee", ang["knee_bend"]))):
                 hp = root_pos + root_mat @ np.array([sign * 0.102 * s, hip_y + 0.012 * s, 0.0], dtype=np.float32)
                 t_mat = root_mat @ euler_mat(*leg_deg)
-                c_mat = t_mat @ euler_mat(ang["knee_bend"], 0.0, 0.0)
+                c_mat = t_mat @ euler_mat(kb, 0.0, 0.0)
                 knee = hp + t_mat @ np.array([0.0, -0.232 * s, 0.0], dtype=np.float32)
                 ank = knee + c_mat @ np.array([0.0, -0.236 * s, 0.0], dtype=np.float32)
                 with sc.part():
@@ -1274,10 +1464,10 @@ class TokohStick3D:
                 sc.capsule(pelv_c, 0.088 * s, 0.340 * s, pants, seg_u=18, seg_cap=6,
                            mat=body_mat @ euler_mat(0, 0, 90), scale_xz=(1.0, 0.88),
                            outline=ol, outline_w=ow_limb, specular=0.02)
-                for sign, leg_deg in ((-1.0, ang["l_leg"]), (+1.0, ang["r_leg"])):
+                for sign, leg_deg, kb in ((-1.0, ang["l_leg"], ang.get("l_knee", ang["knee_bend"])), (+1.0, ang["r_leg"], ang.get("r_knee", ang["knee_bend"]))):
                     hp = root_pos + root_mat @ np.array([sign * 0.102 * s, hip_y + 0.018 * s, 0.0], dtype=np.float32)
                     t_mat = root_mat @ euler_mat(*leg_deg)
-                    c_mat = t_mat @ euler_mat(ang["knee_bend"], 0.0, 0.0)
+                    c_mat = t_mat @ euler_mat(kb, 0.0, 0.0)
                     knee = hp + t_mat @ np.array([0.0, -0.236 * s, 0.0], dtype=np.float32)
                     ank = knee + c_mat @ np.array([0.0, -0.236 * s, 0.0], dtype=np.float32)
                     sc.tapered_limb(hp, knee, leg_r_up, leg_r_kn, leg_col, seg_u=18, outline=ol, outline_w=ow_limb)
