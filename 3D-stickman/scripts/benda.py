@@ -303,6 +303,30 @@ def draw_prop(sc, spec, t=0.0):
         sc.box((pos[0], pos[1] + 0.14 * s, pos[2] - 0.13 * s), (0.44 * s, 0.28 * s, 0.025 * s), HITAM, rot=(-18, ry, 0), outline=True, outline_w=0.008 * s)
     elif jenis == "kopi":
         draw_mug(sc, pos, s=s)
+    elif jenis in ("tiang", "tiang_lampu"):
+        x, y, z = pos
+        col = tuple(spec["warna"]) if isinstance(spec.get("warna"), list) else (58, 64, 76)
+        h = float(spec.get("tinggi", 4.2)) * s
+        r = float(spec.get("radius", 0.085)) * s
+        sc.drop_shadow(x, y, z, 0.34 * s, 0.34 * s, 0.25)
+        sc.cylinder((x, y + 0.14 * s, z), r * 2.1, 0.28 * s, (46, 50, 60), seg_u=14, outline=True, outline_w=0.012 * s)
+        sc.cylinder((x, y + h * 0.5, z), r, h, col, seg_u=14, outline=True, outline_w=0.012 * s)
+        if jenis == "tiang_lampu":
+            arah = float(spec.get("arah", -1.0))
+            arm_x = x + arah * 0.45 * s
+            sc.limb((x, y + h - 0.12 * s, z), (arm_x, y + h - 0.04 * s, z), 0.045 * s, col, outline=True, outline_w=0.01 * s)
+            sc.sphere((arm_x, y + h - 0.16 * s, z), (0.20 * s, 0.12 * s, 0.20 * s), KUNING, emissive=0.85, outline=True, outline_w=0.01 * s)
+            if spec.get("nyala", True):
+                sc.add_light((arm_x, y + h - 0.25 * s, z), color=(255, 214, 142), intensity=0.85, radius=5.5, halo=0.14)
+    elif jenis == "pilar":
+        x, y, z = pos
+        col = tuple(spec["warna"]) if isinstance(spec.get("warna"), list) else (196, 190, 182)
+        h = float(spec.get("tinggi", 4.4)) * s
+        r = float(spec.get("radius", 0.24)) * s
+        sc.drop_shadow(x, y, z, r * 1.6, r * 1.6, 0.28)
+        sc.box((x, y + 0.16 * s, z), (r * 2.5, 0.32 * s, r * 2.5), (146, 142, 138), outline=True, outline_w=0.014 * s)
+        sc.cylinder((x, y + h * 0.5, z), r, h, col, seg_u=18, outline=True, outline_w=0.014 * s)
+        sc.box((x, y + h - 0.14 * s, z), (r * 2.6, 0.28 * s, r * 2.6), (146, 142, 138), outline=True, outline_w=0.014 * s)
 
 
 # ------------------------------------------------------------------ ikon emosi 3D di atas kepala

@@ -3,13 +3,19 @@
 adegan.py - sutradara adegan 3D VoxelVerse: aktor, kamera 3D, percikan listrik,
             balon ucapan, teks sinematik/komik, efek layar, dan pemicu SFX.
 """
-import math, re
+import math, os, re, sys
 import numpy as np
 from PIL import Image, ImageDraw
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 from voxel import (
     OUT, PUTIH, KRIM, HITAM, MERAH, BIRU, KUNING, ORANYE, HIJAU, TEAL,
     clamp, prog, lerp, lerp3, e_io, e_out, e_in, e_back, e_snap, EASE,
     catmull_rom, font, Cam3D, Scene3D,
+)
+from aset_global.sinematografi import (
+    SinematografiRig, apply_cinematic_modifiers, calc_ots_pose, terapkan_sinemaskop,
 )
 import tokoh as TK
 import benda as BD
@@ -333,6 +339,11 @@ class Adegan:
         elif "fokus" in spec or "target" in spec:
             tgt = np.array(self._resolve_target(spec, t), dtype=np.float32)
 
+        if prev is None or any(k in spec for k in ("ukuran", "bahu", "pos")):
+            roll, blur = 0.0, 0.0
+        bahu_id = spec.get("bahu")
+        if bahu_id and bahu_id in self.actor_map:
+            pos, tgt, fov = calc_ots_pose(self.actor_map[bahu_id].pos_at(t)[0], self._resolve_target(spec, t), spec, portrait=portrait)
         if "pos" in spec:
             pos = np.array(spec["pos"], dtype=np.float32)
         if "target" in spec:
@@ -349,10 +360,25 @@ class Adegan:
             roll = float(spec.get("r", spec.get("roll", roll)))
         if "blur" in spec:
             blur = float(spec["blur"])
+        pos, tgt, fov, roll, blur = apply_cinematic_modifiers(pos, tgt, fov, roll, blur, spec)
         return [pos, tgt, fov, roll, blur]
+
+    def _resolve_actor_pos(self, fid, t):
+        fid = fid or (self.actors[0].id if self.actors else None)
+        if fid and fid in self.actor_map:
+            return self.actor_map[fid].pos_at(t)[0]
+        return None
 
     def _prep_cam(self):
         cam_spec = self.s.get("kamera", {})
+        self.cam_rig = None
+        if cam_spec.get("shot") or cam_spec.get("shots"):
+            self.cam_rig = SinematografiRig(
+                cam_spec, self.dur, self.when,
+                self._cam_pose_from_spec, self._resolve_target, self._resolve_actor_pos,
+            )
+            self.awal_cam = self._cam_pose_from_spec(cam_spec.get("awal", {"ukuran": "lebar"}), None, 0.0)
+            return []
         awal = self._cam_pose_from_spec(cam_spec.get("awal", {"ukuran": "lebar"}), None, 0.0)
         self.awal_cam = awal
         moves = []
@@ -403,6 +429,9 @@ class Adegan:
         return moves
 
     def camera_at(self, t):
+        if getattr(self, "cam_rig", None) is not None:
+            pos, tgt, fov, roll, blur = self.cam_rig.eval(t)
+            return Cam3D(pos=pos, target=tgt, fov=fov, roll=roll, blur=blur)
         pos = self.awal_cam[0].copy()
         tgt = self.awal_cam[1].copy()
         fov, roll, blur = self.awal_cam[2], self.awal_cam[3], self.awal_cam[4]
@@ -489,6 +518,8 @@ class Adegan:
 
     def _draw_2d_overlays(self, img, cam, t):
         W, H = self.W, self.H
+        if self.s.get("sinemaskop") or self.film.proj.get("sinemaskop"):
+            img = terapkan_sinemaskop(img)
         # Efek layar penuh (flash, vinyet, gelap, garis_kecepatan, bar)
         for t0, t1, fx in self.fxs:
             k = fx.get("jenis")

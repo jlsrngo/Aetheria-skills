@@ -5,7 +5,11 @@ film.py - menyusun semua adegan 3D-stickman jadi film: jadwal, subtitle ("kata" 
 import math, os, sys, json
 from PIL import Image, ImageDraw, ImageFilter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 from engine3d import OUT, PUTIH, KUNING, clamp, lerp, e_io, e_out, e_back, prog, font
+from aset_global.transisi import blend_transisi, norm_transisi, sfx_transisi
 import timing
 from adegan import Adegan
 
@@ -235,90 +239,16 @@ class Film:
         for i, s in enumerate(self.scenes):
             ev += s.events()
             if i > 0:
-                tr = self.trans_of(i)
-                k = tr["jenis"]
-                if k in ("whip", "geser", "putar", "belah"):
-                    ev.append((s.start - tr["dur"] / 2, "whoosh", 0.8))
-                elif k == "iris":
-                    ev.append((s.start - tr["dur"] / 2, "iris", 0.7))
-                elif k in ("zoom", "kedip"):
-                    ev.append((s.start - tr["dur"] / 2, "whoosh_lembut", 0.8))
-                elif k == "flash":
-                    ev.append((s.start - 0.02, "kilat", 0.85))
+                tr = norm_transisi(self.trans_of(i))
+                sx = sfx_transisi(tr["jenis"])
+                if sx:
+                    t_ev = s.start - 0.02 if sx[0] == "kilat" else s.start - tr["dur"] / 2
+                    ev.append((t_ev, sx[0], sx[1]))
         return sorted(ev)
 
 
 def blend(A, B, p, tr):
-    k = tr["jenis"]
-    W, H = A.size
-    e = e_io(p)
-    if k == "fade":
-        return Image.blend(A, B, e)
-    if k == "flash":
-        if p < 0.5:
-            return Image.blend(A, Image.new("RGB", A.size, PUTIH), e_out(p * 2))
-        return Image.blend(Image.new("RGB", A.size, PUTIH), B, e_io((p - 0.5) * 2))
-    if k == "kedip":
-        im = A.copy() if p < 0.5 else B.copy()
-        q = e_io(p * 2) if p < 0.5 else 1.0 - e_io((p - 0.5) * 2)
-        d = ImageDraw.Draw(im)
-        h = int(H * 0.5 * q)
-        d.rectangle([0, 0, W, h], fill=(16, 18, 26))
-        d.rectangle([0, H - h, W, H], fill=(16, 18, 26))
-        return im
-    if k == "iris":
-        cx, cy = tr.get("x", 0.5) * W, tr.get("y", 0.5) * H
-        R = math.hypot(max(cx, W - cx), max(cy, H - cy)) * e
-        mask = Image.new("L", A.size, 0)
-        ImageDraw.Draw(mask).ellipse([cx - R, cy - R, cx + R, cy + R], fill=255)
-        out = Image.composite(B, A, mask)
-        if 0.02 < p < 0.98:
-            ImageDraw.Draw(out).ellipse([cx - R, cy - R, cx + R, cy + R], outline=OUT, width=8)
-        return out
-    if k in ("geser", "whip"):
-        arah = tr.get("arah", "kiri")
-        dx, dy = {"kiri": (-1, 0), "kanan": (1, 0), "atas": (0, -1), "bawah": (0, 1)}.get(arah, (-1, 0))
-        ox, oy = int(-dx * W * e), int(-dy * H * e)
-        canvas = Image.new("RGB", A.size)
-        canvas.paste(A, (ox, oy))
-        canvas.paste(B, (ox + dx * W, oy + dy * H))
-        if k == "whip":
-            r = max(1, int(math.sin(math.pi * p) * 10))
-            canvas = canvas.filter(ImageFilter.GaussianBlur(r))
-        return canvas
-    if k == "zoom":
-        s_out = 1.0 + 0.75 * e
-        a = A.resize((int(W * s_out), int(H * s_out)), Image.BILINEAR)
-        a = a.crop(((a.width - W) // 2, (a.height - H) // 2, (a.width + W) // 2, (a.height + H) // 2))
-        return Image.blend(a, B, e)
-    if k == "wipe":
-        x = int(W * e)
-        out = A.copy()
-        out.paste(B.crop((0, 0, x, H)), (0, 0))
-        ImageDraw.Draw(out).line([(x, 0), (x, H)], fill=OUT, width=6)
-        return out
-    if k == "putar":
-        # Spin whip cepat dengan blur di tengah transisi
-        ang = (180.0 * e) if p < 0.5 else (-180.0 * (1.0 - e))
-        src = A if p < 0.5 else B
-        rot = src.rotate(ang, resample=Image.BICUBIC)
-        r = max(1, int(math.sin(math.pi * p) * 12))
-        return rot.filter(ImageFilter.GaussianBlur(r))
-    if k == "belah":
-        # Split curtain: layar lama terbelah ke kiri & kanan membuka adegan baru
-        out = B.copy()
-        half = W // 2
-        dx = int(half * e)
-        if dx < half:
-            left_part = A.crop((0, 0, half, H))
-            right_part = A.crop((half, 0, W, H))
-            out.paste(left_part, (-dx, 0))
-            out.paste(right_part, (half + dx, 0))
-            d = ImageDraw.Draw(out)
-            d.line([(half - dx, 0), (half - dx, H)], fill=OUT, width=6)
-            d.line([(half + dx, 0), (half + dx, H)], fill=OUT, width=6)
-        return out
-    return B if p >= 0.5 else A
+    return blend_transisi(A, B, p, tr, outline_col=OUT)
 
 
 class Komik:

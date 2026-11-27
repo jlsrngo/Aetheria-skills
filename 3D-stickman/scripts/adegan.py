@@ -2,13 +2,20 @@
 """
 adegan.py - Sutradara adegan 3D-stickman: aktor, kamera 3D, properti, balon ucapan, teks, efek, dan pemicu SFX.
 """
-import math, re
+import math, os, re, sys
 import numpy as np
 from PIL import Image, ImageDraw
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 from engine3d import (
     OUT, PUTIH, KRIM, HITAM, MERAH, BIRU, KUNING, ORANYE, HIJAU, TEAL,
     clamp, prog, lerp, lerp3, e_io, e_out, e_in, e_back, e_snap, EASE,
     catmull_rom, font, Cam3D, Scene3D,
+)
+from aset_global.sinematografi import (
+    ANGLE_PRESET, GAYA_DRIFT, SinematografiRig,
+    apply_cinematic_modifiers, calc_ots_pose, terapkan_sinemaskop,
 )
 import tokoh as TK
 import benda as BD
@@ -23,23 +30,6 @@ UKURAN = {
     "dekat":         (1.65, 0.24, 35.0),
     "sangat_dekat":  (1.15, 0.16, 32.0),
     "ekstrem_dekat": (0.78, 0.14, 28.0),
-}
-
-# Offset vertikal (dy) & roll otomatis untuk preset sudut sinematik
-ANGLE_PRESET = {
-    "normal": (0.0,   0.0),
-    "bawah":  (-0.55, 0.0),   # low angle (hero shot)
-    "atas":   (+1.15, 0.0),   # high angle
-    "burung": (+3.40, 0.0),   # bird's eye
-    "dutch":  (0.0,   10.0),  # horizon miring tegang
-}
-
-# Intensitas gerak nafas/handheld: (amp_x, amp_y, freq)
-GAYA_DRIFT = {
-    "tripod":   (0.0,   0.0,   0.0),
-    "halus":    (0.015, 0.010, 0.85),
-    "handheld": (0.042, 0.032, 1.85),
-    "tegang":   (0.028, 0.024, 6.50),
 }
 
 
@@ -377,6 +367,11 @@ class Adegan:
             pos, tgt = np.array(prev[0], dtype=np.float32), np.array(prev[1], dtype=np.float32)
             fov, roll, blur = prev[2], prev[3], prev[4]
 
+        # Reset roll & blur bila berpindah ke bidikan baru (prev is None atau ada ukuran/bahu/pos baru)
+        if prev is None or any(k in spec for k in ("ukuran", "bahu", "pos")):
+            roll = 0.0
+            blur = 0.0
+
         uk = spec.get("ukuran")
         if uk in UKURAN:
             dist, dy, fv = UKURAN[uk]
@@ -394,185 +389,44 @@ class Adegan:
         if ("target" in spec or "fokus" in spec) and uk not in ("ekstrem_dekat", "sangat_dekat", "dekat"):
             tgt = np.array(self._resolve_target(spec, t), dtype=np.float32)
 
-        # Preset angle vertikal (bawah / atas / burung / dutch) & offset vertikal manual
-        ang_name = spec.get("angle")
-        if ang_name in ANGLE_PRESET:
-            ady, aroll = ANGLE_PRESET[ang_name]
-            pos = pos + np.array([0.0, ady, 0.0], dtype=np.float32)
-            if "roll" not in spec and "miring" not in spec:
-                roll = aroll
-        if "sudut_v" in spec:
-            pos = pos + np.array([0.0, float(spec["sudut_v"]), 0.0], dtype=np.float32)
-
-        # Komposisi over-the-shoulder: {"bahu": "tokoh_a", "fokus": "tokoh_b"}
+        # Komposisi over-the-shoulder profesional via aset_global.sinematografi
         bahu_id = spec.get("bahu")
         if bahu_id and bahu_id in self.actor_map:
-            p_bahu = np.array(self.actor_map[bahu_id].pos_at(t)[0], dtype=np.float32)
-            p_tgt = np.array(self._resolve_target(spec, t), dtype=np.float32)
-            d_vec = np.array([p_bahu[0] - p_tgt[0], 0.0, p_bahu[2] - p_tgt[2]], dtype=np.float32)
-            d_len = float(np.linalg.norm(d_vec))
-            d_dir = d_vec / d_len if d_len > 1e-4 else np.array([0.0, 0.0, 1.0], dtype=np.float32)
-            side = np.array([-d_dir[2], 0.0, d_dir[0]], dtype=np.float32) * float(spec.get("sisi_bahu", 1.38))
-            pos = p_bahu + d_dir * 1.45 + side + np.array([0.0, 1.34, 0.0], dtype=np.float32)
-            tgt = p_tgt + np.array([0.0, 0.12, 0.0], dtype=np.float32)
-            fov = float(spec.get("fov", 38.0))
+            pos, tgt, fov = calc_ots_pose(
+                self.actor_map[bahu_id].pos_at(t)[0],
+                self._resolve_target(spec, t),
+                spec,
+                portrait=portrait,
+            )
 
-        if "pos" in spec:
-            pos = np.array(spec["pos"], dtype=np.float32)
-        if "fov" in spec:
-            fov = float(spec["fov"])
-        if "roll" in spec or "miring" in spec:
-            roll = float(spec.get("roll", spec.get("miring", 0.0)))
-        if "blur" in spec:
-            blur = float(spec["blur"])
-        return pos, tgt, fov, roll, blur
+        return apply_cinematic_modifiers(pos, tgt, fov, roll, blur, spec)
 
-    def _eval_cam_move(self, g, start_pose, t, p, t1):
-        """Evaluasi pose kamera (pos, tgt, fov, roll, blur) untuk 1 gerak pada progres p in [0, 1]."""
-        jn = g.get("jenis", "push")
-        e = EASE.get(g.get("ease", "io"), e_io)(p)
-        p0, tgt0, f0, r0, b0 = start_pose
-
-        if jn == "orbit":
-            d_vec = p0 - tgt0
-            rad = math.hypot(float(d_vec[0]), float(d_vec[2]))
-            a0 = math.atan2(float(d_vec[0]), float(d_vec[2]))
-            da = math.radians(float(g.get("derajat", 45.0))) * e
-            dh = float(g.get("naik", 0.0)) * e
-            tgt = np.array(self._resolve_target(g, t), dtype=np.float32) if ("fokus" in g or "target" in g) else tgt0
-            pos = tgt + np.array([math.sin(a0 + da) * rad, float(d_vec[1]) + dh, math.cos(a0 + da) * rad], dtype=np.float32)
-            return pos, tgt, f0, r0, b0
-
-        if jn == "spiral":
-            d_vec = p0 - tgt0
-            rad = math.hypot(float(d_vec[0]), float(d_vec[2])) * lerp(1.0, float(g.get("faktor", 0.72)), e)
-            a0 = math.atan2(float(d_vec[0]), float(d_vec[2]))
-            da = math.radians(float(g.get("derajat", 60.0))) * e
-            dh = float(g.get("naik", 0.65)) * e
-            tgt = np.array(self._resolve_target(g, t), dtype=np.float32) if ("fokus" in g or "target" in g) else tgt0
-            pos = tgt + np.array([math.sin(a0 + da) * rad, float(d_vec[1]) + dh, math.cos(a0 + da) * rad], dtype=np.float32)
-            fov = clamp(lerp(f0, f0 - float(g.get("zoom", 4.0)), e), 18.0, 85.0)
-            return pos, tgt, fov, r0, b0
-
-        if jn == "crane":
-            end_pose = self._cam_pose_from_spec(g.get("ke", g), start_pose, t1)
-            p1, tgt1, f1, r1, b1 = end_pose
-            if "naik" in g and "pos" not in g.get("ke", {}):
-                p1 = p0 + np.array([0.0, float(g["naik"]), float(g.get("maju", 0.0))], dtype=np.float32)
-            return (np.array(lerp3(p0, p1, e), dtype=np.float32),
-                    np.array(lerp3(tgt0, tgt1, e), dtype=np.float32),
-                    lerp(f0, f1, e), lerp(r0, r1, e), lerp(b0, b1, e))
-
-        if jn == "terbang" and "jalur" in g:
-            pts = [tuple(float(v) for v in pt) for pt in g["jalur"]]
-            pos = np.array(catmull_rom(pts, e), dtype=np.float32)
-            tgt = np.array(self._resolve_target(g, t), dtype=np.float32)
-            return pos, tgt, f0, r0, b0
-
-        if jn == "ikut":
-            fid = g.get("fokus") or (self.actors[0].id if self.actors else None)
-            if fid and fid in self.actor_map:
-                ap = self.actor_map[fid].pos_at(t)[0]
-                off = np.array(g.get("offset", [0.4, 1.35, 3.0]), dtype=np.float32)
-                tgt = np.array([ap[0], ap[1] + 1.05, ap[2]], dtype=np.float32)
-                pos = np.array([ap[0] + off[0], ap[1] + off[1], ap[2] + off[2]], dtype=np.float32)
-                return pos, tgt, f0, r0, b0
-            return start_pose
-
-        if jn == "punch_in":
-            es = e_snap(p)
-            faktor = float(g.get("faktor", 0.58))
-            pos = np.array(lerp3(p0, tgt0 + (p0 - tgt0) * faktor, es), dtype=np.float32)
-            fov = lerp(f0, max(24.0, f0 - float(g.get("zoom", 10.0))), es)
-            return pos, tgt0, fov, r0, b0
-
-        if jn == "hentak":
-            # Zoom cepat masuk lalu memantul kembali ke posisi semula
-            pulse = math.sin(math.pi * clamp(p)) * float(g.get("kuat", 0.16))
-            pos = tgt0 + (p0 - tgt0) * (1.0 - pulse)
-            fov = max(22.0, f0 - pulse * 18.0)
-            return pos, tgt0, fov, r0, b0
-
-        if jn == "dolly_zoom":
-            # Efek Vertigo: jarak berubah, FOV disesuaikan agar ukuran subjek tetap konstan
-            faktor = float(g.get("faktor", 1.65))
-            dist_scale = lerp(1.0, faktor, e)
-            pos = tgt0 + (p0 - tgt0) * dist_scale
-            half_rad = math.atan(math.tan(math.radians(f0 * 0.5)) / max(0.35, dist_scale))
-            fov = clamp(math.degrees(half_rad * 2.0), 18.0, 85.0)
-            return pos, tgt0, fov, r0, b0
-
-        if jn == "truck":
-            delta = np.array([float(g.get("x", 1.2)), float(g.get("y", 0.0)), float(g.get("z", 0.0))], dtype=np.float32) * e
-            return p0 + delta, tgt0 + delta, f0, r0, b0
-
-        if jn == "pan":
-            v = tgt0 - p0
-            da = math.radians(float(g.get("derajat", 30.0))) * e
-            c_a, s_a = math.cos(da), math.sin(da)
-            nv = np.array([v[0] * c_a + v[2] * s_a, v[1] + float(g.get("naik", 0.0)) * e, -v[0] * s_a + v[2] * c_a], dtype=np.float32)
-            return p0, p0 + nv, f0, r0, b0
-
-        if jn == "pindah_fokus":
-            tgt1 = np.array(self._resolve_target(g, t), dtype=np.float32)
-            tgt = np.array(lerp3(tgt0, tgt1, e), dtype=np.float32)
-            blur = max(b0, float(g.get("blur", 1.6)) * math.sin(math.pi * p))
-            return p0, tgt, f0, r0, blur
-
-        if jn in ("push", "pull", "terbang", "miring", "whip", "potong"):
-            end_pose = self._cam_pose_from_spec(g.get("ke", g), start_pose, t1)
-            p1, tgt1, f1, r1, b1 = end_pose
-            if jn == "push" and "ke" not in g:
-                f1 = max(28.0, f0 - float(g.get("zoom", 8.0)))
-                p1 = tgt0 + (p0 - tgt0) * float(g.get("faktor", 0.78))
-            elif jn == "pull" and "ke" not in g:
-                f1 = min(60.0, f0 + float(g.get("zoom", 8.0)))
-                p1 = tgt0 + (p0 - tgt0) * float(g.get("faktor", 1.32))
-            u = 1.0 if jn == "potong" else e
-            blur = lerp(b0, b1, u)
-            if jn == "whip" and 0.1 < p < 0.9:
-                blur = max(blur, 3.0 * math.sin(math.pi * p))
-            return (np.array(lerp3(p0, p1, u), dtype=np.float32),
-                    np.array(lerp3(tgt0, tgt1, u), dtype=np.float32),
-                    lerp(f0, f1, u), lerp(r0, r1, u), blur)
-
-        return start_pose
+    def _resolve_actor_pos(self, fid, t):
+        fid = fid or (self.actors[0].id if self.actors else None)
+        if fid and fid in self.actor_map:
+            return self.actor_map[fid].pos_at(t)[0]
+        return None
 
     def _prep_cam(self):
-        cam = self.s.get("kamera", {})
-        base = self._cam_pose_from_spec(cam.get("awal", {"ukuran": "penuh"}), None, 0.0)
-        moves = []
-        for g in sorted(cam.get("gerak", []), key=lambda x: self.when(x)):
-            t0 = self.when(g)
-            dur = float(g.get("dur", 0.22 if g.get("jenis") in ("punch_in", "hentak") else 1.2))
-            t1 = t0 + dur
-            moves.append((t0, t1, g, base))
-            if g.get("jenis") not in ("goyang", "hentak"):
-                base = self._eval_cam_move(g, base, t1, 1.0, t1)
-        return moves
+        self.cam_rig = SinematografiRig(
+            self.s.get("kamera", {}),
+            self.dur,
+            self.when,
+            self._cam_pose_from_spec,
+            self._resolve_target,
+            self._resolve_actor_pos,
+        )
+        self.shots = self.cam_rig.shots
+        return self.cam_rig.moves
 
     def cam_at(self, t):
-        cam = self.s.get("kamera", {})
-        pose = self._cam_pose_from_spec(cam.get("awal", {"ukuran": "penuh"}), None, 0.0)
-        shake = np.zeros(3, dtype=np.float32)
-
-        for t0, t1, g, start_pose in self.cam_moves:
-            if t < t0:
-                continue
-            p = prog(t, t0, t1)
-            if g.get("jenis") == "goyang":
-                kuat = float(g.get("kuat", 0.06)) * (1.0 - p)
-                shake += np.array([math.sin(t * 48.0) * kuat, math.cos(t * 55.0) * kuat * 0.7, 0.0], dtype=np.float32)
-            else:
-                pose = self._eval_cam_move(g, start_pose, t, p, t1)
-
-        pos, tgt, fov, roll, blur = pose
-        dx_a, dy_a, freq = GAYA_DRIFT.get(cam.get("gaya", "halus"), GAYA_DRIFT["halus"])
-        drift = np.array([math.sin(t * freq) * dx_a, math.cos(t * freq * 0.76) * dy_a, 0.0], dtype=np.float32) if freq > 0 else np.zeros(3, dtype=np.float32)
-        return Cam3D(pos=pos + shake + drift, target=tgt + shake * 0.35, fov=fov, roll=roll, blur=blur)
+        pos, tgt, fov, roll, blur = self.cam_rig.eval(t)
+        return Cam3D(pos=pos, target=tgt, fov=fov, roll=roll, blur=blur)
 
     def _draw_2d_overlays(self, img, cam, t):
         W, H = self.W, self.H
+        if self.s.get("sinemaskop") or self.film.proj.get("sinemaskop"):
+            img = terapkan_sinemaskop(img)
         ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         d = ImageDraw.Draw(ov)
         scale_ref = H / 1080.0 if W >= H else W / 1080.0
@@ -660,10 +514,5 @@ class Adegan:
                 ev.append((self.start + ak.t_in, "pop", "masuk"))
             for t0, _, kind in ak.icons:
                 ev.append((self.start + t0, "ikon", kind))
-        for t0, _, g, _ in self.cam_moves:
-            jn = g.get("jenis")
-            if jn in ("whip", "terbang", "crane", "orbit", "spiral", "dolly_zoom"):
-                ev.append((self.start + t0, "whoosh", jn))
-            elif jn in ("goyang", "punch_in", "hentak"):
-                ev.append((self.start + t0, "punch", jn))
+        ev.extend(self.cam_rig.sfx_events(self.start))
         return ev

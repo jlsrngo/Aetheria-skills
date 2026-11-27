@@ -35,7 +35,7 @@
 ## Properti 3D (`benda`)
 
 ### Properti Cerita & Diorama Umum
-`kalender`, `poster`, `peta`, `papan_tulis`, `layar_led`, `pesawat`, `karung`, `bendera`, `podium`, `buku`, `laptop`, `kopi`.
+`kalender`, `poster`, `peta`, `papan_tulis`, `layar_led`, `pesawat`, `karung`, `bendera`, `podium`, `buku`, `laptop`, `kopi`, `tiang`, `tiang_lampu`, `pilar` *(cocok untuk foreground parallax wipe & pillar reveal)*.
 
 ### Properti & Animasi 3D Engineering (Portingan `explainer_kit` — Full Lokal CPU)
 Dapat dipanggil langsung di daftar `benda` pada `proyek.json` (seluruh animasi berjalan otomatis mengikuti waktu adegan `t`):

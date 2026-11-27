@@ -5,7 +5,12 @@ film.py - menyusun semua adegan jadi film: jadwal, kata, transisi, subtitle, fad
 import math, os, sys, json
 from PIL import Image, ImageDraw, ImageChops
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 from stik import *
+from aset_global.sinematografi import terapkan_sinemaskop
+from aset_global.transisi import blend_transisi, norm_transisi, sfx_transisi
 import timing
 from adegan import Adegan, ScreenCanvas, motion_blur
 import tokoh as TK
@@ -160,6 +165,8 @@ class Film:
     def frame(self, f):
         T = f / self.fps
         img = self.raw(T)
+        if self.proj.get("sinemaskop"):
+            img = terapkan_sinemaskop(img)
         img = self.caption(img, T)
         # fade dari/ke hitam
         fi = float(self.proj.get("fade_masuk", 0.5))
@@ -178,79 +185,17 @@ class Film:
         for i, s in enumerate(self.scenes):
             ev += s.events()
             if i > 0:
-                tr = self.trans_of(i)
-                k = tr["jenis"]
-                if k in ("whip", "geser"):
-                    ev.append((s.start - tr["dur"] / 2, "whoosh", 0.8))
-                elif k == "iris":
-                    ev.append((s.start - tr["dur"] / 2, "iris", 0.7))
-                elif k in ("zoom", "kedip"):
-                    ev.append((s.start - tr["dur"] / 2, "whoosh_lembut", 0.8))
-                elif k == "flash":
-                    ev.append((s.start - 0.02, "kilat", 0.8))
+                tr = norm_transisi(self.trans_of(i))
+                sx = sfx_transisi(tr["jenis"])
+                if sx:
+                    t_ev = s.start - 0.02 if sx[0] == "kilat" else s.start - tr["dur"] / 2
+                    ev.append((t_ev, sx[0], sx[1]))
         return sorted(ev)
 
 
-# ==================================================================== transisi
+# ==================================================================== transisi (global)
 def blend(A, B, p, tr):
-    k = tr["jenis"]
-    W, H = A.size
-    e = e_io(p)
-    if k == "fade":
-        return Image.blend(A, B, e)
-    if k == "flash":
-        if p < 0.5:
-            return Image.blend(A, Image.new("RGB", A.size, (255, 255, 255)), e_out(p * 2))
-        return Image.blend(Image.new("RGB", A.size, (255, 255, 255)), B, e_io((p - 0.5) * 2))
-    if k == "kedip":      # kelopak menutup lalu membuka
-        im = A if p < 0.5 else B
-        q = e_io(p * 2) if p < 0.5 else 1 - e_io((p - 0.5) * 2)
-        d = ImageDraw.Draw(im)
-        h = int(H * 0.5 * q)
-        d.rectangle([0, 0, W, h], fill=(20, 20, 30))
-        d.rectangle([0, H - h, W, H], fill=(20, 20, 30))
-        return im
-    if k == "iris":
-        cx, cy = tr.get("x", 0.5) * W, tr.get("y", 0.5) * H
-        R = math.hypot(max(cx, W - cx), max(cy, H - cy)) * e
-        mask = Image.new("L", A.size, 0)
-        ImageDraw.Draw(mask).ellipse([cx - R, cy - R, cx + R, cy + R], fill=255)
-        out = Image.composite(B, A, mask)
-        if 0.02 < p < 0.98:
-            ImageDraw.Draw(out).ellipse([cx - R, cy - R, cx + R, cy + R], outline=OUT, width=8)
-        return out
-    if k in ("geser", "whip"):
-        arah = tr.get("arah", "kiri")
-        dx, dy = {"kiri": (-1, 0), "kanan": (1, 0), "atas": (0, -1), "bawah": (0, 1)}.get(arah, (-1, 0))
-        ox, oy = int(-dx * W * e), int(-dy * H * e)
-        canvas = Image.new("RGB", A.size)
-        canvas.paste(A, (ox, oy))
-        canvas.paste(B, (ox + dx * W, oy + dy * H))
-        if k == "whip":
-            canvas = motion_blur(canvas, int(math.sin(math.pi * p) * W * 0.06))
-        return canvas
-    if k == "zoom":
-        s_out = 1 + 0.9 * e
-        s_in = 0.55 + 0.45 * e
-        a = A.resize((int(W * s_out), int(H * s_out)), Image.BILINEAR)
-        a = a.crop(((a.width - W) // 2, (a.height - H) // 2, (a.width + W) // 2, (a.height + H) // 2))
-        b = B.resize((max(2, int(W * s_in)), max(2, int(H * s_in))), Image.BILINEAR)
-        out = Image.blend(a, Image.new("RGB", A.size, (255, 255, 255)), 0.0)
-        mask = Image.new("L", A.size, int(255 * e_io(clamp(p * 1.3 - 0.15))))
-        canvas = a.copy()
-        full = Image.new("RGB", A.size, (255, 255, 255))
-        full.paste(b, ((W - b.width) // 2, (H - b.height) // 2))
-        return Image.composite(full if s_in < 1 else B, a, mask)
-    if k == "wipe":
-        x = int(W * e)
-        out = A.copy()
-        out.paste(B.crop((0, 0, x, H)), (0, 0))
-        ImageDraw.Draw(out).line([(x, 0), (x, H)], fill=OUT, width=8)
-        return out
-    if k == "tirai":     # dua tirai menutup dari atas-bawah
-        h = int(H * 0.5 * (e * 2 if p < .5 else 0))
-        return Image.blend(A, B, e)
-    return B if p >= 0.5 else A
+    return blend_transisi(A, B, p, tr, outline_col=OUT)
 
 
 # ==================================================================== panel komik

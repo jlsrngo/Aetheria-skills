@@ -5,7 +5,11 @@ film.py - menyusun semua adegan 3D PaperWorld jadi film: jadwal, subtitle kertas
 import math, os, sys, json
 from PIL import Image, ImageDraw, ImageFilter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 from paper import OUT, PUTIH, KORAL, KRIM, clamp, lerp, e_io, e_out, e_back, prog, font
+from aset_global.transisi import blend_transisi, norm_transisi, sfx_transisi
 import timing
 from adegan import Adegan
 
@@ -173,55 +177,16 @@ class Film:
         for i, s in enumerate(self.scenes):
             ev += s.events()
             if i > 0:
-                tr = self.trans_of(i)
-                k = tr["jenis"]
-                if k in ("whip", "geser"):
-                    ev.append((s.start - tr["dur"] / 2, "whoosh", 0.8))
-                elif k == "iris":
-                    ev.append((s.start - tr["dur"] / 2, "iris", 0.7))
-                elif k in ("zoom", "kedip"):
-                    ev.append((s.start - tr["dur"] / 2, "whoosh_lembut", 0.75))
-                elif k == "flash":
-                    ev.append((s.start - 0.02, "kilat", 0.8))
+                tr = norm_transisi(self.trans_of(i))
+                sx = sfx_transisi(tr["jenis"])
+                if sx:
+                    t_ev = s.start - 0.02 if sx[0] == "kilat" else s.start - tr["dur"] / 2
+                    ev.append((t_ev, sx[0], sx[1]))
         return sorted(ev)
 
 
 def blend(A, B, p, tr):
-    k = tr["jenis"]
-    W, H = A.size
-    e = e_io(p)
-    if k == "fade":
-        return Image.blend(A, B, e)
-    if k == "flash":
-        if p < 0.5:
-            return Image.blend(A, Image.new("RGB", A.size, PUTIH), e_out(p * 2))
-        return Image.blend(Image.new("RGB", A.size, PUTIH), B, e_io((p - 0.5) * 2))
-    if k == "iris":
-        cx, cy = tr.get("x", 0.5) * W, tr.get("y", 0.5) * H
-        R = math.hypot(max(cx, W - cx), max(cy, H - cy)) * e
-        mask = Image.new("L", A.size, 0)
-        ImageDraw.Draw(mask).ellipse([cx - R, cy - R, cx + R, cy + R], fill=255)
-        out = Image.composite(B, A, mask)
-        if 0.02 < p < 0.98:
-            ImageDraw.Draw(out).ellipse([cx - R, cy - R, cx + R, cy + R], outline=OUT, width=8)
-        return out
-    if k in ("geser", "whip"):
-        arah = tr.get("arah", "kiri")
-        dx, dy = {"kiri": (-1, 0), "kanan": (1, 0), "atas": (0, -1), "bawah": (0, 1)}.get(arah, (-1, 0))
-        ox, oy = int(-dx * W * e), int(-dy * H * e)
-        canvas = Image.new("RGB", A.size)
-        canvas.paste(A, (ox, oy))
-        canvas.paste(B, (ox + dx * W, oy + dy * H))
-        if k == "whip":
-            canvas = canvas.filter(ImageFilter.GaussianBlur(max(1, int(math.sin(math.pi * p) * 10))))
-        return canvas
-    if k == "wipe":
-        x = int(W * e)
-        out = A.copy()
-        out.paste(B.crop((0, 0, x, H)), (0, 0))
-        ImageDraw.Draw(out).line([(x, 0), (x, H)], fill=OUT, width=6)
-        return out
-    return B if p >= 0.5 else A
+    return blend_transisi(A, B, p, tr, outline_col=OUT)
 
 
 class Komik:
