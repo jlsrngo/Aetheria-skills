@@ -17,6 +17,7 @@ from voxel import (
 from aset_global.sinematografi import (
     SinematografiRig, apply_cinematic_modifiers, calc_ots_pose, terapkan_sinemaskop,
 )
+from aset_global.variasi import project_seed, seed_aktor, variasi_aksi_aktor_3d, variasi_kamera_3d
 import tokoh as TK
 import benda as BD
 import dunia as DN
@@ -59,7 +60,8 @@ class Aktor:
             self.x0 = float(spec.get("x", 0.0))
             self.y0 = float(spec.get("y", 0.0))
             self.z0 = float(spec.get("z", 0.0))
-        self.seed = (hash(self.id) % 97) / 10.0
+        proj = getattr(getattr(sc, "film", None), "proj", None)
+        self.seed = seed_aktor(project_seed(proj), self.id, getattr(sc, "idx", 0))
 
         base_state = {
             k: spec[k] for k in ("pose", "ekspresi", "hadap", "bawa", "ransel", "bicara", "lihat") if k in spec
@@ -76,7 +78,8 @@ class Aktor:
         self.in_style = None
         self.out_style = None
 
-        acts = [(sc.when(a), a) for a in spec.get("aksi", [])]
+        raw_aksi = spec.get("aksi") or variasi_aksi_aktor_3d(spec, sc.dur, getattr(sc, "idx", 0), proj, valid_poses=getattr(TK, "POSE", None))
+        acts = [(sc.when(a), a) for a in raw_aksi]
         mk = spec.get("masuk")
         if mk:
             t0 = sc.when(mk)
@@ -370,9 +373,11 @@ class Adegan:
         return None
 
     def _prep_cam(self):
-        cam_spec = self.s.get("kamera", {})
+        raw_cam = self.s.get("kamera", {})
+        proj = getattr(self.film, "proj", None)
+        cam_spec = variasi_kamera_3d(raw_cam, self.dur, self.idx, proj, actor_ids=[a.id for a in self.actors])
         self.cam_rig = None
-        if cam_spec.get("shot") or cam_spec.get("shots"):
+        if cam_spec.get("shot") or cam_spec.get("shots") or (isinstance(raw_cam, dict) and not raw_cam.get("gerak") and cam_spec.get("gerak")):
             self.cam_rig = SinematografiRig(
                 cam_spec, self.dur, self.when,
                 self._cam_pose_from_spec, self._resolve_target, self._resolve_actor_pos,

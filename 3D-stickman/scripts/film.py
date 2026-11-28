@@ -10,6 +10,7 @@ if _REPO_ROOT not in sys.path:
     sys.path.insert(0, _REPO_ROOT)
 from engine3d import OUT, PUTIH, KUNING, clamp, lerp, e_io, e_out, e_back, prog, font
 from aset_global.transisi import blend_transisi, norm_transisi, sfx_transisi
+from aset_global.variasi import pilih_transisi_cerdas
 import timing
 from adegan import Adegan
 
@@ -199,13 +200,17 @@ class Film:
         tr = sc.s.get("transisi")
         prev = self.scenes[j - 1]
         if tr is None or tr == "auto":
-            same = prev.s.get("latar") == sc.s.get("latar") and prev.s.get("waktu") == sc.s.get("waktu")
-            tr = {"jenis": "potong"} if same else {"jenis": "fade", "dur": 0.35}
-        if isinstance(tr, str):
-            tr = {"jenis": tr}
-        d = dict(tr)
-        d.setdefault("dur", 0.0 if d["jenis"] == "potong" else 0.40)
-        return d
+            prev_j = self._prev_trans_jenis(j - 1) if j > 1 else None
+            tr = pilih_transisi_cerdas(prev.s, sc.s, j, self.proj, prev_jenis=prev_j)
+        return norm_transisi(tr, default_dur=0.42)
+
+    def _prev_trans_jenis(self, k):
+        if k <= 0:
+            return None
+        tr0 = self.scenes[k].s.get("transisi")
+        if tr0 is None or tr0 == "auto":
+            return pilih_transisi_cerdas(self.scenes[k - 1].s, self.scenes[k].s, k, self.proj).get("jenis")
+        return norm_transisi(tr0).get("jenis")
 
     def raw(self, T):
         i = self.scene_index(T)

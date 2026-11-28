@@ -6,9 +6,13 @@ Waktu di dalam adegan selalu DETIK RELATIF terhadap awal adegan. Setiap item bol
   "t": 1.5                      -> detik tetap
   "kata": "jam tujuh"           -> saat frasa itu diucapkan di narasi adegan (+ "geser": -0.2 untuk maju/mundur)
 """
-import math, re
+import math, os, re, sys
 from PIL import Image, ImageDraw, ImageFilter, ImageChops
+_REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
 from stik import *
+from aset_global.variasi import project_seed, seed_aktor, variasi_aksi_aktor_2d, variasi_kamera_2d
 import tokoh as TK
 import benda as BD
 import dunia as DN
@@ -63,7 +67,9 @@ class Aktor:
         self.tk = TK.Tokoh(base)
         self.s = float(spec.get("skala", 1.0))
         self.x0, self.y0 = float(spec.get("x", 0)), float(spec.get("y", 0))
-        self.seed = (hash(self.id) % 97) / 10.0
+        proj = getattr(getattr(sc, "film", None), "proj", None)
+        self.seed = seed_aktor(project_seed(proj), self.id, getattr(sc, "idx", 0))
+        self.gerak_mode = str(spec.get("gerak", "aktif")).lower()
         self.layer = spec.get("lapis", 0)
         base_state = {k: spec[k] for k in ("pose", "ekspresi", "hadap", "bawa", "ransel", "bicara", "lihat", "tali_ransel") if k in spec}
         base_state.setdefault("pose", "diam")
@@ -75,8 +81,9 @@ class Aktor:
         self.t_in, self.t_out = None, None
         self.in_style, self.out_style = None, None
         pos = (self.x0, self.y0)
+        raw_aksi = spec.get("aksi") or variasi_aksi_aktor_2d(spec, sc.dur, getattr(sc, "idx", 0), proj)
         acts = []
-        for a in spec.get("aksi", []):
+        for a in raw_aksi:
             acts.append((sc.when(a), a))
         # masuk / keluar
         mk = spec.get("masuk")
@@ -241,10 +248,20 @@ class Aktor:
             squash = (1 + 0.1 * (1 - 4 * p * (1 - p)) * 0, 1.0)
         else:
             amp = 0.0
-        # napas (hidup)
+        # napas & idle organik anti-pasif (kepala, badan, lengan bergerak halus meski tidak sedang bicara)
         life = math.sin(t * 2.1 + self.seed) * 2.6
         if not walking:
-            hop += life * 0.4
+            hop += life * 0.45
+            if self.gerak_mode != "kaku" and pose_name not in ("tidur", "rebah"):
+                g_m = 1.35 if self.gerak_mode == "ekspresif" else (0.55 if self.gerak_mode == "tenang" else 1.0)
+                base["tilt"] = base.get("tilt", 0.0) + math.sin(t * 1.45 + self.seed) * 2.8 * g_m
+                base["lean"] = base.get("lean", 0.0) + math.sin(t * 0.95 + self.seed * 0.7) * 1.9 * g_m
+                if pose_name in ("diam", "santai"):
+                    sw_idle = math.sin(t * 1.65 + self.seed) * 5.2 * g_m
+                    la, le, lh = base["arms"]["L"]
+                    ra, re_, rh = base["arms"]["R"]
+                    base["arms"]["L"] = (la + sw_idle, le - abs(sw_idle) * 0.6, lh)
+                    base["arms"]["R"] = (ra - sw_idle * 0.9, re_ - abs(sw_idle) * 0.5, rh)
         # masuk: pop / jatuh
         if self.t_in is not None and self.in_style:
             gya, dr, dur = self.in_style
@@ -362,7 +379,8 @@ class Adegan:
         self.balon = spec.get("balon", [])
         self.teks = spec.get("teks", [])
         self.efek = spec.get("efek", [])
-        self._build_camera(spec.get("kamera", {}))
+        proj = getattr(film, "proj", None)
+        self._build_camera(variasi_kamera_2d(spec.get("kamera", {}), self.dur, idx, proj))
         self.vign = None
 
     # ------------------------------------------------------------ waktu

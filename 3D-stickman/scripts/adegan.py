@@ -17,6 +17,10 @@ from aset_global.sinematografi import (
     ANGLE_PRESET, GAYA_DRIFT, SinematografiRig,
     apply_cinematic_modifiers, calc_ots_pose, terapkan_sinemaskop,
 )
+from aset_global.variasi import (
+    PROFIL_SUTRADARA, pilih_profil_sutradara, project_seed,
+    seed_aktor, variasi_aksi_aktor_3d, variasi_kamera_3d,
+)
 import tokoh as TK
 import benda as BD
 import dunia as DN
@@ -84,13 +88,15 @@ class Aktor:
             self.x0 = float(spec.get("x", 0.0))
             self.y0 = float(spec.get("y", 0.0))
             self.z0 = float(spec.get("z", 0.0))
-        self.seed = (sum(ord(ch) * (i + 1) for i, ch in enumerate(self.id)) % 97) / 10.0
+        proj = getattr(getattr(sc, "film", None), "proj", None)
+        self.seed = seed_aktor(project_seed(proj), self.id, getattr(sc, "idx", 0))
+        prof_g = PROFIL_SUTRADARA[pilih_profil_sutradara(proj)]["gerak_aktor"]
 
         base_state = {k: spec[k] for k in ("pose", "ekspresi", "hadap", "bawa", "buku_kiri", "buku_kanan", "buku_isi", "bicara", "lihat", "gerak") if k in spec}
         base_state.setdefault("pose", "diam")
         base_state.setdefault("ekspresi", "senang")
         base_state.setdefault("hadap", "depan")
-        base_state.setdefault("gerak", "aktif")
+        base_state.setdefault("gerak", prof_g)
         base_state["t"] = 0.0
         self.keys = [base_state]
         self.moves = []
@@ -99,7 +105,8 @@ class Aktor:
         self.t_out = None
         self.patrol = spec.get("mondar_mandir")
 
-        acts = [(sc.when(a), a) for a in spec.get("aksi", [])]
+        raw_aksi = spec.get("aksi") or variasi_aksi_aktor_3d(spec, sc.dur, getattr(sc, "idx", 0), proj, valid_poses=TK.POSE)
+        acts = [(sc.when(a), a) for a in raw_aksi]
         # Dukungan multi-waypoint "jalur": [{"ke_pos": [...], "durasi": 2.0, "gaya": "jalan", "jeda": 0.4}, ...]
         jalur = spec.get("jalur")
         if isinstance(jalur, list) and jalur:
@@ -408,8 +415,13 @@ class Adegan:
         return None
 
     def _prep_cam(self):
+        proj = getattr(self.film, "proj", None)
+        cam_spec = variasi_kamera_3d(
+            self.s.get("kamera", {}), self.dur, self.idx, proj,
+            actor_ids=[a.id for a in self.actors],
+        )
         self.cam_rig = SinematografiRig(
-            self.s.get("kamera", {}),
+            cam_spec,
             self.dur,
             self.when,
             self._cam_pose_from_spec,

@@ -16,6 +16,8 @@ OUT_DEFAULT = (22, 22, 28)
 TRANSISI_ALIAS = {
     "cut": "potong",
     "dissolve": "fade",
+    "silang": "fade",
+    "crossfade": "fade",
     "dip_hitam": "fade_hitam",
     "dip_black": "fade_hitam",
     "dip_putih": "flash",
@@ -241,12 +243,18 @@ def blend_transisi(A, B, p, tr=None, outline_col=OUT_DEFAULT):
         return out
 
     if k == "wipe_diagonal":
-        # Sapuan garis miring 45 derajat dari sudut ke sudut
+        # Sapuan garis miring 45 derajat dari sudut ke sudut (mendukung arah kanan_bawah / kiri_bawah)
+        arah_d = str(tr.get("arah", "kanan_bawah")).lower()
         skew = int(H * 0.42)
-        x_top = int(-skew + (W + skew * 2) * e)
-        x_bot = x_top - skew
         mask = Image.new("L", (W, H), 0)
-        ImageDraw.Draw(mask).polygon([(-skew, 0), (x_top, 0), (x_bot, H), (-skew, H)], fill=255)
+        if "kiri" in arah_d:
+            x_top = int(W + skew - (W + skew * 2) * e)
+            x_bot = x_top + skew
+            ImageDraw.Draw(mask).polygon([(W + skew, 0), (x_top, 0), (x_bot, H), (W + skew, H)], fill=255)
+        else:
+            x_top = int(-skew + (W + skew * 2) * e)
+            x_bot = x_top - skew
+            ImageDraw.Draw(mask).polygon([(-skew, 0), (x_top, 0), (x_bot, H), (-skew, H)], fill=255)
         out = Image.composite(B, A, mask)
         if tr.get("garis", True) and 0.02 < p < 0.98:
             ImageDraw.Draw(out).line([(x_top, 0), (x_bot, H)], fill=ol, width=max(5, W // 150))
@@ -342,12 +350,18 @@ def blend_transisi(A, B, p, tr=None, outline_col=OUT_DEFAULT):
         return out
 
     if k == "luma":
-        # Film Burn / Light Leak hangat oranye-emas menyapu layar
+        # Film Burn / Light Leak hangat oranye-emas (mendukung pola: horizontal | radial)
+        pola = str(tr.get("pola", "horizontal")).lower()
         base = np.asarray(Image.blend(A, B, e), dtype=np.float32)
         xs = np.linspace(0.0, 1.0, W, dtype=np.float32)[None, :]
         ys = np.linspace(0.0, 1.0, H, dtype=np.float32)[:, None]
-        center = 1.25 - 1.50 * e
-        wave = np.exp(-((xs - center) ** 2) / 0.14) * (0.65 + 0.35 * np.sin(ys * 4.5 + p * 6.0))
+        if pola == "radial":
+            r = np.sqrt((xs - 0.5) ** 2 + (ys - 0.5) ** 2)
+            ring_r = 0.05 + 0.85 * e
+            wave = np.exp(-((r - ring_r) ** 2) / 0.045) * 0.95 + np.exp(-(r ** 2) / 0.28) * 0.35
+        else:
+            center = 1.25 - 1.50 * e
+            wave = np.exp(-((xs - center) ** 2) / 0.14) * (0.65 + 0.35 * np.sin(ys * 4.5 + p * 6.0))
         glow = (math.sin(math.pi * p) ** 1.1) * wave
         leak = np.zeros_like(base)
         leak[:, :, 0] = 255.0 * glow * 1.10

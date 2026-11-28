@@ -52,6 +52,17 @@ from .transisi import (
     norm_transisi,
     sfx_transisi,
 )
+from .variasi import (
+    PROFIL_SUTRADARA,
+    pilih_profil_sutradara,
+    pilih_transisi_cerdas,
+    project_seed,
+    seed_aktor,
+    variasi_aksi_aktor_2d,
+    variasi_aksi_aktor_3d,
+    variasi_kamera_2d,
+    variasi_kamera_3d,
+)
 
 __all__ = [
     "clamp", "smoothstep", "ease_io", "ease_out_cubic",
@@ -65,4 +76,7 @@ __all__ = [
     "calc_ots_pose", "catmull_rom_3d", "eval_camera_move",
     "terapkan_sinemaskop", "terapkan_vinyet_halus",
     "DAFTAR_TRANSISI", "TRANSISI_ALIAS", "blend_transisi", "norm_transisi", "sfx_transisi",
+    "PROFIL_SUTRADARA", "pilih_profil_sutradara", "pilih_transisi_cerdas",
+    "project_seed", "seed_aktor", "variasi_aksi_aktor_2d", "variasi_aksi_aktor_3d",
+    "variasi_kamera_2d", "variasi_kamera_3d",
 ]

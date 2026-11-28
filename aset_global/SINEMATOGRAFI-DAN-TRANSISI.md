@@ -93,3 +93,21 @@ Bisa ditulis sebagai string singkat (`"transisi": "wipe_tiang"`) atau objek (`"t
 | `kotak` | `pixelate`, `mosaic` | Mozaik piksel membesar lalu kembali tajam | `besar`, `dur` |
 | `halaman` | `page_turn`, `lipat` | Membalik halaman kertas dengan bayangan lipatan | `dur` |
 | `cahaya` | `radial_flash`, `flare` | Ledakan lens flare lembut dari pusat layar | `dur` |
+
+---
+
+## 3. Mesin Variasi Sutradara & Anti-Pasif Antar Video (`variasi.py`)
+
+Agar **Video 1 dan Video 2 tidak terasa kembar / gitu-gitu aja**, seluruh 7 skill visual otomatis memakai [`aset_global/variasi.py`](variasi.py):
+
+- **Auto-Seed Deterministik per Video:** dihitung otomatis dari hash `judul` + `narasi` + `latar` (atau dapat diatur manual lewat `"seed": 2026` di root `proyek.json`). Video berbeda otomatis mendapat variasi berbeda, namun render ulang proyek yang sama tetap 100% konsisten.
+- **6 Profil Sutradara (`"gaya_sutradara"` di root `proyek.json`, default otomatis):**
+  - `dinamis_film` *(handheld, wipe_tiang/whip/luma, low-angle/crane/spiral, karakter ekspresif)*
+  - `dokumenter_halus` *(halus, fade/geser/iris/tirai, push/pull/orbit lembut)*
+  - `komik_enerjik` *(handheld, whip/wipe_diagonal/belah/flash/halaman, punch_in/hentak)*
+  - `misteri_tegang` *(tegang, fade_hitam/kedip/glitch, dutch/rendah/dolly_zoom)*
+  - `hangat_ghibli` *(napas_film, luma radial/cahaya/halaman/wipe_tiang, crane/orbit lembut)*
+  - `retro_kreatif` *(halus, glitch/kotak/putar/belah, spiral/truck/dolly_zoom)*
+- **Transisi Anti-Repetisi:** saat `"transisi": "auto"` (atau kosong), transisi dipilih kontekstual sesuai profil & seed video dan tidak pernah mengulang jenis non-potong 2× berturut-turut.
+- **Auto-Variasi Kamera:** jika adegan belum menentukan `kamera.gerak` / `kamera.shot`, sudut, `angle`, `geser_x`, gerak kamera, hingga 2-shot OTS (untuk adegan `>= 4,8 dtk` dengan `>= 2` tokoh) digenerate otomatis unik per video (tanpa menimpa pengaturan kamera manual user).
+- **Auto-Koreografi Karakter Anti-Pasif:** jika aktor berdiri hanya diberi `pose: "diam"` / `"santai"` tanpa `aksi`/`masuk`/`keluar`, mesin otomatis menyisipkan langkah berjalan pendek, perubahan pose gestur, & perubahan hadap 3/4/serong yang berbeda tiap video + gerak *idle* organik (matikan per aktor dengan `"gerak": "kaku"`).

@@ -12,7 +12,7 @@ from stik import *
 import tokoh as TK
 
 
-def potret(spec, W, H, cam, bg=(255, 255, 255, 0), ss=2, **st):
+def potret(spec, W, H, cam, bg=(255, 255, 255, 0), ss=3, **st):
     c = Canvas(W, H, ss, cam, 1.0)
     c.fill(bg[:3] if len(bg) == 4 else bg)
     TK.Tokoh(spec).draw(c, TK.state(**st))
@@ -39,7 +39,7 @@ def lembar(out):
     poses = ["lambai", "tunjuk", "silang", "ide", "jalan"]
     for title, spec, col, light, ox, cam_eks in cols:
         d.ellipse([ox + 30, 90, ox + 400, 460], fill=light)
-        cam_main = Cam(19, -264, 0.80) if spec == "kribo" else Cam(8, -242, 0.92)
+        cam_main = Cam(14, -246, 0.74) if spec == "kribo" else Cam(8, -242, 0.90)
         im = potret(spec, 420, 520, cam_main, pose="jempol", expr="senang")
         sheet.paste(im, (ox + 10, 40))
         pil(None, title, (ox + 665, 60), 40, (255, 255, 255), col, d)
@@ -109,7 +109,7 @@ def semua(out):
     y += rows_p * cell
     d.text((20, y), "TOKOH BAWAAN", font=font("judul", 34), fill=(40, 40, 60)); y += 50
     for i, p in enumerate(presets):
-        cam_c = Cam(0, -264, 0.42) if p == "kribo" else Cam(0, -215, 0.62)
+        cam_c = Cam(0, -264, 0.42) if p == "kribo" else Cam(0, -240, 0.46)
         im = potret(p, cell, cell - 30, cam_c, pose="diam")
         sheet.paste(im, ((i % cols) * 320, y + (i // cols) * cell))
         d.text(((i % cols) * 320 + 150, y + (i // cols) * cell + cell - 20), p, font=font("judul", 24), fill=(40, 40, 60), anchor="mm")

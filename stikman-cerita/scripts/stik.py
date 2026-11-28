@@ -253,23 +253,42 @@ class Canvas:
         return max(1, int(round(ow * self.k)))
 
     def _stroke(self, q, ow, color, closed=False, cap=True):
-        """Garis tebal mulus: ruas lurus + bulatan di tiap titik (tanpa sambungan bergerigi)."""
+        """Garis tebal super halus berbasis pita poligon kontinu (bebas bug tangga/gerigi PIL.ImageDraw.line)."""
         if not ow or len(q) < 2:
             return
         w = max(1.0, ow * self.k)
-        seq = list(q) + [q[0]] if closed else list(q)
-        iw = max(1, int(round(w)))
-        r = iw / 2.0
+        r = w * 0.5
         d = self.d
-        last = None
-        for i, (x, y) in enumerate(seq):
-            if i:
-                d.line([seq[i - 1], (x, y)], fill=color, width=iw)
-            # bulatan di titik: lewati titik yang terlalu dekat dengan bulatan sebelumnya
-            if last is None or (x - last[0]) ** 2 + (y - last[1]) ** 2 > (r * 0.45) ** 2 or i == len(seq) - 1:
-                if cap or 0 < i < len(seq) - 1:
-                    d.ellipse([x - r, y - r, x + r, y + r], fill=color)
-                last = (x, y)
+        # bersihkan titik duplikat berdekatan agar normal selalu stabil
+        pts = [q[0]]
+        for p in q[1:]:
+            if (p[0] - pts[-1][0]) ** 2 + (p[1] - pts[-1][1]) ** 2 > 0.04:
+                pts.append(p)
+        if closed and len(pts) > 2 and (pts[0][0] - pts[-1][0]) ** 2 + (pts[0][1] - pts[-1][1]) ** 2 <= 0.04:
+            pts.pop()
+        m = len(pts)
+        if m < 2:
+            return
+        # bila garis sangat tipis (<1.4 px di ruang SS), tetap gambar pita lembut ber-r >= 0.7
+        r_eff = max(0.7, r)
+        seq = pts + [pts[0]] if closed else pts
+        # gambar tiap segmen sebagai quad presisi + bulatan sambungan hanya di titik belok
+        for i in range(len(seq) - 1):
+            x0, y0 = seq[i]
+            x1, y1 = seq[i + 1]
+            dx, dy = x1 - x0, y1 - y0
+            ll = math.hypot(dx, dy)
+            if ll < 1e-4:
+                continue
+            nx, ny = -dy / ll * r_eff, dx / ll * r_eff
+            d.polygon([
+                (x0 + nx, y0 + ny), (x1 + nx, y1 + ny),
+                (x1 - nx, y1 - ny), (x0 - nx, y0 - ny),
+            ], fill=color)
+        # bulatan join halus di tiap simpul (dan cap di ujung bila cap=True)
+        for i, (x, y) in enumerate(pts):
+            if closed or cap or (0 < i < m - 1):
+                d.ellipse([x - r_eff, y - r_eff, x + r_eff, y + r_eff], fill=color)
 
     def poly(self, pts, fill=None, ow=0, oc=OUT):
         q = [self.P(*p) for p in pts]
@@ -344,7 +363,7 @@ class Canvas:
 
     # --- keluaran
     def finish(self):
-        """Roll kamera (jika ada) lalu perkecil ke ukuran akhir."""
+        """Roll kamera (jika ada) lalu perkecil dengan resampling LANCZOS anti-aliased super halus."""
         im = self.im
         r = self.cam.r
         if abs(r) > 0.02:
@@ -353,9 +372,9 @@ class Canvas:
             s = 1 + abs(math.radians(r)) * 1.1
             w, h = im.size
             cw, ch = int(w / s), int(h / s)
-            im = im.crop(((w - cw) // 2, (h - ch) // 2, (w + cw) // 2, (h + ch) // 2)).resize((w, h), Image.BILINEAR)
+            im = im.crop(((w - cw) // 2, (h - ch) // 2, (w + cw) // 2, (h + ch) // 2)).resize((w, h), Image.Resampling.LANCZOS)
         if self.ss > 1:
-            im = im.reduce(self.ss)
+            im = im.resize((self.W, self.H), Image.Resampling.LANCZOS)
         return im
 
 

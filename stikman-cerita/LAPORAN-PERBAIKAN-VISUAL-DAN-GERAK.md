@@ -94,3 +94,17 @@ Fungsi `trans_of(self, j)` di [`film.py`](scripts/film.py#L135-L192) kini memili
      - Anggukan kepala ritmis mengikuti intensitas suara (`tilt += sin(t * 3.1) * 2.4 * (0.4 + 0.6 * talk)`).
      - Goyangan tumpuan tubuh lembut (`lean += sin(t * 1.8) * 1.2`).
      - Gerakan tangan kanan ekspresif ringan saat menekankan kata (`lift_t` mengikuti amplop suara VO).
+
+---
+
+## 5. Audit & Penyempurnaan Lanjutan (Galeri, Transisi Global, & Verifikasi Karakter)
+
+Hasil audit menyeluruh pada seluruh preset tokoh, sudut hadap (`depan` / `miring 3/4` / `samping`), dan seluruh cabang *Smart Contextual Auto-Transition* di [`film.py`](scripts/film.py):
+
+1. **Perbaikan Alias & Pola Transisi Global ([`aset_global/transisi.py`](../aset_global/transisi.py))**:
+   - Menambahkan alias `"silang"` & `"crossfade"` -> `"fade"` sehingga cabang *time-lapse* di `Film.trans_of()` (`{"jenis": "silang", "dur": 0.65}`) tidak lagi jatuh ke *hard-cut* fallback.
+   - Mengaktifkan parameter `pola="radial"` pada transisi `luma` (cincin *light leak* hangat memancar radial untuk *time-lapse*) serta parameter `arah` (`kanan_bawah` / `kiri_bawah`) pada `wipe_diagonal`.
+   - Seluruh 10 skenario *Smart Contextual Auto-Transition* (`komik`, `timelapse`, `same_lat/same_wak`, `outdoor`, `indoor`) diverifikasi 100% valid terhadap `DAFTAR_TRANSISI` global dan berjalan penuh dari `p = 0.0 -> 1.0`.
+2. **Verifikasi Karakter & Regenerasi Galeri ([`galeri.py`](scripts/galeri.py), [`assets/galeri-karakter.png`](assets/galeri-karakter.png))**:
+   - Menyelaraskan framing kamera potret utama Kribo (`Cam(14, -246, 0.74)`) dan seluruh 19 preset di mode `--semua` (`Cam(0, -240, 0.46)`) agar kepala karakter berafro/berhijab tidak terpotong di tepi atas.
+   - Regenerasi penuh [`assets/galeri-karakter.png`](assets/galeri-karakter.png) dan [`galeri.png`](../galeri.png) dengan tampilan Kribo maskulin ikal 3-tone terbaru serta verifikasi visual 3 sudut hadap (`depan`, `miring 3/4`, `samping`) untuk `kribo`, `nadia`, `hana`, `arka`, dan `raka`.

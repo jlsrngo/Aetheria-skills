@@ -26,6 +26,7 @@ from .studio_cutaway import (
     render_style_preview,
 )
 from .transisi import blend_transisi, norm_transisi
+from .variasi import pilih_transisi_cerdas, variasi_kamera_3d
 
 STYLE_MAP = {
     "strata3d": "tanah",
@@ -84,10 +85,11 @@ def render_scene_frame(proj, adegan, t_local, W, H, skill_name, aa=1.5):
                 sc.add_hud_callout(h.get("pos", [0.5, 0.35]), h.get("teks", "LABEL"),
                                    bg=tuple(h.get("bg", [214, 52, 46])), size=int(h.get("ukuran", 26)))
 
-    # Sinematografi global (mendukung kamera.shot, kamera.gerak, orbit/spiral/crane/dolly_zoom, maupun awal->akhir)
+    # Sinematografi global + variasi otomatis per proyek bila kamera kosong/auto
     dcam = DEFAULT_CAM[style]
-    kam = adegan.get("kamera") or {}
     dur = max(0.1, float(adegan.get("durasi", 4.0)))
+    ad_idx = int(adegan.get("_idx", 0))
+    kam = variasi_kamera_3d(adegan.get("kamera") or {}, dur, ad_idx, proj)
 
     def _when(obj, key="t", default=0.0):
         if isinstance(obj, (int, float)):
@@ -216,7 +218,11 @@ def cli_render(skill_name, argv=None):
         im = None
         if si + 1 < len(spans):
             nxt_s0, _, ad_nxt = spans[si + 1]
-            tr = norm_transisi(ad_nxt.get("transisi", "potong"))
+            tr_raw = ad_nxt.get("transisi", "auto")
+            if tr_raw is None or tr_raw == "auto":
+                tr = norm_transisi(pilih_transisi_cerdas(ad_cur, ad_nxt, si + 1, proj))
+            else:
+                tr = norm_transisi(tr_raw)
             if tr["dur"] > 0 and T >= nxt_s0 - tr["dur"] * 0.5:
                 p = max(0.0, min(1.0, (T - (nxt_s0 - tr["dur"] * 0.5)) / tr["dur"]))
                 A = render_scene_frame(proj, ad_cur, T - s0, W, H, skill_name, aa=aa_val)
@@ -224,7 +230,11 @@ def cli_render(skill_name, argv=None):
                 im = blend_transisi(A, B, p, tr)
         if im is None and si > 0:
             prev_s0, prev_s1, ad_prev = spans[si - 1]
-            tr = norm_transisi(ad_cur.get("transisi", "potong"))
+            tr_raw = ad_cur.get("transisi", "auto")
+            if tr_raw is None or tr_raw == "auto":
+                tr = norm_transisi(pilih_transisi_cerdas(ad_prev, ad_cur, si, proj))
+            else:
+                tr = norm_transisi(tr_raw)
             if tr["dur"] > 0 and T < s0 + tr["dur"] * 0.5:
                 p = max(0.0, min(1.0, (T - (s0 - tr["dur"] * 0.5)) / tr["dur"]))
                 A = render_scene_frame(proj, ad_prev, min(prev_s1 - prev_s0, T - prev_s0), W, H, skill_name, aa=aa_val)

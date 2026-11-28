@@ -11,6 +11,7 @@ if _REPO_ROOT not in sys.path:
 from stik import *
 from aset_global.sinematografi import terapkan_sinemaskop
 from aset_global.transisi import blend_transisi, norm_transisi, sfx_transisi
+from aset_global.variasi import pilih_transisi_cerdas
 import timing
 from adegan import Adegan, ScreenCanvas, motion_blur
 import tokoh as TK
@@ -133,60 +134,22 @@ class Film:
         return i
 
     def trans_of(self, j):
-        """Transisi MASUK ke adegan j (j>=1): dict kind,dur,... (Smart Contextual Auto-Transition)."""
+        """Transisi MASUK ke adegan j (j>=1): Smart Contextual Auto-Transition berbasis seed & profil sutradara."""
         sc = self.scenes[j]
         tr = sc.s.get("transisi")
         prev = self.scenes[j - 1]
         if tr is None or tr == "auto":
-            lat_a, lat_b = prev.s.get("latar"), sc.s.get("latar")
-            wak_a, wak_b = prev.s.get("waktu", "siang"), sc.s.get("waktu", "siang")
-            same_lat = (lat_a == lat_b)
-            same_wak = (wak_a == wak_b)
-            if sc.s.get("tipe") == "komik" or prev.s.get("tipe") == "komik":
-                tr = {"jenis": "halaman", "arah": "kiri", "dur": 0.60}
-            elif same_lat and not same_wak:
-                # perubahan waktu di lokasi yang sama (time-lapse)
-                rot_time = (
-                    {"jenis": "luma", "pola": "radial", "dur": 0.65},
-                    {"jenis": "blur_cross", "dur": 0.60},
-                    {"jenis": "silang", "dur": 0.65},
-                )
-                tr = rot_time[j % len(rot_time)]
-            elif same_lat and same_wak:
-                # lokasi & waktu sama: mayoritas hard-cut sinematik, diselingi whip/blur lembut tiap 3 adegan agar tidak monoton
-                if j % 3 == 0:
-                    rot_same = (
-                        {"jenis": "blur_cross", "dur": 0.38},
-                        {"jenis": "whip", "arah": "kanan" if (j // 3) % 2 == 0 else "kiri", "dur": 0.32},
-                    )
-                    tr = rot_same[(j // 3) % len(rot_same)]
-                else:
-                    tr = {"jenis": "potong", "dur": 0.0}
-            else:
-                # pindah lokasi: pilih transisi sinematik kontekstual dari 22 transisi global
-                outdoor = ("jalan", "taman", "halaman_sekolah", "lapangan", "jembatan", "atap", "halte", "hutan", "sawah", "kota", "pantai")
-                if lat_b in outdoor or lat_a in outdoor:
-                    rot_loc = (
-                        {"jenis": "wipe_tiang", "arah": "kanan" if j % 2 else "kiri", "dur": 0.55},
-                        {"jenis": "whip", "arah": "kiri" if j % 2 else "kanan", "dur": 0.42},
-                        {"jenis": "wipe_diagonal", "arah": "kanan_bawah", "dur": 0.55},
-                        {"jenis": "geser", "arah": "kiri" if j % 2 else "kanan", "dur": 0.52},
-                        {"jenis": "zoom", "arah": "masuk", "dur": 0.50},
-                    )
-                else:
-                    rot_loc = (
-                        {"jenis": "iris", "dur": 0.58},
-                        {"jenis": "tirai", "arah": "horizontal", "dur": 0.54},
-                        {"jenis": "luma", "pola": "horizontal", "dur": 0.55},
-                        {"jenis": "halaman", "arah": "kiri", "dur": 0.58},
-                        {"jenis": "blur_cross", "dur": 0.50},
-                    )
-                tr = rot_loc[j % len(rot_loc)]
-        if isinstance(tr, str):
-            tr = {"jenis": tr}
-        d = dict(tr)
-        d.setdefault("dur", 0.0 if d["jenis"] == "potong" else 0.55)
-        return d
+            prev_j = self._prev_trans_jenis(j - 1) if j > 1 else None
+            tr = pilih_transisi_cerdas(prev.s, sc.s, j, self.proj, prev_jenis=prev_j)
+        return norm_transisi(tr, default_dur=0.52)
+
+    def _prev_trans_jenis(self, k):
+        if k <= 0:
+            return None
+        tr0 = self.scenes[k].s.get("transisi")
+        if tr0 is None or tr0 == "auto":
+            return pilih_transisi_cerdas(self.scenes[k - 1].s, self.scenes[k].s, k, self.proj).get("jenis")
+        return norm_transisi(tr0).get("jenis")
 
     def raw(self, T):
         i = self.scene_index(T)
