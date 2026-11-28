@@ -13,7 +13,8 @@ if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 from aset_global import draw_engineering_2d  # noqa: E402
 
-OW = 4.0
+OW = 2.6
+OC = (62, 48, 42)     # outline coklat hangat halus Ghibli (serasi dengan karakter baru!)
 
 
 def _T(x, y, s, rot):
@@ -29,100 +30,110 @@ def _P(f, pts):
     return [f(*p) for p in pts]
 
 
-# ----------------------------------------------------------------- benda genggam
-def hp(c, f, s, t, layar=(120, 182, 255), warna=(34, 34, 44), **k):
-    c.rect(*f(-21, -38), *f(21, 38), warna, OW * s, OUT, r=9 * s) if False else None
-    pts = _P(f, [(-21, -38), (21, -38), (21, 38), (-21, 38)])
-    c.blob(_P(f, [(-21, -38), (0, -40), (21, -38), (23, 0), (21, 38), (0, 40), (-21, 38), (-23, 0)]), warna, OW * s, OUT, n=5)
-    c.poly(_P(f, [(-16, -31), (16, -31), (16, 31), (-16, 31)]), layar)
+# ----------------------------------------------------------------- benda genggam (Ghibli warm style)
+def hp(c, f, s, t, layar=(126, 190, 232), warna=(58, 64, 76), **k):
+    c.blob(_P(f, [(-21, -38), (0, -40), (21, -38), (23, 0), (21, 38), (0, 40), (-21, 38), (-23, 0)]), warna, OW * s, OC, n=5)
+    c.poly(_P(f, [(-16, -31), (16, -31), (16, 31), (-16, 31)]), layar, 1.4 * s, OC)
+    c.poly(_P(f, [(-14, 10), (-4, 10), (12, -28), (2, -28)]), (255, 255, 255, 85))
     if k.get("play"):
         c.poly(_P(f, [(-6, -9), (9, 0), (-6, 9)]), PUTIH)
-    c.ell(*f(0, -34), 2.2 * s, 2.2 * s, OUT)
+    c.ell(*f(0, -34), 2.2 * s, 2.2 * s, OC)
 
 
-def buku(c, f, s, t, warna=BIRU, buka=False, **k):
+def buku(c, f, s, t, warna=(92, 134, 162), buka=False, **k):
     if buka:
-        c.poly(_P(f, [(-62, -34), (0, -28), (0, 40), (-62, 46)]), PUTIH, OW * s, OUT)
-        c.poly(_P(f, [(62, -34), (0, -28), (0, 40), (62, 46)]), (250, 250, 244), OW * s, OUT)
+        c.poly(_P(f, [(-62, -34), (0, -28), (0, 40), (-62, 46)]), (252, 248, 238), OW * s, OC)
+        c.poly(_P(f, [(62, -34), (0, -28), (0, 40), (62, 46)]), (244, 238, 224), OW * s, OC)
         for i in range(4):
-            c.line(_P(f, [(-52, -14 + i * 14), (-10, -8 + i * 14)]), ABU, 2.6 * s, False)
-            c.line(_P(f, [(52, -14 + i * 14), (10, -8 + i * 14)]), ABU, 2.6 * s, False)
+            c.line(_P(f, [(-52, -14 + i * 14), (-10, -8 + i * 14)]), (172, 164, 152), 2.2 * s, False)
+            c.line(_P(f, [(52, -14 + i * 14), (10, -8 + i * 14)]), (172, 164, 152), 2.2 * s, False)
     else:
-        c.poly(_P(f, [(-34, -46), (34, -46), (34, 46), (-34, 46)]), warna, OW * s, OUT)
-        c.poly(_P(f, [(30, -42), (36, -42), (36, 42), (30, 42)]), PUTIH, 2.6 * s, OUT)
-        c.rect(*f(-20, -28), *f(14, -6), PUTIH, 2.4 * s, OUT, r=3 * s) if False else c.poly(_P(f, [(-22, -28), (14, -28), (14, -8), (-22, -8)]), terang(warna, .75), 2.4 * s, OUT)
+        c.poly(_P(f, [(-34, -46), (34, -46), (34, 46), (-34, 46)]), warna, OW * s, OC)
+        c.poly(_P(f, [(-34, -46), (-22, -46), (-22, 46), (-34, 46)]), gelap(warna, 0.20))
+        c.poly(_P(f, [(30, -42), (36, -42), (36, 42), (30, 42)]), (248, 242, 226), 2.0 * s, OC)
+        c.poly(_P(f, [(-18, -28), (18, -28), (18, -8), (-18, -8)]), (248, 240, 222), 1.8 * s, OC)
 
 
 def pensil(c, f, s, t, **k):
-    c.poly(_P(f, [(-6, -46), (6, -46), (6, 28), (0, 42), (-6, 28)]), KUNING, OW * .8 * s, OUT)
-    c.poly(_P(f, [(-6, 28), (6, 28), (0, 42)]), KAYU, 2.4 * s, OUT)
-    c.poly(_P(f, [(-6, -46), (6, -46), (6, -58), (-6, -58)]), PINK, OW * .8 * s, OUT)
-    c.line(_P(f, [(-6, -38), (6, -38)]), ABU, 3 * s, False)
+    c.poly(_P(f, [(-6, -46), (6, -46), (6, 28), (0, 42), (-6, 28)]), (238, 198, 92), OW * .85 * s, OC)
+    c.poly(_P(f, [(1, -46), (6, -46), (6, 28), (1, 28)]), (212, 168, 68))
+    c.poly(_P(f, [(-6, 28), (6, 28), (0, 42)]), (226, 184, 134), 2.0 * s, OC)
+    c.poly(_P(f, [(-2.2, 36), (2.2, 36), (0, 42)]), OC)
+    c.poly(_P(f, [(-6, -46), (6, -46), (6, -58), (-6, -58)]), (226, 146, 142), OW * .85 * s, OC)
+    c.line(_P(f, [(-6, -42), (6, -42)]), (188, 192, 198), 4.0 * s, False)
 
 
-def stik(c, f, s, t, warna=(52, 56, 74), **k):
-    c.blob(_P(f, [(-48, -4), (-40, -22), (-16, -24), (16, -24), (40, -22), (48, -4), (50, 18), (36, 24), (26, 12), (-26, 12), (-36, 24), (-50, 18)]), warna, OW * s, OUT, n=5)
-    c.line(_P(f, [(-34, -10), (-18, -10)]), PUTIH, 4 * s, False)
-    c.line(_P(f, [(-26, -18), (-26, -2)]), PUTIH, 4 * s, False)
-    for (bx, by, col) in ((30, -14, MERAH), (40, -6, HIJAU), (30, 2, BIRU), (20, -6, KUNING)):
+def stik(c, f, s, t, warna=(72, 78, 96), **k):
+    c.blob(_P(f, [(-48, -4), (-40, -22), (-16, -24), (16, -24), (40, -22), (48, -4), (50, 18), (36, 24), (26, 12), (-26, 12), (-36, 24), (-50, 18)]), warna, OW * s, OC, n=5)
+    c.line(_P(f, [(-34, -10), (-18, -10)]), (246, 244, 236), 4 * s, False)
+    c.line(_P(f, [(-26, -18), (-26, -2)]), (246, 244, 236), 4 * s, False)
+    for (bx, by, col) in ((30, -14, (214, 92, 82)), (40, -6, (112, 178, 114)), (30, 2, (98, 152, 206)), (20, -6, (238, 198, 86))):
         c.ell(*f(bx, by), 3.8 * s, 3.8 * s, col)
 
 
 def bola(c, f, s, t, **k):
-    c.ell(*f(0, 0), 38 * s, 38 * s, PUTIH, OW * s, OUT)
-    c.poly(_P(f, [(0, -14), (13, -4), (8, 12), (-8, 12), (-13, -4)]), OUT)
+    c.ell(*f(0, 0), 38 * s, 38 * s, (250, 248, 240), OW * s, OC)
+    c.ell(*f(6, 8), 32 * s, 28 * s, (226, 224, 214, 120))
+    c.poly(_P(f, [(0, -14), (13, -4), (8, 12), (-8, 12), (-13, -4)]), OC)
     for a in range(0, 360, 72):
         ca, sa = math.cos(math.radians(a - 90)), math.sin(math.radians(a - 90))
-        c.line(_P(f, [(ca * 14, sa * 14), (ca * 28, sa * 28)]), OUT, 3 * s, False)
+        c.line(_P(f, [(ca * 14, sa * 14), (ca * 32, sa * 32)]), OC, 2.4 * s, False)
 
 
 def kertas(c, f, s, t, **k):
-    c.poly(_P(f, [(-36, -46), (36, -46), (36, 46), (-36, 46)]), PUTIH, OW * s, OUT)
+    c.poly(_P(f, [(-36, -46), (36, -46), (36, 46), (-36, 46)]), (252, 248, 238), OW * s, OC)
     for i in range(6):
-        c.line(_P(f, [(-26, -32 + i * 13), (26 if i % 3 else 10, -32 + i * 13)]), ABU, 3 * s, False)
+        c.line(_P(f, [(-26, -32 + i * 13), (26 if i % 3 else 10, -32 + i * 13)]), (168, 162, 150), 2.6 * s, False)
 
 
-def gelas(c, f, s, t, isi=BIRU_MUDA, **k):
-    c.poly(_P(f, [(-22, -34), (22, -34), (17, 34), (-17, 34)]), (240, 248, 255), OW * s, OUT)
+def gelas(c, f, s, t, isi=(138, 204, 232), **k):
+    c.poly(_P(f, [(-22, -34), (22, -34), (17, 34), (-17, 34)]), (242, 248, 250), OW * s, OC)
     c.poly(_P(f, [(-20, -8), (20, -8), (17, 32), (-17, 32)]), isi)
-    c.poly(_P(f, [(-22, -34), (22, -34), (17, 34), (-17, 34)]), None, OW * s, OUT)
+    c.line(_P(f, [(-13, -24), (-10, 22)]), (255, 255, 255, 150), 3.4 * s)
+    c.poly(_P(f, [(-22, -34), (22, -34), (17, 34), (-17, 34)]), None, OW * s, OC)
 
 
-def payung(c, f, s, t, warna=MERAH, **k):
-    c.line(_P(f, [(0, -10), (0, 96)]), OUT, 6 * s)
-    c.curve(_P(f, [(0, 96), (10, 108), (22, 98)]), OUT, 6 * s)
-    arc = [(-96 * math.cos(math.radians(a)), -96 * math.sin(math.radians(a)) * .75) for a in range(0, 181, 15)]
-    c.poly(_P(f, [(x, y - 14) for x, y in arc] + [(-96, -14), (96, -14)][:0]), warna, OW * s, OUT)
+def payung(c, f, s, t, warna=(208, 88, 76), **k):
+    """Payung Ghibli dengan kanopi scallop melengkung 3 lekuk, rusuk & gagang J halus."""
+    c.line(_P(f, [(0, -68), (0, 56)]), (136, 98, 68), 4.6 * s)
+    c.curve(_P(f, [(0, 56), (4, 70), (18, 70), (22, 58)]), (136, 98, 68), 4.8 * s)
+    top_arc = [(-80 * math.cos(math.radians(a)), -10 - 54 * math.sin(math.radians(a))) for a in range(0, 181, 12)]
+    scallop = [(80, -10), (54, -20), (28, -10), (0, -20), (-28, -10), (-54, -20), (-80, -10)]
+    c.poly(_P(f, top_arc + scallop), warna, OW * s, OC)
+    # highlight panel tengah
+    c.poly(_P(f, [(0, -64), (-28, -10), (0, -20), (28, -10)]), terang(warna, 0.16), 1.6 * s, OC)
 
 
-def kado(c, f, s, t, warna=PINK, pita=KUNING, **k):
-    c.poly(_P(f, [(-40, -22), (40, -22), (40, 38), (-40, 38)]), warna, OW * s, OUT)
-    c.poly(_P(f, [(-44, -36), (44, -36), (44, -18), (-44, -18)]), terang(warna, .2), OW * s, OUT)
-    c.poly(_P(f, [(-6, -36), (6, -36), (6, 38), (-6, 38)]), pita, 2.6 * s, OUT)
-    c.blob(_P(f, [(0, -38), (-26, -62), (-14, -66), (0, -42)]), pita, 3 * s, OUT)
-    c.blob(_P(f, [(0, -38), (26, -62), (14, -66), (0, -42)]), pita, 3 * s, OUT)
+def kado(c, f, s, t, warna=(226, 146, 138), pita=(242, 202, 98), **k):
+    c.poly(_P(f, [(-40, -22), (40, -22), (40, 38), (-40, 38)]), warna, OW * s, OC)
+    c.poly(_P(f, [(14, -22), (40, -22), (40, 38), (14, 38)]), gelap(warna, 0.14))
+    c.poly(_P(f, [(-44, -36), (44, -36), (44, -18), (-44, -18)]), terang(warna, .16), OW * s, OC)
+    c.poly(_P(f, [(-6, -36), (6, -36), (6, 38), (-6, 38)]), pita, 2.0 * s, OC)
+    c.blob(_P(f, [(0, -38), (-26, -60), (-14, -64), (0, -42)]), pita, 2.2 * s, OC)
+    c.blob(_P(f, [(0, -38), (26, -60), (14, -64), (0, -42)]), pita, 2.2 * s, OC)
 
 
-def bunga(c, f, s, t, warna=PINK, **k):
-    c.line(_P(f, [(0, 0), (0, 70)]), HIJAU_TUA, 6 * s)
+def bunga(c, f, s, t, warna=(236, 152, 162), **k):
+    c.line(_P(f, [(0, 0), (0, 68)]), (76, 138, 78), 5.0 * s)
     for i in range(6):
         a = math.radians(i * 60)
-        c.ell(*f(math.cos(a) * 20, math.sin(a) * 20 - 6), 15 * s, 15 * s, warna, 3 * s, OUT)
-    c.ell(*f(0, -6), 11 * s, 11 * s, KUNING, 3 * s, OUT)
+        c.ell(*f(math.cos(a) * 19, math.sin(a) * 19 - 6), 14 * s, 14 * s, warna, 2.2 * s, OC)
+    c.ell(*f(0, -6), 10.5 * s, 10.5 * s, (246, 204, 86), 2.2 * s, OC)
 
 
 def uang(c, f, s, t, **k):
-    c.poly(_P(f, [(-50, -26), (50, -26), (50, 26), (-50, 26)]), HIJAU_MUDA, OW * s, OUT)
-    c.ell(*f(0, 0), 15 * s, 15 * s, HIJAU, 3 * s, OUT)
-    c.text(*f(0, 0), "Rp", 15 * s, OUT, "judul") if False else None
+    c.poly(_P(f, [(-50, -26), (50, -26), (50, 26), (-50, 26)]), (142, 198, 128), OW * s, OC)
+    c.poly(_P(f, [(-43, -20), (43, -20), (43, 20), (-43, 20)]), None, 1.6 * s, (78, 134, 72))
+    c.ell(*f(0, 0), 15 * s, 15 * s, (194, 232, 174), 2.0 * s, (72, 126, 68))
+    c.text(*f(0, 1), "Rp", 16 * s, (52, 102, 50), "judul")
 
 
-def laptop(c, f, s, t, layar=(36, 44, 70), **k):
-    c.poly(_P(f, [(-70, -50), (70, -50), (64, 24), (-64, 24)]), (210, 214, 226), OW * s, OUT)
-    c.poly(_P(f, [(-60, -42), (60, -42), (56, 18), (-56, 18)]), layar)
+def laptop(c, f, s, t, layar=(46, 56, 78), **k):
+    c.poly(_P(f, [(-70, -50), (70, -50), (64, 24), (-64, 24)]), (216, 214, 206), OW * s, OC)
+    c.poly(_P(f, [(-60, -42), (60, -42), (56, 18), (-56, 18)]), layar, 1.4 * s, OC)
     for i, w in enumerate((70, 48, 84, 40)):
-        c.line(_P(f, [(-48, -28 + i * 12), (-48 + w, -28 + i * 12)]), (120, 220, 170) if i % 2 == 0 else (250, 200, 90), 3.4 * s, False)
-    c.poly(_P(f, [(-84, 24), (84, 24), (96, 42), (-96, 42)]), (180, 186, 202), OW * s, OUT)
+        c.line(_P(f, [(-48, -28 + i * 12), (-48 + w, -28 + i * 12)]), (136, 216, 168) if i % 2 == 0 else (246, 204, 104), 3.2 * s, False)
+    c.poly(_P(f, [(-84, 24), (84, 24), (96, 42), (-96, 42)]), (188, 186, 180), OW * s, OC)
 
 
 def weker(c, f, s, t, jam="07:00", on=False, **k):
@@ -295,9 +306,9 @@ def silang(c, f, s, t, warna=MERAH, **k):
 
 
 def koin(c, f, s, t, **k):
-    c.ell(*f(0, 0), 30 * s, 30 * s, KUNING, OW * s, OUT)
-    c.ell(*f(0, 0), 20 * s, 20 * s, None, 3 * s, ORANYE)
-    c.text(*f(0, 1), "$" if False else "Rp", 18 * s, ORANYE, "seru")
+    c.ell(*f(0, 0), 30 * s, 30 * s, (242, 198, 78), OW * s, OC)
+    c.ell(*f(0, 0), 21 * s, 21 * s, (250, 218, 114), 2.2 * s, (196, 138, 42))
+    c.text(*f(0, 1), "Rp", 20 * s, (148, 92, 26), "judul")
 
 
 def debu(c, f, s, t, **k):

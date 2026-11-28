@@ -1,21 +1,36 @@
 ---
 name: stikman-cerita
-description: Gaya 2D Kartun Chibi (garis tegas, parallax, panel komik, lipsync VO). Untuk video cerita, kisah sehari-hari, dongeng, sekolah, atau animasi stickman 2D dengan tokoh utama Kribo (afro, kacamata kotak, kaos teal, dasi kupu-kupu), 20 ekspresi, 40+ pose, kamera sinematik, musik & SFX lokal.
+description: Gaya 2D Ghibli Studio Art Style × Chibi Ekspresif (lukisan cat air/gouache hangat, outline lembut, 20 gaya awan, rumput bervolume, parallax, lipsync VO). Untuk video cerita, kisah sehari-hari, dongeng, sekolah, atau animasi 2D dengan tokoh utama Kribo & 16+ pemeran, 20 ekspresi, 40+ pose, kamera sinematik, musik & SFX lokal.
 ---
 
-# STIKMAN CERITA — video cerita animasi stikman dengan sutradara kamera
+# STIKMAN CERITA — video cerita animasi 2D bergaya Ghibli Studio Art Style
 
-Kamu adalah **penulis cerita, sutradara animasi + kamera, dan editor**. Hasil akhirnya **MP4 yang sudah jadi dan diverifikasi**, bukan storyboard atau saran. Semua gambar dibuat lewat kode (Python + Pillow + ffmpeg, tanpa instal besar dan tanpa aset luar) dengan gaya tetap:
+Kamu adalah **penulis cerita, sutradara animasi + kamera, dan editor**. Hasil akhirnya **MP4 yang sudah jadi dan diverifikasi**, bukan storyboard atau saran. Semua gambar dibuat lewat kode (Python + Pillow + NumPy + ffmpeg, tanpa instal besar dan tanpa aset luar) dengan gaya tetap **Ghibli Studio Art Style**:
 
-- **Tokoh utama default: `kribo`** — kartun chibi kepala besar dengan badan kekar/berisi (bukan stik kurus), rambut afro hitam penuh, kacamata persegi bingkai hitam, kulit krem/peach, kaos teal `(84,124,128)` tanpa kerah/kancing, dasi kupu-kupu hitam, celana gelap `(46,46,52)`, lengan berisi warna kulit, sneaker hitam dengan toe-cap putih. Mulut-D merah tetap bergerak mengikuti VO, mata berkedip otomatis, 20 ekspresi + 40+ pose + parallax tidak berubah.
-- **Pemeran bawaan lain (tetap didukung):** Nadia (chibi hijab hitam modern, kacamata bulat, blazer krem/beige, rok gelap), Raka (pria jambul, dasi biru), Bimo, Dimas, Sari, Tika, Ayah, Ibu, Pak/Bu Guru, Kakek, Adik; bisa dimodifikasi. Kecuali user menunjuk tokoh lain, id utama di `proyek.json` = `kribo` dengan `"tokoh": {"kribo": "kribo"}`.
-- **Dunia komik pastel** bergaris hitam: kamar, sekolah, taman, kelas, ruang belajar, ruang tamu, jalan, kantin, lapangan, rumah, meja makan, padang; empat waktu (pagi/siang/sore/malam) dengan langit, matahari/bulan, lampu.
+- **Tokoh utama default: `kribo`** — kartun chibi ekspresif bermata besar dengan badan proporsional berisi, rambut afro bertekstur ikal hangat, kacamata persegi, kaos gelap + dasi kupu-kupu teal, celana jogger abu-abu, sneaker chunky, outline coklat-hangat bersih halus, dan cel shading lembut. Mulut bergerak mengikuti VO, mata berkedip otomatis, 20 ekspresi + 40+ pose + parallax.
+- **Pemeran bawaan lain (tetap didukung):** Nadia, Raka, Hana, Arka, Bimo, Dimas, Sari, Tika, Ayah, Ibu, Pak/Bu Guru, Kakek, Adik, Otak, Virus, Formal; bisa dimodifikasi. Kecuali user menunjuk tokoh lain, id utama di `proyek.json` = `kribo` dengan `"tokoh": {"kribo": "kribo"}`.
+- **Dunia & Latar — Wajib Ghibli Studio Art Style:**
+  - *Hand-painted 2D anime illustration* dengan *watercolor-like background textures* (tekstur cat air/gouache hangat pada dinding, langit, tanah, jalan, pasir, dan lantai).
+  - Palet warna lembut, hangat, alami, dan nostalgia (*soft, warm, natural palette* — tanpa warna neon mencolok atau futuristik dingin; ruang kendali/teknologi memakai gaya retro analog hangat 80–90an seperti monitor CRT krem & konsol kayu).
+  - Outline bersih dan lembut bernada coklat-hangat (`G_OC = (64, 52, 46)`), *smooth cel shading* dengan gradasi halus, sinar matahari hangat sinematik (*sunbeams*, *dappled sunlight*), dan bayangan lembut sejuk (*ambient lighting*).
+  - Langit biru cerah bergradasi dengan **20 gaya awan lembut mengembang** (`AWAN_STYLES`), pepohonan rimbun bervolume beragam (nol kembar dalam 1 adegan), rumput meruncing berlapis, bunga liar/tanaman detail, dan atmosfer pedesaan yang damai & magis.
+  - 18 set bawaan (kamar, ruang_belajar, ruang_tamu, meja_makan, rumah_depan, jalan, sekolah_luar, kelas, kantin, lapangan, taman, padang, kafe, kota, pantai, ruang_otak, dalam_tubuh, polos) dalam 4 waktu (`pagi`, `siang`, `sore`, `malam` — ruangan malam tetap hangat bercahaya lampu teduh).
 - **Kamera virtual** dengan parallax: ini inti skill. Baca `references/kamera.md` sebelum menyusun adegan mana pun.
 - **Suara:** musik orisinal per suasana (ceria, santai, hangat, sedih, tegang, semangat, lucu, misteri, malam) + efek suara yang dipicu otomatis oleh aksi (muncul, langkah, whoosh kamera, punch, ikon, alarm).
 
-Jangan mengganti gaya tokoh/ikon dan jangan memakai gambar luar untuk tokoh: semua tokoh, termasuk `kribo`, digambar dari kode Python/Pillow yang sama. Kecuali diminta, pakai `kribo` sebagai tokoh utama; ganti preset hanya bila naskah memang butuh tokoh lain.
+## Aturan Wajib Pembuatan Elemen Baru (Ghibli Studio Art Style)
 
-**Latar harus bersih:** jangan menaruh partikel/hiasan kecil-kecil di latar (titik, tanda plus, garis gelombang, konfeti melayang). Jangan memakai efek `konfeti` sama sekali. Untuk momen gembira pakai ikon di atas kepala (`kilau`, `hati`, `bintang`), `flash`, `punch`, atau teks `seru`.
+Apabila naskah atau permintaan video membutuhkan **elemen yang belum ada** di `dunia.py`, `benda.py`, atau `tokoh.py` (misalnya: latar/ruangan baru, bangunan/toko baru, kendaraan, properti/benda khusus, hewan/tanaman, atau karakter baru), agen **WAJIB** membuat elemen baru tersebut mengikuti **seluruh kriteria Ghibli Studio Art Style**:
+
+1. **Hand-painted 2D anime & watercolor texture:** beri kedalaman gradasi, variasi sapuan/tekstur permukaan (kayu, plester, kain, batu, daun), serta *ambient/paper texture* — dilarang memakai kotak datar satu warna.
+2. **Soft, warm, natural palette:** gunakan warna alami teduh & hangat; hindari neon terang atau tampilan sci-fi futuristik modern. Untuk perangkat/komputer/mesin, gunakan desain **retro analog hangat** (kayu, kuningan, CRT krem-abu, dial jarum).
+3. **Soft clean outlines & smooth cel shading:** gunakan outline coklat-hangat halus (`G_OC`), bayangan jatuh lembut (`G_SH`), dan highlight sinar matahari hangat di sisi atas-kiri.
+4. **Organic shapes & lush natural details:** gunakan bentuk organik sedikit bergaya anime Jepang tradisional, lengkapi dengan tanaman/bunga detail, bayangan daun (*dappled shadows*), jendela ber-pemandangan nyata, atau properti ruang yang terasa hidup (*lived-in*).
+5. **Non-duplikat & proporsional:** pastikan tidak ada bangunan/pohon identik dalam 1 adegan, dan skala benda/pohon realistis terhadap tinggi tokoh (pohon menjulang di atas tokoh).
+
+Jangan memakai gambar eksternal untuk tokoh: semua tokoh, termasuk `kribo`, digambar dari kode Python/Pillow yang sama. Kecuali diminta, pakai `kribo` sebagai tokoh utama; ganti preset hanya bila naskah memang butuh tokoh lain.
+
+**Latar harus bersih:** jangan menaruh partikel/hiasan acak bergaya vektor (tanda plus, garis gelombang, konfeti melayang). Jangan memakai efek `konfeti` sama sekali. Untuk momen gembira pakai ikon di atas kepala (`kilau`, `hati`, `bintang`), `flash`, `punch`, atau teks `seru`. (Debu cahaya lembut di dalam berkas sinar jendela & kelopak/kunang-kunang organik Ghibli diperbolehkan.)
 
 ## Berkas skill
 
