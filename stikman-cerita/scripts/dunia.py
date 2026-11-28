@@ -3459,6 +3459,418 @@ def sepeda_ghibli(c, x, y=0, s=1.0, warna=(198, 118, 76)):
            (168, 134, 96), 2.2 * s, oc)
 
 
+# ================================================================= INTERIOR KERETA GHIBLI (500 DAYS / SPIRITED AWAY)
+def _penumpang_latar(c, x, y, s=1.0, col_baju=(96, 112, 128), col_rambut=(58, 48, 44), baca=True, t=0.0, seed=0):
+    """Penumpang latar bergaya lukisan Ghibli lembut (duduk tenang membaca/mendengar musik, tidak mengganggu fokus tokoh utama!)."""
+    sw = math.sin(t * 2.2 + seed) * 2.2 * s
+    oc_p = (74, 66, 64)
+    # badan duduk santai di bangku kereta
+    c.blob([
+        (x - 42 * s, y - 4 * s), (x - 44 * s, y - 92 * s), (x - 22 * s, y - 122 * s),
+        (x + 22 * s, y - 122 * s), (x + 44 * s, y - 92 * s), (x + 42 * s, y - 4 * s),
+    ], col_baju, 2.0 * s, oc_p, n=5)
+    c.blob([
+        (x + 6 * s, y - 120 * s), (x + 42 * s, y - 92 * s), (x + 40 * s, y - 6 * s), (x + 8 * s, y - 6 * s),
+    ], gelap(col_baju, 0.16), 0, n=4)
+    # kepala sedikit menunduk + rambut lembut
+    hx, hy = x + sw * 0.4, y - 158 * s
+    c.ell(hx, hy - 8 * s, 38 * s, 36 * s, col_rambut, 2.0 * s, oc_p)
+    c.ell(hx, hy + 4 * s, 31 * s, 28 * s, (238, 212, 192), 1.8 * s, oc_p)
+    c.blob([
+        (hx - 35 * s, hy - 6 * s), (hx - 28 * s, hy - 34 * s), (hx, hy - 40 * s),
+        (hx + 28 * s, hy - 34 * s), (hx + 35 * s, hy - 6 * s),
+        (hx + 16 * s, hy - 14 * s), (hx - 16 * s, hy - 14 * s),
+    ], col_rambut, 1.8 * s, oc_p, n=4)
+    # mata tenang menunduk
+    for sg in (-1, 1):
+        c.curve([(hx + sg * 12 * s - 5 * s, hy + 6 * s), (hx + sg * 12 * s, hy + 10 * s), (hx + sg * 12 * s + 5 * s, hy + 6 * s)], oc_p, 1.8 * s)
+    if baca:
+        # buku terbuka di pangkuan
+        c.poly([(x - 36 * s, y - 58 * s), (x, y - 48 * s), (x + 36 * s, y - 58 * s),
+                (x + 32 * s, y - 18 * s), (x, y - 10 * s), (x - 32 * s, y - 18 * s)], (242, 234, 216), 1.8 * s, oc_p)
+        c.line([(x, y - 48 * s), (x, y - 10 * s)], (152, 138, 122), 1.8 * s)
+    else:
+        # headphone retro kecil di telinga
+        c.curve(arc_pts(hx, hy - 8 * s, 39 * s, 37 * s, 195, 345, 14), (82, 76, 78), 4.0 * s)
+        c.ell(hx - 35 * s, hy + 2 * s, 7 * s, 13 * s, (108, 98, 94), 1.5 * s, oc_p)
+        c.ell(hx + 35 * s, hy + 2 * s, 7 * s, 13 * s, (108, 98, 94), 1.5 * s, oc_p)
+
+
+def _kursi_amtrak(c, cx, y_bot, w=290, h=420, hangat=0.5, sun_side=0.0):
+    """Kursi kereta Amtrak tinggi biru-navy bermotif ombak + sandaran kepala biru muda (persis referensi 500 Days of Summer, gaya cat air Ghibli!)."""
+    seat_navy = mix((52, 66, 94), (66, 72, 98), hangat)
+    seat_hi = mix((84, 102, 134), (138, 128, 144), hangat)
+    head_c = mix((74, 104, 138), (94, 118, 152), hangat)
+    oc_s = (52, 44, 42)
+    hw = w * 0.5
+    y_top = y_bot - h
+    # Badan sandaran kursi tinggi melengkung empuk
+    pts = [
+        (cx - hw, y_bot),
+        (cx - hw * 1.02, y_top + 86),
+        (cx - hw * 0.84, y_top + 18),
+        (cx - hw * 0.35, y_top),
+        (cx + hw * 0.35, y_top),
+        (cx + hw * 0.84, y_top + 18),
+        (cx + hw * 1.02, y_top + 86),
+        (cx + hw, y_bot),
+    ]
+    c.blob(pts, seat_navy, 2.6, oc_s, n=5)
+    # Sorotan sinar matahari lembut di sisi kursi bila sun_side > 0
+    if sun_side > 0.05:
+        sun_col = mix((198, 214, 232), (255, 224, 168), hangat)
+        c.blob([
+            (cx + hw * 0.15, y_top + 14), (cx + hw * 0.82, y_top + 22),
+            (cx + hw * 0.98, y_top + 110), (cx + hw * 0.96, y_bot - 10),
+            (cx + hw * 0.10, y_bot - 10),
+        ], sun_col + (int(82 * sun_side),), 0, n=4)
+    # Motif ombak halus kain kursi Amtrak (tipis & organik Ghibli, tidak ramai!)
+    pat_c = seat_hi + (90,)
+    for row in range(6):
+        ry = y_top + 95 + row * 46
+        if ry > y_bot - 22:
+            break
+        for col_i in range(-3, 4):
+            rx = cx + col_i * 36 + (18 if row % 2 else 0)
+            if abs(rx - cx) < hw - 26:
+                c.curve([(rx - 14, ry + 5), (rx, ry - 4), (rx + 14, ry + 5)], pat_c, 1.8)
+    # Strip kain sandaran kepala vertikal + bantal headrest biru lembut di atas!
+    c.rect(cx - hw * 0.34, y_top + 4, cx + hw * 0.34, y_top + 185, head_c, 2.0, oc_s, r=8)
+    c.rect(cx - hw * 0.44, y_top + 46, cx + hw * 0.44, y_top + 124, terang(head_c, 0.08), 2.2, oc_s, r=18)
+    c.rect(cx - hw * 0.38, y_top + 106, cx + hw * 0.38, y_top + 122, gelap(head_c, 0.16), 0, None, r=6)
+    c.blob(pts, None, 2.6, oc_s, n=5)
+
+
+def kereta_dalam_b(c, t, o):
+    """Interior kereta komuter/Amtrak bergaya Studio Ghibli — mendukung 3 sudut POV film 500 Days of Summer:
+    - sudut='tom'    : menghadap kursi penumpang Amtrak biru-navy bermotif + jendela kiri-belakang (persis Referensi 1!)
+    - sudut='summer' : POV lorong kereta 1-titik hilang, jendela sisi kiri, rak bagasi+lampu baca, kursi berjajar (persis Referensi 2!)
+    - sudut='berdua' : menghadap sepasang kursi penumpang Amtrak berdampingan + lorong & penumpang baris belakang!
+    """
+    hangat = clamp(float(o.get("hangat", 0.5)), 0.0, 1.0)
+    sudut = str(o.get("sudut", "berdua")).lower()
+    rail_jolt = math.sin(t * 7.8) * 1.2 + math.sin(t * 2.6) * 1.8
+
+    # Warna kabin & langit dingin (0.0) -> hangat sore keemasan (1.0)
+    s_top = mix((116, 148, 178), (92, 142, 196), hangat)
+    s_bot = mix((208, 220, 228), (254, 212, 152), hangat)
+    wall_c = mix((198, 204, 210), (236, 220, 194), hangat)
+    ceil_c = mix((216, 220, 224), (244, 232, 210), hangat)
+    trim_c = mix((126, 134, 144), (156, 128, 98), hangat)
+    c_cols = _cloud_colors("sore" if hangat > 0.72 else ("pagi" if hangat < 0.25 else "siang"))
+    hill_c = mix((116, 138, 156), (138, 148, 122), hangat)
+    tree_c = mix((84, 118, 98), (112, 156, 88), hangat)
+
+    # 1) PEMANDANGAN LUAR JENDELA BERGERAK (parallax 3 lapis!)
+    c.set_depth(0.28)
+    c.gradient(s_top, s_bot, 0.0, 0.78)
+    for cx0, cy0, sc_c in ((-950, -590, 1.05), (-180, -615, 1.18), (620, -575, 1.00), (1380, -605, 1.12)):
+        cx_ = ((cx0 - t * 42.0 + 2200) % 4400) - 2200
+        _paint_cloud_puffs(c, cx_, cy0, sc_c, [(-64, 14, 58, 28), (6, -8, 72, 40), (76, 12, 54, 26)], c_cols)
+    c.set_depth(0.45)
+    for i in range(-4, 6):
+        hx = ((i * 580 - t * 125.0 + 2600) % 5200) - 2600
+        c.blob([(hx - 340, -160), (hx - 120, -340 - (abs(i) % 3) * 38), (hx + 160, -290), (hx + 340, -160)], hill_c, 0, n=4)
+    c.set_depth(0.62)
+    for i in range(-5, 7):
+        tx = ((i * 410 - t * 410.0 + 2400) % 4800) - 2400
+        c.ell(tx, -245, 96, 84, gelap(tree_c, 0.16))
+        c.ell(tx - 12, -264, 76, 62, tree_c)
+        if i % 2 == 0:
+            px_e = ((i * 680 - t * 560.0 + 2400) % 4800) - 2400
+            c.rect(px_e - 8, -790, px_e + 8, -160, (78, 84, 94, 165))
+
+    c.set_depth(1.0)
+    if sudut == "pintu":
+        # ================= SUDUT 0: BINGKAI PINTU KERETA GHIBLI VERTIKAL 9:16 (persis referensi anime hangat!) =================
+        # Dinding kabin krem-oker hangat di sekitar jendela kotak tengah (dingin krem-kelabu -> oker senja keemasan!)
+        cab_wall = mix((198, 202, 204), (232, 198, 138), hangat)
+        cab_ceil = mix((212, 216, 218), (242, 216, 162), hangat)
+        cab_trim = mix((142, 148, 154), (176, 140, 88), hangat)
+        # Bangku merah-terakota khas kereta Jepang/Ghibli (teduh dingin -> merah hangat menyala!)
+        bench_c = mix((148, 86, 76), (194, 82, 54), hangat)
+        bench_top = mix((168, 102, 90), (218, 104, 68), hangat)
+        fl_c = mix((134, 138, 144), (174, 142, 102), hangat)
+        oc_k = (48, 36, 30)
+
+        # Dinding sekeliling jendela kotak lebar tengah (jendela tinggi elegan y=-840..-355!)
+        c.rect(-1200, -1450, 1200, -840, cab_ceil)
+        c.rect(-1200, -844, -262, -350, cab_wall)
+        c.rect(262, -844, 1200, -350, cab_wall)
+        c.rect(-1200, -355, 1200, 0, cab_wall)
+
+        # Panel plafon atas & garis trim horizontal
+        c.rect(-340, -1120, 340, -1010, terang(cab_ceil, 0.06), 2.0, oc_k)
+        c.line([(-520, -965), (520, -965)], oc_k, 2.0)
+        c.line([(-520, -952), (520, -952)], gelap(cab_wall, 0.16), 2.2)
+
+        # Bayangan diagonal halus dari rak bagasi & bingkai jendela di dinding krem kiri & kanan!
+        sh_w = gelap(cab_wall, 0.18) + (110,)
+        for row_s in range(4):
+            ys_r = -845 + row_s * 18
+            c.line([(-460, ys_r), (-268, ys_r + 12)], sh_w, 5.5)
+            c.line([(268, ys_r + 12), (460, ys_r + 24)], sh_w, 5.5)
+
+        # 2 bingkai poster/papan iklan retro tipis di dinding kiri & kanan jendela
+        c.rect(-455, -805, -305, -670, terang(cab_wall, 0.08), 2.0, oc_k, r=4)
+        c.rect(305, -805, 455, -670, terang(cab_wall, 0.08), 2.0, oc_k, r=4)
+
+        # Kusen jendela kotak ganda membulat + kait pegangan di puncak jendela + kilau hangat kaca!
+        glass_tint = mix((232, 240, 246, 52), (255, 240, 188, 108), hangat)
+        c.rect(-262, -840, 262, -355, glass_tint)
+        c.poly([(-254, -362), (-120, -362), (45, -834), (-90, -834)], (255, 255, 242, 42))
+        def _rr_pts(x0_, y0_, x1_, y1_, r_):
+            return (
+                arc_pts(x0_ + r_, y0_ + r_, r_, r_, 180, 270, 6)
+                + arc_pts(x1_ - r_, y0_ + r_, r_, r_, 270, 360, 6)
+                + arc_pts(x1_ - r_, y1_ - r_, r_, r_, 0, 90, 6)
+                + arc_pts(x0_ + r_, y1_ - r_, r_, r_, 90, 180, 6)
+            )
+        c.poly(_rr_pts(-266, -844, 266, -352, 14), None, 3.2, oc_k)
+        c.poly(_rr_pts(-254, -832, 254, -364, 10), None, 2.2, oc_k)
+        c.rect(-36, -844, 36, -820, cab_ceil, 2.2, oc_k, r=4)
+        c.line([(-480, -350), (480, -350)], oc_k, 2.4)
+
+        # Rak bagasi logam horizontal di atas jendela + siku penopang kiri & kanan!
+        for yr_b in (-898, -886, -874):
+            c.line([(-420, yr_b), (420, yr_b)], (152, 146, 134), 3.6)
+            c.line([(-420, yr_b - 2), (420, yr_b - 2)], oc_k, 1.4)
+        for xb_s, sgn_b in ((-365, -1), (365, 1)):
+            c.poly([(xb_s, -872), (xb_s + sgn_b * 28, -908), (xb_s + sgn_b * 18, -922), (xb_s - sgn_b * 4, -876)],
+                   cab_ceil, 2.2, oc_k)
+
+        # 4 tali pegangan melingkar (hand straps) persis referensi — berayun sangat pelan!
+        for i_h, sx_h in enumerate((-235, -78, 78, 235)):
+            ang_s = math.sin(t * 2.4 + i_h * 0.45) * 0.08
+            bx_s = sx_h + math.sin(ang_s) * 145
+            by_s = -1045 + math.cos(ang_s) * 145
+            c.line([(sx_h, -1060), (bx_s, by_s)], oc_k, 9.5)
+            c.line([(sx_h, -1060), (bx_s, by_s)], (92, 82, 72), 5.0)
+            c.rect(bx_s - 8, by_s - 28, bx_s + 8, by_s + 2, cab_ceil, 2.0, oc_k, r=3)
+            c.curve(arc_pts(bx_s, by_s + 22, 23, 23, 0, 360, 22), oc_k, 9.5)
+            c.curve(arc_pts(bx_s, by_s + 22, 23, 23, 0, 360, 22), (236, 224, 198), 4.8)
+
+        # Lantai kabin hangat
+        lantai(c, fl_c, garis=gelap(fl_c, 0.18))
+
+        # Bangku panjang empuk merah-terakota Ghibli (dudukan tinggi di y=-168..-116 agar kaki panjang menjuntai di depan kisi-kisi!)
+        c.rect(-480, -330, 480, -162, bench_c, 2.8, oc_k, r=18)
+        c.rect(-474, -324, 474, -296, terang(bench_c, 0.12))
+        c.rect(-474, -182, 474, -162, gelap(bench_c, 0.18))
+        for sj_x in (-240, 0, 240):
+            c.line([(sj_x, -324), (sj_x, -166)], gelap(bench_c, 0.28), 2.2)
+            c.line([(sj_x, -160), (sj_x, -118)], gelap(bench_c, 0.28), 2.2)
+        c.rect(-485, -166, 485, -116, bench_top, 2.8, oc_k, r=14)
+        c.rect(-478, -132, 478, -118, gelap(bench_c, 0.22))
+        c.rect(-480, -116, 480, 0, mix((116, 114, 110), (146, 122, 86), hangat), 2.6, oc_k)
+        for gx0, gx1 in ((-325, -18), (18, 325)):
+            c.rect(gx0, -100, gx1, -16, gelap(fl_c, 0.30), 2.0, oc_k, r=4)
+            for row_g in range(5):
+                gy = -90 + row_g * 15
+                for col_g in range(gx0 + 12, gx1 - 14, 22):
+                    c.rect(col_g, gy, col_g + 13, gy + 8, (44, 38, 34))
+
+        # 2 tiang pegangan logam vertikal rapi kiri & kanan
+        for px_p in (-288, 296):
+            c.rect(px_p - 6, -892, px_p + 6, -116, (186, 180, 166), 2.2, oc_k)
+            c.line([(px_p - 2, -890), (px_p - 2, -118)], (242, 236, 222), 2.2)
+        c.curve([(-288, -116), (-288, -96), (-268, -96)], oc_k, 8.0)
+        c.curve([(-288, -116), (-288, -96), (-268, -96)], (186, 180, 166), 4.0)
+        c.curve([(296, -116), (296, -96), (276, -96)], oc_k, 8.0)
+        c.curve([(296, -116), (296, -96), (276, -96)], (186, 180, 166), 4.0)
+
+    elif sudut == "summer":
+        # ================= SUDUT 2: POV TOM MELIHAT KE LORONG KERETA & SUMMER (persis Referensi 2!) =================
+        # Dinding kanan lorong & ujung belakang gerbong (perspektif 1-titik hilang di (120, -360)!)
+        vp_x, vp_y = 115, -355
+        # Plafon perspektif mengecil ke belakang
+        c.poly([(-1200, -900), (1200, -900), (1200, -495), (360, -460), (-420, -460), (-1200, -560)], ceil_c, 2.2, G_OC)
+        # Dinding kanan kabin (sisi kanan lorong, teduh hangat)
+        c.poly([(360, -460), (1200, -520), (1200, 120), (360, -95)], gelap(wall_c, 0.14), 2.2, G_OC)
+        # Dinding ujung belakang gerbong + pintu kaca penghubung gerbong
+        c.rect(-140, -465, 365, -90, mix((112, 122, 134), (138, 122, 108), hangat), 2.2, G_OC)
+        c.rect(48, -430, 210, -110, mix((66, 78, 94), (82, 74, 72), hangat), 2.2, G_OC, r=6)
+        c.rect(74, -408, 184, -275, mix((128, 152, 174), (188, 164, 136), hangat), 2.0, G_OC, r=8)
+
+        # Dinding kiri berjendela perspektif (jendela besar di kiri depan -> mengecil ke belakang!)
+        # Bingkai atas & bawah dinding kiri miring mengikuti garis perspektif
+        c.poly([(-1200, -560), (-140, -465), (-140, -438), (-1200, -518)], wall_c, 2.0, G_OC)
+        c.poly([(-1200, -210), (-140, -255), (-140, 20), (-1200, 120)], wall_c, 2.0, G_OC)
+        # Pilar pemisah antar-jendela sisi kiri mengecil ke belakang
+        for px_l, pw_l, yt_l, yb_l in ((-920, 42, -520, -215), (-520, 32, -488, -234), (-260, 22, -468, -248)):
+            c.rect(px_l - pw_l, yt_l, px_l + pw_l, yb_l, wall_c, 2.2, G_OC)
+            c.rect(px_l + pw_l * 0.25, yt_l + 4, px_l + pw_l - 3, yb_l - 4, gelap(wall_c, 0.12))
+        # Kilau jendela kiri
+        c.poly([(-870, -220), (-780, -225), (-680, -496), (-770, -502)], (255, 255, 255, 28))
+        c.poly([(-480, -238), (-420, -242), (-360, -474), (-420, -478)], (255, 255, 255, 24))
+
+        # Rak bagasi overhead perspektif di kiri-atas & kanan-atas + lampu baca kecil berjajar!
+        c.poly([(-1200, -760), (-140, -508), (-140, -470), (-1200, -640)], terang(wall_c, 0.06), 2.2, G_OC)
+        c.line([(-1200, -640), (-140, -470)], gelap(trim_c, 0.18), 4.0)
+        c.poly([(1200, -740), (360, -508), (360, -472), (1200, -630)], wall_c, 2.2, G_OC)
+        for lx_r, ly_r, sr_l in ((-840, -645, 1.0), (-510, -578, 0.78), (-285, -528, 0.58)):
+            c.rect(lx_r - 58 * sr_l, ly_r - 18 * sr_l, lx_r + 58 * sr_l, ly_r + 12 * sr_l, trim_c, 1.8, G_OC, r=6)
+            c.ell(lx_r - 22 * sr_l, ly_r + 4 * sr_l, 11 * sr_l, 7 * sr_l, (72, 68, 66), 1.4, G_OC)
+            c.ell(lx_r + 22 * sr_l, ly_r + 4 * sr_l, 11 * sr_l, 7 * sr_l, (72, 68, 66), 1.4, G_OC)
+            glow(c, lx_r, ly_r + 28 * sr_l, 120 * sr_l, mix((232, 240, 248), (255, 224, 152), hangat), int(26 + 32 * hangat), n=6)
+
+        # Lantai lorong perspektif
+        lantai(c, mix((134, 140, 148), (154, 134, 116), hangat), garis=gelap(trim_c, 0.22))
+
+        # Baris kursi Amtrak biru-navy berjajar mengecil ke belakang di kiri & kanan lorong!
+        for bx_c, by_c, bw_c, bh_c in (
+            (-265, -80, 155, 220), (-115, -82, 145, 215), (410, -82, 150, 215),
+            (-420, -40, 200, 275), (-195, -42, 190, 270), (505, -40, 205, 275),
+            (-640, 18, 260, 340), (-330, 18, 250, 335), (650, 18, 260, 340),
+        ):
+            _kursi_amtrak(c, bx_c, by_c, w=bw_c, h=bh_c, hangat=hangat, sun_side=0.35 if bx_c < 0 else 0.0)
+        # Penumpang kecil mengintip tenang di baris kursi belakang kiri (persis Referensi 2!)
+        if o.get("penumpang", True):
+            _penumpang_latar(c, -225, -135 + rail_jolt * 0.3, 0.62, (124, 112, 98), (196, 162, 108), baca=True, t=t, seed=2)
+            _penumpang_latar(c, 530, -108 + rail_jolt * 0.3, 0.68, (88, 98, 112), (56, 46, 42), baca=False, t=t, seed=5)
+        # Sandaran kursi di sebelah depan Summer (tempat tangan Summer bersandar santai!)
+        _kursi_amtrak(c, -110, 145, w=320, h=380, hangat=hangat, sun_side=0.25)
+
+    elif sudut == "tom":
+        # ================= SUDUT 1: POV KE TOM DUDUK DI KURSI AMTRAK (persis Referensi 1!) =================
+        # Plafon & bingkai jendela besar di belakang-atas
+        c.rect(X0, -1100, X1, -660, ceil_c)
+        c.rect(X0, -672, X1, -646, trim_c, 2.0, G_OC)
+        c.rect(X0, -255, X1, 0, wall_c)
+        c.rect(X0, -264, X1, -244, trim_c, 2.0, G_OC)
+        # Pilar jendela perspektif di belakang kursi Tom
+        for px in (-820, -125, 560):
+            c.rect(px - 26, -660, px + 26, -250, wall_c, 2.2, G_OC)
+            c.rect(px + 8, -654, px + 22, -254, gelap(wall_c, 0.14))
+        c.poly([(-60, -256), (90, -256), (260, -646), (110, -646)], (255, 255, 255, 26))
+        lantai(c, mix((136, 142, 150), (166, 140, 114), hangat), garis=gelap(trim_c, 0.22))
+
+        # Baris kursi belakang + 1 penumpang pria di kiri belakang (persis Referensi 1!)
+        _kursi_amtrak(c, -560, -40, w=280, h=395, hangat=hangat, sun_side=0.10)
+        _kursi_amtrak(c, -265, -45, w=260, h=370, hangat=hangat, sun_side=0.15)
+        if o.get("penumpang", True):
+            _penumpang_latar(c, -560, -115 + rail_jolt * 0.4, 1.08, (186, 184, 178), (64, 50, 44), baca=True, t=t, seed=1)
+
+        # Sepasang kursi Amtrak utama di depan (Tom duduk di kursi kiri x=-125; kursi kanan kosong disorot matahari hangat!)
+        _kursi_amtrak(c, -125, 110, w=340, h=490, hangat=hangat, sun_side=0.18)
+        _kursi_amtrak(c, 255, 110, w=340, h=490, hangat=hangat, sun_side=0.85)
+
+    else:
+        # ================= SUDUT 3: TWO-SHOT BERDUA (2 kursi Amtrak berdampingan + lorong & penumpang belakang!) =================
+        c.rect(X0, -1100, X1, -645, ceil_c)
+        c.rect(X0, -660, X1, -634, trim_c, 2.0, G_OC)
+        c.rect(X0, -265, X1, 0, wall_c)
+        c.rect(X0, -274, X1, -254, trim_c, 2.0, G_OC)
+        for px in (-920, -455, 455, 920):
+            c.rect(px - 34, -650, px + 34, -260, wall_c, 2.2, G_OC)
+            c.rect(px + 12, -644, px + 30, -264, gelap(wall_c, 0.12))
+        for wx0 in (-860, -390, 520):
+            c.poly([(wx0, -264), (wx0 + 84, -264), (wx0 + 195, -634), (wx0 + 110, -634)], (255, 255, 255, 22))
+        # Rak bagasi & lampu plafon hangat
+        c.line([(-1200, -700), (1200, -700)], (140, 146, 154), 5.0)
+        for lx in (-460, 0, 460):
+            c.rect(lx - 86, -805, lx + 86, -784, (254, 248, 226), 1.8, G_OC, r=8)
+            glow(c, lx, -768, 240, mix((218, 234, 248), (255, 220, 144), hangat), int(30 + 36 * hangat), n=7)
+        lantai(c, mix((138, 144, 152), (168, 142, 114), hangat), garis=gelap(trim_c, 0.22))
+
+        # Penumpang latar duduk di kursi kanan & kiri baris belakang
+        _kursi_amtrak(c, -665, -20, w=250, h=350, hangat=hangat, sun_side=0.15)
+        _kursi_amtrak(c, 675, -20, w=250, h=350, hangat=hangat, sun_side=0.20)
+        if o.get("penumpang", True):
+            _penumpang_latar(c, -665, -88 + rail_jolt * 0.4, 0.96, (94, 110, 126), (56, 46, 42), baca=True, t=t, seed=1)
+            _penumpang_latar(c, 675, -88 + rail_jolt * 0.4, 0.94, (132, 116, 102), (68, 52, 44), baca=False, t=t, seed=3)
+
+        # Sepasang kursi Amtrak utama tempat Tom (kiri x=-185) & Summer (kanan x=+185) duduk berdampingan!
+        _kursi_amtrak(c, -185, 65, w=315, h=440, hangat=hangat, sun_side=0.22)
+        _kursi_amtrak(c, 185, 65, w=315, h=440, hangat=hangat, sun_side=0.65)
+        # Dudukan bawah kursi menyatu rapi
+        c.rect(-360, -108, 360, -56, mix((62, 78, 108), (76, 82, 112), hangat), 2.2, G_OC, r=10)
+        c.rect(-340, -56, 340, 0, gelap(wall_c, 0.16), 2.0, G_OC)
+
+    # 3) BERKAS CAHAYA MATAHARI MENYAPU MELALUI JENDELA
+    sweep_phase = (t * 0.40) % 1.0
+    sweep_env = math.sin(sweep_phase * math.pi)
+    if sweep_env > 0.05:
+        sun_col = mix((226, 238, 250), (255, 224, 148), hangat)
+        s_al = int((18 + 40 * hangat) * (0.45 + 0.55 * sweep_env))
+        sx_sh = lerp(520, -680, sweep_phase)
+        c.poly([(sx_sh - 160, -640), (sx_sh + 190, -640), (sx_sh - 260, 240), (sx_sh - 610, 240)], sun_col + (s_al,))
+        c.poly([(sx_sh + 260, -640), (sx_sh + 460, -640), (sx_sh + 10, 240), (sx_sh - 190, 240)], sun_col + (int(s_al * 0.65),))
+
+    # Nuansa warna dingin->hangat bertahap sesuai parameter `hangat`
+    if hangat < 0.45:
+        cool_a = int((0.45 - hangat) * 52)
+        c.d.rectangle([0, 0, c.im.width, c.im.height], fill=(110, 144, 186, cool_a))
+    elif hangat > 0.55:
+        warm_a = int((hangat - 0.55) * 48)
+        c.d.rectangle([0, 0, c.im.width, c.im.height], fill=(255, 182, 104, warm_a))
+
+    if not o.get("tanpa_tekstur"):
+        _apply_watercolor_bg(c, wk="sore" if hangat > 0.7 else "siang", indoor=True, strength=0.90)
+
+
+def kereta_dalam_f(c, t, o):
+    """Lapisan foreground POV kereta: sapuan cahaya jendela melewati wajah + siluet POV over-the-shoulder/kursi depan!"""
+    hangat = clamp(float(o.get("hangat", 0.5)), 0.0, 1.0)
+    sudut = str(o.get("sudut", "berdua")).lower()
+    # Sapuan tipis cahaya matahari melewati sisi wajah Tom & Summer saat kereta bergerak!
+    sweep_phase = (t * 0.40) % 1.0
+    sweep_env = math.sin(sweep_phase * math.pi)
+    if sweep_env > 0.12:
+        sun_col = mix((230, 242, 255), (255, 228, 152), hangat)
+        s_al = int((12 + 24 * hangat) * sweep_env)
+        sx_sh = lerp(520, -680, sweep_phase)
+        c.poly([(sx_sh - 120, -630), (sx_sh + 140, -630), (sx_sh - 280, 220), (sx_sh - 540, 220)], sun_col + (s_al,))
+    c.set_depth(1.24)
+    if sudut == "pintu":
+        # BINGKAI PINTU KERETA BIRU-SLATE TUA (persis referensi anime Ghibli! Membingkai indah saat wide/medium, otomatis minggir saat close-up!)
+        c.set_depth(1.05)
+        door_c = mix((58, 86, 108), (62, 82, 98), hangat)
+        door_dark = gelap(door_c, 0.24)
+        trim_d = mix((204, 206, 204), (232, 206, 158), hangat)
+        oc_d = (34, 30, 30)
+        # Panel pintu kiri, kanan, dan atas mengelilingi bukaan pintu x=-356..356, y=-1025..650
+        c.rect(-1400, -1650, -356, 700, door_c)
+        c.rect(356, -1650, 1400, 700, door_c)
+        c.rect(-1400, -1650, 1400, -1025, door_c)
+        c.rect(-1400, -145, -356, 40, door_dark)
+        c.rect(356, -145, 1400, 40, door_dark)
+        c.line([(-1400, -1120), (1400, -1120)], oc_d, 3.0)
+        c.rect(-620, -900, -455, -550, gelap(door_c, 0.16), 3.0, oc_d, r=18)
+        c.rect(455, -900, 620, -550, gelap(door_c, 0.16), 3.0, oc_d, r=18)
+        for hx_d in (-404, 404):
+            c.rect(hx_d - 12, -572, hx_d + 12, -534, (132, 144, 152), 2.4, oc_d, r=4)
+            c.rect(hx_d - 12, -168, hx_d + 12, -130, (132, 144, 152), 2.4, oc_d, r=4)
+            c.rect(hx_d - 7, -552, hx_d + 7, -150, (158, 168, 174), 2.4, oc_d, r=5)
+            c.line([(hx_d - 2, -548), (hx_d - 2, -154)], (214, 222, 226), 2.0)
+        def _door_arch(x0_, y0_, x1_, y1_, r_):
+            return (
+                [(x0_, y1_)]
+                + arc_pts(x0_ + r_, y0_ + r_, r_, r_, 180, 270, 8)
+                + arc_pts(x1_ - r_, y0_ + r_, r_, r_, 270, 360, 8)
+                + [(x1_, y1_)]
+            )
+        c.poly([(-370, -1038), (-314, -1038)] + arc_pts(-314, -982, 56, 56, 270, 180, 8), door_c)
+        c.poly([(370, -1038), (314, -1038)] + arc_pts(314, -982, 56, 56, 270, 360, 8), door_c)
+        c.line(_door_arch(-364, -1032, 364, 650, 48), trim_d, 13.0)
+        c.line(_door_arch(-370, -1038, 370, 656, 52), oc_d, 3.2)
+        c.line(_door_arch(-356, -1024, 356, 642, 42), oc_d, 3.2)
+    elif sudut == "tom":
+        # Siluet tipis lengan/bahu foreground di pinggir kanan (over-the-shoulder persis Referensi 1!)
+        fg_c = mix((74, 58, 48, 155), (96, 68, 50, 150), hangat)
+        c.blob([(430, -560), (620, -560), (660, 220), (385, 220)], fg_c, 0, n=4)
+    elif sudut == "summer":
+        # Siluet puncak sandaran kursi & kepala Tom di sudut kiri bawah (POV Tom duduk persis Referensi 2!)
+        fg_seat = mix((36, 46, 68, 185), (46, 48, 66, 180), hangat)
+        c.blob([(-580, 180), (-560, -110), (-360, -145), (-195, -90), (-165, 180)], fg_seat, 0, n=5)
+        c.ell(-420, -142, 95, 58, (34, 24, 20, 190))
+    else:
+        edge_c = mix((72, 82, 96, 105), (96, 76, 66, 95), hangat)
+        c.rect(-1140, -900, -1060, 320, edge_c)
+        c.rect(1060, -900, 1140, 320, edge_c)
+    c.set_depth(1.0)
+
+
 SET = {
     "kamar": (kamar_b, kamar_f), "sekolah_luar": (sekolah_luar_b, sekolah_luar_f), "sekolah": (sekolah_luar_b, sekolah_luar_f),
     "taman": (taman_b, taman_f), "kelas": (kelas_b, kelas_f), "ruang_belajar": (ruang_belajar_b, ruang_belajar_f),
@@ -3467,10 +3879,12 @@ SET = {
     "padang": (padang_b, padang_f), "polos": (polos_b, polos_f),
     "ruang_otak": (ruang_otak_b, ruang_otak_f), "dalam_tubuh": (dalam_tubuh_b, dalam_tubuh_f),
     "kafe": (kafe_b, kafe_f), "kota": (kota_b, kota_f), "pantai": (pantai_b, pantai_f),
+    "kereta_dalam": (kereta_dalam_b, kereta_dalam_f),
 }
 ALIAS = {"kamar_tidur": "kamar", "gerbang_sekolah": "sekolah_luar", "halaman_sekolah": "taman", "dapur": "meja_makan",
          "ruang_keluarga": "ruang_tamu", "meja_belajar": "ruang_belajar", "komplek": "jalan", "kampung": "jalan", "luar": "padang",
-         "kedai": "kafe", "coffee": "kafe", "perkotaan": "kota", "laut": "pantai"}
+         "kedai": "kafe", "coffee": "kafe", "perkotaan": "kota", "laut": "pantai",
+         "kereta": "kereta_dalam", "interior_kereta": "kereta_dalam", "train": "kereta_dalam"}
 
 
 def set_of(name):

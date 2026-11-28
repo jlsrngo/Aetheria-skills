@@ -61,7 +61,7 @@ class Aktor:
         if isinstance(base, str):
             base = {"dasar": base}
         base = dict(base)
-        for k in ("kacamata", "hijab", "rambut", "kemeja", "dasi", "bawah", "bawah_warna", "skala_dasar"):
+        for k in ("kacamata", "hijab", "rambut", "kemeja", "dasi", "bawah", "bawah_warna", "skala_dasar", "headphone"):
             if k in spec:
                 base[k] = spec[k]
         self.tk = TK.Tokoh(base)
@@ -224,7 +224,8 @@ class Aktor:
             look = tuple(d["lihat"])
         walking = gaya in ("jalan", "lari") and mv is not None
         if walking and hadap_s in ("kanan", "kiri", "miring", "miring_kanan", "miring_kiri"):
-            hadap_mode = "samping"
+            # Sudut 3/4 lembut saat berjalan santai (jauh lebih luwes & natural daripada profil samping 90 derajat yang gepeng!)
+            hadap_mode = "samping" if gaya == "lari" else "miring"
         hop = 0.0
         squash = (1.0, 1.0)
         phase, amp = 0.0, 0.0
@@ -234,14 +235,20 @@ class Aktor:
             dist = abs(mv["x1"] - mv["x0"]) * (0.65 * p + 0.35 * e_io(p))
             phase = dist / 78.0 * math.pi * (1.0 if gaya == "jalan" else 1.15)
             amp = 1.0 if gaya == "jalan" else 1.5
+            base["sit"] = 0.0
             base["legs"] = "walk"
-            if pose_name in ("diam", "santai", "jalan", "lari"):
-                sw = math.sin(phase) * (30 if gaya == "jalan" else 52)
-                base["arms"]["L"] = (16 + sw, 10, "m") if gaya == "jalan" else (36 + sw, -78, "m")
-                base["arms"]["R"] = (16 - sw, 10, "m") if gaya == "jalan" else (36 - sw, -78, "m")
+            if pose_name in ("diam", "santai", "jalan", "lari", "duduk", "duduk_pangku", "duduk_santai"):
+                sw = math.sin(phase) * (24 if gaya == "jalan" else 52)
+                # Siku menekuk lembut ke depan + tangan rileks 'r' agar ayunan berjalan lentur ala Ghibli (tidak kaku lurus!)
+                el_l = -18.0 - max(0.0, sw) * 0.35
+                el_r = -18.0 - max(0.0, -sw) * 0.35
+                base["arms"]["L"] = (10 + sw, el_l, "r") if gaya == "jalan" else (36 + sw, -78, "m")
+                base["arms"]["R"] = (10 - sw, el_r, "r") if gaya == "jalan" else (36 - sw, -78, "m")
             if gaya == "lari":
                 base["lean"] = max(base["lean"], 9)
-            bob = abs(math.sin(phase)) * (7 if gaya == "jalan" else 14)
+            else:
+                base["lean"] = base.get("lean", 0.0) + 3.5 + math.sin(phase * 2.0) * 1.2
+            bob = abs(math.sin(phase)) * (5.5 if gaya == "jalan" else 14)
             hop = -bob
         elif mv is not None and gaya == "lompat":
             hop = -4 * 70 * p * (1 - p)
@@ -330,9 +337,13 @@ class Aktor:
             if jenis == "hp" and st["arms"]["R"][0] > 20 and st["arms"]["R"][1] < -100:
                 # dua tangan memegang: taruh di tengah kedua tangan
                 lx, ly = hands["L"]["pos"]
-                px, py = (hx + lx) / 2, (hy + ly) / 2 - 14 * s * c.cam.z * 0
-        k = c.k
-        wx, wy = (px - c.ox) / k, (py - c.oy) / k   # balik ke koordinat dunia
+                px, py = (hx + lx) / 2, (hy + ly) / 2 - 14 * s
+            elif jenis == "buku" and (bawa.get("buka") or (st["arms"]["R"][0] > 18 and st["arms"]["R"][1] < -70)):
+                # dua tangan memegang buku terbuka/baca tepat di depan dada/pangkuan
+                lx, ly = hands["L"]["pos"]
+                px, py = (hx + lx) / 2, (hy + ly) / 2 - 8 * s
+        # hands["pos"] sudah berupa koordinat dunia (hasil T(*hd) di tokoh.py)!
+        wx, wy = px, py
         if jenis == "hp":
             rot = rot or (-8 if pose_hand == "R" else 8)
             BD.gambar(c, "hp", wx, wy - 8 * s, s * .95, rot, t, layar=tuple(bawa.get("layar", (120, 182, 255))), play=bawa.get("play"))
@@ -341,7 +352,8 @@ class Aktor:
         elif jenis == "pensil":
             BD.gambar(c, "pensil", wx, wy, s * .8, rot or 36, t)
         else:
-            BD.gambar(c, jenis, wx, wy - 16 * s, s * (0.9 if jenis in ("buku", "kertas", "laptop") else 1.0), rot, t, **{k2: v for k2, v in bawa.items() if k2 in ("buka", "warna", "isi", "layar", "jam")})
+            sc_b = 1.05 if (jenis == "buku" and bawa.get("buka")) else (0.9 if jenis in ("buku", "kertas", "laptop") else 1.0)
+            BD.gambar(c, jenis, wx, wy - 12 * s, s * sc_b, rot, t, **{k2: v for k2, v in bawa.items() if k2 in ("buka", "warna", "isi", "layar", "jam")})
         # tangan di atas benda: gambar ulang tangan (agar benda terlihat digenggam)
         c.ell(px, py, 17.5 * s * c.k / c.k if False else 17.5 * s, 17.5 * s, None) if False else None
         c.set_depth(1.0)
@@ -844,6 +856,33 @@ class Adegan:
             k = q * wob
             lay = lay.resize((max(2, int(lay.width * k)), max(2, int(lay.height * k))), Image.BILINEAR)
             S.im.alpha_composite(lay, (int(px * S.k - lay.width / 2), int(py * S.k - lay.height / 2)))
+        elif gaya == "sinema_penutup":
+            # Judul penutup sinematik multi-baris (Instrument Serif Italic, TANPA garis pinggir & kapsul, layar menghitam di belakang teks!)
+            dur_bg = float(tk.get("dur_gelap", 1.8))
+            if tk.get("layar_hitam", True):
+                bg_a = int(255 * e_io(prog(tt, 0.0, dur_bg)))
+                if bg_a > 0:
+                    S.d.rectangle([0, 0, S.im.width, S.im.height], fill=(8, 8, 10, bg_a))
+            fade_in_t = e_io(prog(tt, 0.25, 1.35))
+            fade_out_t = 1.0 - e_in(prog(tt, dur, dur + 0.35))
+            al = int(255 * clamp(fade_in_t * fade_out_t))
+            if al <= 2:
+                return
+            sc_grow = lerp(0.92, 1.06, e_io(prog(tt, 0.0, max(1.0, dur))))
+            col_rgb = tuple(tk["warna"]) if isinstance(tk.get("warna"), list) else (255, 219, 88)
+            col_rgba = (col_rgb[0], col_rgb[1], col_rgb[2], al)
+            sh_rgba = (0, 0, 0, int(al * 0.45))
+            baris = [ln.strip() for ln in str(isi).split("\n") if ln.strip()]
+            n_ln = len(baris)
+            step_y = size * 1.12 * sc_grow
+            y_start = py - (n_ln - 1) * step_y * 0.5
+            for idx_b, ln_txt in enumerate(baris):
+                # Baris terakhir bila berupa tahun '(2009)' tampil sedikit lebih lembut & proporsional
+                ln_sc = 0.74 if (idx_b == n_ln - 1 and ln_txt.startswith("(")) else 1.0
+                fs_b = size * sc_grow * ln_sc
+                yy_b = y_start + idx_b * step_y + (size * 0.08 if ln_sc < 1.0 else 0.0)
+                S.text(px, yy_b + 4.0, ln_txt, fs_b, sh_rgba, "serif_italic", "mm")
+                S.text(px, yy_b, ln_txt, fs_b, col_rgba, "serif_italic", "mm")
         else:   # kata_besar: teks putih bergaris di tengah
             S.text(px, py, isi, size * q, col if tk.get("warna") else PUTIH, "judul", stroke=10, stroke_fill=OUT)
 

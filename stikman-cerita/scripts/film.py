@@ -87,9 +87,14 @@ class Film:
         if pg is None:
             return img
         S = ScreenCanvas(self.W, self.H, 2)
-        size = 56 * (self.H / 1080.0 if self.W >= self.H else self.W / 1080.0 * 0.95)
-        f = font("teks", size * S.k)
-        sp = size * 0.30
+        gaya_sub = self.proj.get("gaya_subtitle", "komik")
+        serif_style = gaya_sub in ("serif", "editorial", "sinema")
+        pil_style = gaya_sub == "pil"
+        sub_font = "serif_italic" if serif_style else "teks"
+        base_sz = 88 if serif_style else 56
+        size = base_sz * (self.H / 1080.0 if self.W >= self.H else self.W / 1080.0 * 0.95)
+        f = font(sub_font, size * S.k)
+        sp = size * (0.22 if serif_style else 0.30)
         lens = [f.getlength(w[0]) / S.k for w in pg]
         total = sum(lens) + sp * (len(pg) - 1)
         maxw = self.W * 0.88
@@ -101,8 +106,16 @@ class Film:
                 cw = 0
             lines[-1].append((w, l))
             cw += l + sp
-        y0 = self.H * (0.885 if self.W >= self.H else 0.80) - (len(lines) - 1) * size * 0.6
-        pil_style = self.proj.get("gaya_subtitle", "komik") == "pil"
+        y0 = self.H * (0.885 if self.W >= self.H else (0.875 if serif_style else 0.80)) - (len(lines) - 1) * size * 0.56
+        if serif_style:
+            # Soft cinematic gradient scrim tipis di bawah layar agar subtitle tanpa outline 100% terbaca jernih!
+            sy_top = int(max(0, (y0 - size * 1.45) * S.k))
+            sy_bot = S.im.height
+            span_h = max(1, sy_bot - sy_top)
+            for row_i in range(0, span_h, 4):
+                p_g = row_i / span_h
+                al_g = int(135 * (p_g ** 1.35))
+                S.d.rectangle([0, sy_top + row_i, S.im.width, min(sy_bot, sy_top + row_i + 4)], fill=(8, 8, 10, al_g))
         if pil_style:
             bw = max(sum(l for _, l in ln) + sp * (len(ln) - 1) for ln in lines) + size * 1.4
             bh = len(lines) * size * 1.2 + size * .5
@@ -112,13 +125,19 @@ class Film:
             x = self.W / 2 - wline / 2
             for w, l in ln:
                 active = w[1] - 0.02 <= t < w[2] + 0.05 or (t >= w[1] and w is pg[-1])
-                col = (255, 214, 60) if (active and not pil_style) else (OUT if pil_style else PUTIH)
-                if active and pil_style:
-                    col = (226, 56, 56)
-                grow = 1.0 + (0.1 * e_back((t - w[1]) / 0.12, 3) if active else 0)
-                if pil_style:
+                if serif_style:
+                    # Gaya editorial Instrument Serif Italic TANPA garis pinggir (stroke=0), bayangan lembut, kata aktif #FFDB58!
+                    col = (255, 219, 88) if active else (255, 252, 246)
+                    yy = y0 + li * size * 1.10
+                    S.text(x + l / 2, yy + 3.5, w[0], size, (10, 10, 12, 165), sub_font, "mm")
+                    S.text(x + l / 2, yy, w[0], size, col, sub_font, "mm")
+                elif pil_style:
+                    col = (226, 56, 56) if active else OUT
+                    grow = 1.0 + (0.1 * e_back((t - w[1]) / 0.12, 3) if active else 0)
                     S.text(x + l / 2, y0 + li * size * 1.2, w[0], size * grow, col, "teks", "mm")
                 else:
+                    col = (255, 214, 60) if active else PUTIH
+                    grow = 1.0 + (0.1 * e_back((t - w[1]) / 0.12, 3) if active else 0)
                     S.text(x + l / 2, y0 + li * size * 1.2, w[0], size * grow, col, "teks", "mm", stroke=size * 0.16, stroke_fill=OUT)
                 x += l + sp
         ov = S.finish()

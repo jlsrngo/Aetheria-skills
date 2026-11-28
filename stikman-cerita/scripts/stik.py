@@ -124,7 +124,9 @@ def lerp(a, b, t):
 def font(name, size):
     """name: 'judul' (Fredoka), 'teks' (Nunito), 'bulat' (Baloo 2), 'seru' (Bungee)."""
     files = {"judul": ("Fredoka-Var.ttf", 700), "teks": ("Nunito-Var.ttf", 900),
-             "bulat": ("Baloo2-Var.ttf", 800), "seru": ("Bungee-Regular.ttf", None)}
+             "bulat": ("Baloo2-Var.ttf", 800), "seru": ("Bungee-Regular.ttf", None),
+             "serif_italic": ("InstrumentSerif-Italic.ttf", None),
+             "serif": ("InstrumentSerif-Regular.ttf", None)}
     fn, wt = files.get(name, files["judul"])
     path = os.path.join(FONT_DIR, fn)
     if not os.path.exists(path):

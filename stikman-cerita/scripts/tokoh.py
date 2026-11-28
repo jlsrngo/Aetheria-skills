@@ -16,7 +16,7 @@ HEAD_R = 96.0
 HEAD_Y = -352.0          # pusat kepala (berdiri, proporsi chibi Ghibli hangat)
 SHOULDER_Y = -254.0
 HIP_Y = -142.0
-SIT_DROP = 64.0
+SIT_DROP = 8.0
 UP_ARM = 56.0
 FORE_ARM = 52.0
 SHOULDER_X = 40.0
@@ -204,6 +204,7 @@ EKSPRESI = {
     "lega":     dict(eyes="arc_dn", mouth="open", open=0.35, blush=0.5, sweat=True),
     "terpana":  dict(eyes="spark", mouth="o", brow=(10, 0, 0), blush=0.6),
     "datar":    dict(eyes="dot", mouth="flat", blush=0.0),
+    "kosong":   dict(eyes="half", mouth="flat", brow=(-2, 0.45, 0.45), blush=0.0, hl=0.20),
 }
 ALIAS_EKS = {"senyum": "tenang", "kecewa": "sedih", "bingung": "mikir", "gembira": "senang", "ketawa": "tertawa",
              "heran": "kaget", "kesal": "cemberut", "takut": "panik", "ngakak": "tertawa", "ceria": "senang"}
@@ -254,8 +255,13 @@ POSE = {
     "jalan":       _P((14, 10, "m"), (14, 10, "m"), legs="walk", swing=1.0),
     "lari":        _P((38, -80, "m"), (38, -80, "m"), legs="walk", swing=1.9, lean=9),
     "berjinjit":   _P((14, 10, "m"), (14, 10, "m"), legs="walk", swing=0.5),
-    "duduk":       _P((26, -92, "m"), (26, -92, "m"), legs="stand", sit=1.0),
-    "duduk_santai": _P((18, -40, "m"), (18, -40, "m"), sit=1.0, lean=-4),
+    "duduk":       _P((16, -62, "r"), (16, -62, "r"), legs="stand", sit=1.0),
+    "duduk_pangku": _P((18, -74, "r"), (18, -74, "r"), legs="stand", sit=1.0),
+    "duduk_santai": _P((14, -56, "r"), (14, -56, "r"), legs="stand", sit=1.0, lean=-2),
+    "duduk_baca":  _P((18, -64, "r"), (18, -64, "r"), legs="stand", sit=1.0, tilt=5, lean=1),
+    "duduk_bicara": _P((16, -62, "r"), (28, -76, "m"), legs="stand", sit=1.0, lean=1),
+    "duduk_tawa":  _P((16, -64, "r"), (16, -64, "r"), legs="stand", sit=1.0, lean=-2),
+    "bersandar_kursi": _P((14, -12, "m"), (42, -26, "m"), lean=3, tilt=-2),
     "duduk_hp":    _P((34, -128, "m"), (34, -128, "m"), sit=1.0, tilt=10, lean=3),
     "duduk_nulis": _P((30, -70, "m"), (40, -112, "m"), sit=1.0, tilt=12, lean=10),
     "duduk_game":  _P((36, -118, "m"), (36, -118, "m"), sit=1.0, tilt=4, lean=-3),
@@ -462,9 +468,13 @@ class Tokoh:
         hip = [T(-18, hy), T(18, hy)]
         feet, knees, hip = self._legs(st, T, sit, turn)
         skirt = p.get("bawah") == "rok"
-        legw = (11.5 if skirt else 13.6) * kt
-        legc = (56, 56, 68) if (skirt and (p.get("hijab") or bawah_c == HITAM)) else (gelap(bawah_c, .36) if skirt else bawah_c)
-        legoc = OUT
+        legw = (12.8 if skirt else 18.5) * kt
+        # Karakter ber-rok non-hijab: betis warna kulit hangat (bukan warna biru tua gelap yang aneh!)
+        if skirt:
+            legc = (56, 56, 68) if (p.get("hijab") or p.get("rok_panjang")) else kulit
+        else:
+            legc = bawah_c
+        legoc = (64, 46, 38) if p.get("outline_hangat") else OUT
         jog_mode = bool(p.get("celana_jogger")) and not skirt
         if jog_mode:
             # ===== 1) KAKI CELANA JOGGER LONGGAR DULU (agar sepatu & lidah sepatu tampil utuh 3D di depan manset!) =====
@@ -618,8 +628,88 @@ class Tokoh:
                         (fx + w_ank * 0.85, ank_y + 2 * s), (fx - w_ank * 0.85, ank_y + 2 * s)], gelap(leg_fill, 0.14), 2.2 * s, OUT)
                 c.poly(jog_pts, None, 3.0 * s, OUT)
             else:
-                c.line([(ax, ay), (kx, ky), (fx, ank_y)], legoc, (legw + 2 * 3.8) * s)
-                c.line([(ax, ay), (kx, ky), (fx, ank_y)], leg_fill, legw * s)
+                # Gambar kaki anatomis rapi bertekstur 3D duduk (paha maju, lipatan lutut, bayangan bawah lutut, kaos kaki & bayangan sepatu!)
+                is_front_sit = (sit > 0.15 and turn < 0.25)
+                w_th = (13.5 if skirt else (22.5 if is_front_sit else 20.5)) * s * (0.88 if side_prof else 1.0)
+                w_kn = (11.8 if skirt else (20.5 if is_front_sit else 18.0)) * s
+                w_an = (9.2 if skirt else (15.8 if is_front_sit else 14.5)) * s
+
+                def _seg_poly(p0, p1, w0, w1):
+                    ddx, ddy = p1[0] - p0[0], p1[1] - p0[1]
+                    ll = max(1e-6, math.hypot(ddx, ddy))
+                    nx_, ny_ = -ddy / ll, ddx / ll
+                    return [
+                        (p0[0] - nx_ * w0, p0[1] - ny_ * w0),
+                        (p0[0] + nx_ * w0, p0[1] + ny_ * w0),
+                        (p1[0] + nx_ * w1, p1[1] + ny_ * w1),
+                        (p1[0] - nx_ * w1, p1[1] - ny_ * w1),
+                    ]
+
+                # Bayangan lantai lembut di bawah sepatu saat duduk agar kaki terasa mantap menapak!
+                if is_front_sit:
+                    c.ell(fx, fy + 2.0 * s, (14.5 if skirt else 17.5) * s, 4.8 * s, (38, 32, 28, 65))
+
+                thigh_p = _seg_poly((ax, ay), (kx, ky), w_th, w_kn)
+                shin_p = _seg_poly((kx, ky), (fx, ank_y), w_kn * 0.94, w_an)
+                # Pass 1: outline luar mulus
+                ow_l = 2.4 * s
+                c.poly(thigh_p, leg_fill, ow_l, legoc)
+                c.poly(shin_p, leg_fill, ow_l, legoc)
+                c.ell(kx, ky, w_kn * 0.98, w_kn * 0.96, leg_fill, ow_l, legoc)
+                # Pass 2: isi ulang di dalam agar sambungan lutut 100% menyatu
+                c.poly(thigh_p, leg_fill)
+                c.poly(shin_p, leg_fill)
+                c.ell(kx, ky, w_kn * 0.95, w_kn * 0.94, leg_fill)
+
+                if not skirt:
+                    if is_front_sit:
+                        # TEKSTUR DUDUK 3D CELANA (persis gambar target: paha atas terang membulat ke depan + tekukan lutut + bayangan dalam betis!)
+                        sg_in = 1 if i == 0 else -1
+                        # Bayangan teduh di bawah tekukan lutut & tepi dalam betis (efek paha menekuk 90 derajat ke depan!)
+                        c.poly([
+                            (kx - w_kn * 0.88, ky + 6 * s), (kx + w_kn * 0.88, ky + 6 * s),
+                            (fx + w_an * 0.88, ank_y), (fx - w_an * 0.88, ank_y),
+                        ], gelap(leg_fill, 0.12))
+                        c.poly([
+                            (kx + sg_in * w_kn * 0.18, ky + 4 * s), (kx + sg_in * w_kn * 0.88, ky + 4 * s),
+                            (fx + sg_in * w_an * 0.88, ank_y), (fx + sg_in * w_an * 0.28, ank_y),
+                        ], gelap(leg_fill, 0.22))
+                        # Sorotan lembut di atas paha & tempurung lutut (menghadap cahaya atas -> langsung terasa duduk!)
+                        c.ell(kx - sg_in * 3.0 * s, ky - 11.0 * s, w_kn * 0.62, w_kn * 0.44, terang(leg_fill, 0.13))
+                        # 2 garis lipatan kain lutut melengkung lembut + celah lipatan pangkal paha
+                        c.curve([
+                            (kx - w_kn * 0.66, ky + 2.0 * s),
+                            (kx, ky + 7.5 * s),
+                            (kx + w_kn * 0.66, ky + 2.0 * s),
+                        ], gelap(leg_fill, 0.34), 1.9 * s)
+                        c.curve([
+                            (kx - w_kn * 0.42, ky - 6.0 * s),
+                            (kx, ky - 2.5 * s),
+                            (kx + w_kn * 0.42, ky - 6.0 * s),
+                        ], gelap(leg_fill, 0.22), 1.4 * s)
+                    else:
+                        c.line([(ax, ay), (kx, ky)], gelap(leg_fill, 0.10), max(2.0, w_kn * 0.35))
+                        c.line([(kx - w_kn * 0.5, ky - 2 * s), (kx + w_kn * 0.5, ky + 3 * s)], gelap(leg_fill, 0.24), 1.8 * s)
+                    # Manset ujung celana bahan rapi di atas sepatu
+                    c.poly([(fx - w_an * 1.04, ank_y - 6 * s), (fx + w_an * 1.04, ank_y - 6 * s),
+                            (fx + w_an * 1.00, ank_y + 2 * s), (fx - w_an * 1.00, ank_y + 2 * s)],
+                           gelap(leg_fill, 0.08), 2.0 * s, legoc)
+                elif not p.get("hijab") and not p.get("rok_panjang"):
+                    if is_front_sit:
+                        # Bayangan jatuh dari tepi bawah rok ke lutut + shading sisi dalam betis agar terasa duduk dari balik rok!
+                        sg_in = 1 if i == 0 else -1
+                        c.ell(kx, ky + 3.0 * s, w_kn * 0.88, 7.5 * s, gelap(leg_fill, 0.14))
+                        c.poly([
+                            (kx + sg_in * w_kn * 0.25, ky + 4 * s), (kx + sg_in * w_kn * 0.88, ky + 4 * s),
+                            (fx + sg_in * w_an * 0.88, ank_y), (fx + sg_in * w_an * 0.30, ank_y),
+                        ], gelap(leg_fill, 0.10))
+                    # Kaos kaki putih bersih panjang rapi sampai sepertiga betis di atas sepatu Mary-Jane!
+                    sock_top = lerp(ky, ank_y, 0.56)
+                    sock_x = lerp(kx, fx, 0.56)
+                    sock_p = _seg_poly((sock_x, sock_top), (fx, ank_y + 2 * s), w_an * 1.05, w_an * 1.02)
+                    c.poly(sock_p, (248, 246, 240), 2.0 * s, legoc)
+                    c.line([(sock_x - w_an * 0.96, sock_top), (sock_x + w_an * 0.96, sock_top)], legoc, 2.0 * s)
+                    c.line([(sock_x - w_an * 0.86, sock_top + 4 * s), (sock_x + w_an * 0.86, sock_top + 4 * s)], (214, 210, 202), 1.4 * s)
             # sepatu
             toe = 1 if (turn >= 0.25 or walking) else (-1 if i == 0 else 1)
             dir_x = toe * fl
@@ -645,20 +735,43 @@ class Tokoh:
                     c.ell(sx_c, fy - 7.5 * s * sm, 21.0 * s * sm, 10.5 * s * sm, sc_s, 2.6 * s, oc_s)
                     c.ell(sx_c + (2.5 if i == 1 else -2.5) * s, fy - 9.5 * s * sm, 9.0 * s * sm, 4.0 * s * sm, terang(sc_s, 0.16))
                 elif p.get("sepatu_gaya") in ("loafer", "maryjane"):
-                    loafer = [
-                        SP2(-15, -4), SP2(-16, -15), SP2(-9, -19), SP2(3, -18),
-                        SP2(18, -14), SP2(27, -6), SP2(26, 2),
-                        SP2(13, 5), SP2(-2, 3), SP2(-14, 1),
-                    ]
-                    c.blob(loafer, sc_s, 2.6 * s, OUT, n=5)
-                    sole_l = [SP2(-15, -3), SP2(0, -1), SP2(14, 1), SP2(26, -1), SP2(25, 3), SP2(12, 5), SP2(-14, 2)]
-                    c.blob(sole_l, sole_s, 2.0 * s, OUT, n=4)
-                    if p.get("sepatu_gaya") == "maryjane":
-                        # bukaan sepatu Mary-Jane chibi + tali strap mungil melintang di punggung kaki!
-                        c.ell(*SP2(4, -15), 8.2 * S_sh, 4.4 * S_sh, (248, 244, 238), 1.6 * s, OUT)
-                        c.line([SP2(-1, -18), SP2(8, -11)], gelap(sc_s, 0.20), 3.4 * s)
-                        c.ell(*SP2(8, -11), 2.2 * S_sh, 2.2 * S_sh, (236, 206, 136))
-                    c.ell(*SP2(16, -8), 6.2 * S_sh, 3.0 * S_sh, terang(sc_s, 0.18))
+                    if sit > 0.15 and turn < 0.25:
+                        # SEPATU MUNGIL PROPORSIONAL MENGHADAP DEPAN (persis gambar target: ramping-vertikal & ada celah bersih antar sepatu!)
+                        oc_fsh = (56, 38, 32)
+                        if p.get("sepatu_gaya") == "maryjane":
+                            rx_m, ry_m = 12.2 * s, 14.2 * s
+                            cy_m = fy - 11.5 * s
+                            c.ell(fx, cy_m + 3.0 * s, rx_m * 1.02, ry_m * 0.90, sole_s, 1.8 * s, oc_fsh)
+                            c.ell(fx, cy_m, rx_m, ry_m, sc_s, 2.0 * s, oc_fsh)
+                            c.ell(fx, cy_m - 4.8 * s, rx_m * 0.56, ry_m * 0.38, (248, 246, 240), 1.5 * s, oc_fsh)
+                            c.line([(fx - rx_m * 0.68, cy_m - 3.6 * s), (fx + rx_m * 0.68, cy_m - 3.6 * s)], gelap(sc_s, 0.24), 3.0 * s)
+                            c.ell(fx - 2.4 * s, cy_m + 3.8 * s, 3.6 * s, 2.2 * s, terang(sc_s, 0.20))
+                        else:
+                            rx_l, ry_l = 14.8 * s, 16.0 * s
+                            cy_l = fy - 12.2 * s
+                            c.ell(fx, cy_l + 3.2 * s, rx_l * 1.02, ry_l * 0.90, sole_s, 1.8 * s, oc_fsh)
+                            c.ell(fx, cy_l, rx_l, ry_l, sc_s, 2.0 * s, oc_fsh)
+                            c.curve(arc_pts(fx, cy_l - 2.0 * s, rx_l * 0.56, ry_l * 0.48, 200, 340, 10), gelap(sc_s, 0.34), 1.6 * s)
+                            c.ell(fx - 3.0 * s, cy_l - 2.2 * s, 4.4 * s, 2.6 * s, terang(sc_s, 0.20))
+                    else:
+                        # Sepatu profil samping/3/4 Mary-Jane & Loafer proporsional (tidak kebesaran saat berjalan!)
+                        S_w = s * 0.96
+                        def SPw(u, v, fx_s=fx_s, fy_s=fy_s, dx_s=dx_s):
+                            return (fx_s + dx_s * u * S_w, fy_s + v * S_w)
+                        oc_fsh = (56, 38, 32)
+                        loafer = [
+                            SPw(-14, -4), SPw(-15, -14), SPw(-8, -17), SPw(3, -16),
+                            SPw(17, -12), SPw(24, -5), SPw(23, 2),
+                            SPw(12, 4), SPw(-2, 3), SPw(-13, 1),
+                        ]
+                        c.blob(loafer, sc_s, 2.2 * s, oc_fsh, n=5)
+                        sole_l = [SPw(-14, -3), SPw(0, -1), SPw(13, 1), SPw(23, -1), SPw(22, 3), SPw(11, 4), SPw(-13, 2)]
+                        c.blob(sole_l, sole_s, 1.8 * s, oc_fsh, n=4)
+                        if p.get("sepatu_gaya") == "maryjane":
+                            c.ell(*SPw(4, -13), 7.2 * S_w, 3.8 * S_w, (248, 244, 238), 1.5 * s, oc_fsh)
+                            c.line([SPw(-1, -16), SPw(7, -10)], gelap(sc_s, 0.22), 2.8 * s)
+                            c.ell(*SPw(7, -10), 1.9 * S_w, 1.9 * S_w, (236, 206, 136))
+                        c.ell(*SPw(15, -7), 5.2 * S_w, 2.6 * S_w, terang(sc_s, 0.18))
                 else:
                     full_sh = [
                         SP2(-16, -6), SP2(-17, -18), SP2(-11, -22), SP2(-4, -20),
@@ -720,50 +833,120 @@ class Tokoh:
         if skirt:
             oc_sk = (68, 44, 34) if p.get("hijab_gaya") == "modern" else OUT
             if p.get("rok_panjang"):
-                # ROK PANJANG CHIBI JATUH LEMBUT DARI BAWAH TUNIK (ramping-mekar alami, TIDAK menggembung balon di pinggul!)
+                # ROK PANJANG CHIBI JATUH LEMBUT DARI BAWAH TUNIK (saat duduk ikut menyapu menutupi paha & lutut!)
                 hem = -20.0 + dy * 0.45
                 sw = max(0.74 if side_prof else 1.0, hipb * 0.64)
                 y_rk_top = hy + 16.0
                 w_top = 56.0 * sw
                 w_bot = 68.0 * sw
-                if side_prof:
-                    w_top, w_bot = 38.0 * sw, 52.0 * sw
-                    bot_r = [
-                        (w_bot, hem - 4), (w_bot * 0.45, hem + 5), (0, hem - 1),
-                        (-w_bot * 0.45, hem + 5), (-w_bot, hem - 3),
+                if sit > 0.15:
+                    # Saat duduk, kain rok jatuh mengikuti arah lutut (+x lokal, mengikuti flip) agar kaki tidak terpisah aneh!
+                    drape = 96.0 * sit
+                    skirt_pts = [
+                        (-w_top * 0.78, y_rk_top),
+                        (w_top * 0.85, y_rk_top),
+                        (drape + 26.0, hy + SIT_DROP * 0.55),
+                        (drape + 18.0, hem + 14.0),
+                        (drape * 0.45, hem + 20.0),
+                        (-w_top * 0.72, hem + 8.0),
                     ]
+                    c.poly(TT(skirt_pts), bawah_c, 2.8 * s, oc_sk)
+                    c.poly(TT([(w_top * 0.35, y_rk_top), (drape + 22.0, hy + SIT_DROP * 0.55),
+                               (drape + 14.0, hem + 14.0), (drape * 0.35, hem + 18.0)]), gelap(bawah_c, 0.14))
+                    c.poly(TT(skirt_pts), None, 2.8 * s, oc_sk)
                 else:
-                    # tepi bawah bergelombang 3 kelopak lembut persis referensi chibi hijab!
-                    bot_r = (
-                        bezier((w_bot, hem - 5), (w_bot * 0.68, hem + 6), (w_bot * 0.34, hem - 1), 6) +
-                        bezier((w_bot * 0.34, hem - 1), (0, hem + 8), (-w_bot * 0.34, hem - 1), 6)[1:] +
-                        bezier((-w_bot * 0.34, hem - 1), (-w_bot * 0.68, hem + 6), (-w_bot, hem - 5), 6)[1:]
-                    )
-                skirt_pts = [(-w_top, y_rk_top), (w_top, y_rk_top)] + bot_r
-                c.poly(TT(skirt_pts), bawah_c, 2.8 * s, oc_sk)
-                # bayangan cel lembut di sisi kanan & lipatan rok jatuh lurus alami
-                c.poly(TT([(w_top * 0.25, y_rk_top), (w_top, y_rk_top), (w_bot, hem - 5), (w_bot * 0.30, hem)]),
-                       gelap(bawah_c, 0.16))
-                if not side_prof:
-                    for fx_r in (-0.42, -0.10, 0.24, 0.56):
-                        c.line(TT([(w_top * fx_r, y_rk_top + 4), (w_bot * fx_r * 1.04, hem - 1)]),
-                               gelap(bawah_c, 0.28), 2.0 * s)
-                c.poly(TT(skirt_pts), None, 2.8 * s, oc_sk)
+                    if side_prof:
+                        w_top, w_bot = 38.0 * sw, 52.0 * sw
+                        bot_r = [
+                            (w_bot, hem - 4), (w_bot * 0.45, hem + 5), (0, hem - 1),
+                            (-w_bot * 0.45, hem + 5), (-w_bot, hem - 3),
+                        ]
+                    else:
+                        # tepi bawah bergelombang 3 kelopak lembut persis referensi chibi hijab!
+                        bot_r = (
+                            bezier((w_bot, hem - 5), (w_bot * 0.68, hem + 6), (w_bot * 0.34, hem - 1), 6) +
+                            bezier((w_bot * 0.34, hem - 1), (0, hem + 8), (-w_bot * 0.34, hem - 1), 6)[1:] +
+                            bezier((-w_bot * 0.34, hem - 1), (-w_bot * 0.68, hem + 6), (-w_bot, hem - 5), 6)[1:]
+                        )
+                    skirt_pts = [(-w_top, y_rk_top), (w_top, y_rk_top)] + bot_r
+                    c.poly(TT(skirt_pts), bawah_c, 2.8 * s, oc_sk)
+                    # bayangan cel lembut di sisi kanan & lipatan rok jatuh lurus alami
+                    c.poly(TT([(w_top * 0.25, y_rk_top), (w_top, y_rk_top), (w_bot, hem - 5), (w_bot * 0.30, hem)]),
+                           gelap(bawah_c, 0.16))
+                    if not side_prof:
+                        for fx_r in (-0.42, -0.10, 0.24, 0.56):
+                            c.line(TT([(w_top * fx_r, y_rk_top + 4), (w_bot * fx_r * 1.04, hem - 1)]),
+                                   gelap(bawah_c, 0.28), 2.0 * s)
+                    c.poly(TT(skirt_pts), None, 2.8 * s, oc_sk)
             else:
                 hem = hy + 62 + dy * 0.85
                 sw = max(0.74 if side_prof else 0.98, hipb * 1.04)
-                skirt_pts = [(-32 * sw, hy - 14), (32 * sw, hy - 14), (54 * sw, hem - 4)] + bezier((54 * sw, hem - 4), (0, hem + 18), (-54 * sw, hem - 4), 10)[1:-1] + [(-54 * sw, hem - 4)]
-                c.poly(TT(skirt_pts), bawah_c, 2.8 * s, oc_sk)
-                if turn >= 0.25:
-                    c.poly(TT([(-30 * sw, hy - 12), (-6 * sw, hy - 12), (-16 * sw, hem + 4), (-48 * sw, hem - 5)]),
-                           gelap(bawah_c, 0.14))
+                if sit > 0.15:
+                    # Rok selutut saat duduk: RAMPING MEMELUK PAHA (tidak mekar seperti payung!) dengan 3 kelopak lembut persis gambar target!
+                    if turn < 0.25:
+                        w_t = 38.0
+                        w_b = 58.0
+                        skirt_pts = [
+                            (-w_t, hy - 12), (w_t, hy - 12),
+                            (w_b * 0.90, hy + 18), (w_b, hy + 46),
+                            (w_b * 0.62, hy + 56), (w_b * 0.26, hy + 48),
+                            (0, hy + 54), (-w_b * 0.26, hy + 48),
+                            (-w_b * 0.62, hy + 56), (-w_b, hy + 46),
+                            (-w_b * 0.90, hy + 18),
+                        ]
+                        c.blob(TT(skirt_pts), bawah_c, 2.5 * s, oc_sk, n=5)
+                        # Tekstur duduk 3D di rok: sorotan lembut di atas kedua paha + bayangan cekung di tengah antar-paha + shading sisi!
+                        c.ell(*T(-18.0, hy + 18.0), 16.0 * s, 11.0 * s, terang(bawah_c, 0.12))
+                        c.ell(*T(18.0, hy + 18.0), 16.0 * s, 11.0 * s, terang(bawah_c, 0.12))
+                        c.poly(TT([(-7.0, hy + 6), (7.0, hy + 6), (11.0, hy + 52), (-11.0, hy + 52)]), gelap(bawah_c, 0.16))
+                        c.poly(TT([(w_t * 0.52, hy - 10), (w_t, hy - 10), (w_b * 0.96, hy + 44), (w_b * 0.55, hy + 52)]),
+                               gelap(bawah_c, 0.15))
+                        c.curve(TT([(-w_t * 0.42, hy - 2), (-w_b * 0.34, hy + 24), (-w_b * 0.28, hy + 48)]), gelap(bawah_c, 0.26), 1.6 * s)
+                        c.curve(TT([(w_t * 0.42, hy - 2), (w_b * 0.34, hy + 24), (w_b * 0.28, hy + 48)]), gelap(bawah_c, 0.26), 1.6 * s)
+                        c.curve(TT([(-4.0, hy + 10), (0.0, hy + 34), (2.0, hy + 52)]), gelap(bawah_c, 0.28), 1.5 * s)
+                        c.blob(TT(skirt_pts), None, 2.5 * s, oc_sk, n=5)
+                    else:
+                        # Hadap 3/4 atau samping: rok jatuh lembut memeluk kedua paha serong ke arah lutut!
+                        drape = (52.0 if turn < 0.80 else 72.0) * sit
+                        skirt_pts = [
+                            (-30 * sw, hy - 14), (30 * sw, hy - 14),
+                            (drape + 14 * sw, hy + 22),
+                            (drape + 8 * sw, hy + 54),
+                            (drape * 0.25, hy + 58),
+                            (-34 * sw, hy + 48),
+                        ]
+                        c.blob(TT(skirt_pts), bawah_c, 2.6 * s, oc_sk, n=4)
+                        c.poly(TT([(8 * sw, hy - 12), (drape + 12 * sw, hy + 22), (drape + 6 * sw, hy + 52), (16 * sw, hy + 55)]),
+                               gelap(bawah_c, 0.13))
+                        c.curve(TT([(-4 * sw, hy - 4), (drape * 0.45, hy + 24), (drape * 0.55, hy + 52)]), gelap(bawah_c, 0.24), 1.8 * s)
+                        c.blob(TT(skirt_pts), None, 2.6 * s, oc_sk, n=4)
                 else:
-                    c.poly(TT([(10 * sw, hy - 12), (30 * sw, hy - 12), (49 * sw, hem - 5), (22 * sw, hem + 4)]),
-                           gelap(bawah_c, 0.14))
-                if not side_prof:
-                    for px_s in (-22, -6, 10, 24):
-                        c.line(TT([(px_s * sw * 0.68, hy - 6), (px_s * sw * 1.08, hem + 3)]), gelap(bawah_c, 0.24), 1.8 * s)
-                c.poly(TT(skirt_pts), None, 2.8 * s, oc_sk)
+                    # Rok A-line lembut berlipat organik (ujung bawah sedikit berayun halus saat berjalan, tidak segitiga kaku!)
+                    sw_w = math.sin(st.get("phase", 0.0)) * (6.5 if walking else 0.0)
+                    w_t_w = 34.0 * (0.78 if side_prof else 1.0 - 0.12 * turn)
+                    w_b_w = 54.0 * (0.82 if side_prof else 1.0 - 0.10 * turn)
+                    skirt_pts = [
+                        (-w_t_w, hy - 14), (w_t_w, hy - 14),
+                        (w_b_w * 0.86 + sw_w * 0.4, hy + 22),
+                        (w_b_w + sw_w, hem - 2),
+                        (w_b_w * 0.45 + sw_w * 0.7, hem + 8),
+                        (sw_w * 0.4, hem + 3),
+                        (-w_b_w * 0.45 + sw_w * 0.5, hem + 8),
+                        (-w_b_w + sw_w * 0.8, hem - 2),
+                        (-w_b_w * 0.86 + sw_w * 0.3, hy + 22),
+                    ]
+                    c.blob(TT(skirt_pts), bawah_c, 2.5 * s, oc_sk, n=5)
+                    if turn >= 0.25:
+                        c.poly(TT([(-w_t_w * 0.92, hy - 12), (-w_t_w * 0.15, hy - 12),
+                                   (-w_b_w * 0.25 + sw_w * 0.4, hem + 5), (-w_b_w * 0.90 + sw_w * 0.7, hem - 3)]),
+                               gelap(bawah_c, 0.14))
+                    else:
+                        c.poly(TT([(w_t_w * 0.25, hy - 12), (w_t_w * 0.92, hy - 12),
+                                   (w_b_w * 0.92 + sw_w * 0.7, hem - 3), (w_b_w * 0.35 + sw_w * 0.4, hem + 5)]),
+                               gelap(bawah_c, 0.14))
+                    c.curve(TT([(-w_t_w * 0.32, hy - 4), (-w_b_w * 0.34 + sw_w * 0.4, (hy + hem) * 0.5), (-w_b_w * 0.36 + sw_w * 0.6, hem + 4)]), gelap(bawah_c, 0.24), 1.6 * s)
+                    c.curve(TT([(w_t_w * 0.28, hy - 4), (w_b_w * 0.32 + sw_w * 0.4, (hy + hem) * 0.5), (w_b_w * 0.34 + sw_w * 0.6, hem + 4)]), gelap(bawah_c, 0.24), 1.6 * s)
+                    c.blob(TT(skirt_pts), None, 2.5 * s, oc_sk, n=5)
         elif not jog_mode:
             if side_prof:
                 # pinggul celana side-profile ramping sejajar paha depan-belakang (tidak terpotong/melebar)
@@ -1157,13 +1340,35 @@ class Tokoh:
             elif stance == "wide":
                 fx = sgn * 48 * kl
             hipw = T(hx, hy)
-            f_stand, f_sit = T(fx, fy, True), T(hx + 92, 0.0, True)
+            # Posisi kaki duduk anatomis panjang proporsional (pinggul di -138, lutut di -102, sepatu di 0 -> kaki panjang menutupi kisi-kisi!)
+            if turn < 0.25:
+                if self.p.get("bawah") == "rok":
+                    kx_s = sgn * 16.5
+                    fx_s = sgn * 16.5
+                else:
+                    kx_s = sgn * 23.5
+                    fx_s = sgn * 23.5
+                ky_s = -102.0
+                fy_s = 0.0
+            elif turn < 0.80:
+                # Duduk serong 3/4 (menoleh ke kanan/kiri): kedua lutut sedikit mengarah ke depan-serong, kedua betis tegak rapi!
+                kx_s = (hx + 16.0) if sgn < 0 else (hx + 28.0)
+                ky_s = -84.0 if sgn < 0 else -80.0
+                fx_s = (hx + 14.0) if sgn < 0 else (hx + 26.0)
+                fy_s = -3.0 if sgn < 0 else 0.0
+            else:
+                # Duduk profil samping 90 derajat
+                kx_s = hx + 64.0
+                ky_s = -84.0
+                fx_s = hx + 68.0
+                fy_s = 0.0
+            f_stand, f_sit = T(fx, fy, True), T(fx_s, fy_s, True)
             foot = (lerp(f_stand[0], f_sit[0], sit), lerp(f_stand[1], f_sit[1], sit))
             # lutut sedikit menekuk ke arah maju (+x lokal) saat side-profile berjalan agar langkah alami
             kx_stand = (hx + fx) * 0.5 + knee_bend
             ky_stand = (hy + fy) * 0.5
             k_stand = T(kx_stand, ky_stand)
-            k_sit = T(hx + 84, hy + SIT_DROP, True)
+            k_sit = T(kx_s, ky_s, True)
             knee = (lerp(k_stand[0], k_sit[0], sit), lerp(k_stand[1], k_sit[1], sit))
             feet.append(foot)
             knees.append(knee)
@@ -1306,11 +1511,11 @@ class Tokoh:
                 arm_w = 14.2 * lb
                 S_arm = T(sh[0] + (el[0] - sh[0]) * 0.24, sh[1] + (el[1] - sh[1]) * 0.24) if not self.p.get("lengan_gulung") else S
                 if saku:
-                    c.curve([S_arm, E, H], OUT, (arm_w + 2 * 3.8) * s, n=6)
+                    c.curve([S_arm, E, H], arm_oc, (arm_w + 2 * 2.5) * s, n=6)
                     c.curve([S_arm, E, H], skin_c, arm_w * s, n=6)
                 else:
-                    c.line([S_arm, E, H], OUT, (arm_w + 2 * 3.8) * s)
-                    c.line([S_arm, E, H], skin_c, arm_w * s)
+                    c.curve([S_arm, E, H], arm_oc, (arm_w + 2 * 2.5) * s, n=6)
+                    c.curve([S_arm, E, H], skin_c, arm_w * s, n=6)
             else:
                 c.line([S, E, H], OUT, 6.0 * s)
             # lengan pendek rapi ala Kribo untuk semua karakter lengan pendek; lengan gulung untuk Arka
@@ -1446,7 +1651,28 @@ class Tokoh:
                    (36 * k, yb + 1), (34 * k, -200)]), gelap(kemeja, 0.18))
         lum = 0.299 * kemeja[0] + 0.587 * kemeja[1] + 0.114 * kemeja[2]
         rib = terang(kemeja, 0.16) if lum < 90 else gelap(kemeja, 0.18)
-        c.curve(TT([(-20 * k, -255), (0, -244), (20 * k, -255)]), rib, 2.8 * s)
+        if self.p.get("krah"):
+            # Kerah kemeja santai pendek V-neck terbuka rapi persis Tom di gambar target!
+            oc_kr = (60, 44, 38)
+            c.poly(TT([(-20 * k, -258), (-5 * k, -242), (-18 * k, -234), (-27 * k, -248)]), terang(kemeja, 0.06), 2.0 * s, oc_kr)
+            c.poly(TT([(20 * k, -258), (5 * k, -242), (18 * k, -234), (27 * k, -248)]), terang(kemeja, 0.06), 2.0 * s, oc_kr)
+        else:
+            c.curve(TT([(-20 * k, -255), (0, -244), (20 * k, -255)]), rib, 2.8 * s)
+        # Bordiran biru bunga lembut di bahu/dada atas (gaya blus krem ikonik Summer!)
+        if self.p.get("bordir_biru"):
+            emb_c = (48, 76, 118)
+            emb_c2 = (86, 122, 168)
+            c.curve(TT([(-42 * k, -218), (0, -212), (42 * k, -218)]), emb_c, 2.0 * s)
+            for ex_b in (-30, -15, 0, 15, 30):
+                bx_e = ex_b * k
+                by_e = -232 + (4 if abs(ex_b) <= 15 else 0)
+                c.ell(*TT([(bx_e, by_e)])[0], 4.2 * s, 4.2 * s, emb_c)
+                c.ell(*TT([(bx_e, by_e)])[0], 1.8 * s, 1.8 * s, kemeja)
+                c.ell(*TT([(bx_e - 6 * k, by_e + 6)])[0], 2.4 * s, 2.4 * s, emb_c2)
+                c.ell(*TT([(bx_e + 6 * k, by_e + 6)])[0], 2.4 * s, 2.4 * s, emb_c2)
+            # Lipatan vertikal lembut kain blus krem di dada
+            for lx_b in (-18, -6, 6, 18):
+                c.line(TT([(lx_b * k, -210), (lx_b * k * 1.05, yb - 12)]), gelap(kemeja, 0.12), 1.5 * s)
         c.blob(TT(pts), None, 3.2 * s, OUT, n=6)
 
     def _hair_back_ref(self, c, HH, s, hc, sh):
@@ -1778,6 +2004,17 @@ class Tokoh:
             return (hx + ux * fwd * sc + vx * side * sc, hy + uy * fwd * sc + vy * side * sc)
 
         how = 3.2 * s
+        if hk == "r":
+            # Tangan rileks bulat-oval lembut menyatu mulus dengan pergelangan (tanpa garis gelang hitam kaku!)
+            oc_hnd = (60, 44, 38)
+            palm_c = pt(5.0, 0.0)
+            c.ell(palm_c[0], palm_c[1], 10.6 * sc, 8.8 * sc, skin, 2.0 * s, oc_hnd)
+            # Tutup sambungan pergelangan dengan warna kulit agar menyatu mulus tanpa garis potong!
+            w_c = pt(-1.2, 0.0)
+            c.ell(w_c[0], w_c[1], 6.4 * sc, 6.2 * sc, skin)
+            for fs_ in (-2.4, 2.0):
+                c.line([pt(6.2, fs_), pt(13.2, fs_ * 0.9)], oc_hnd, 1.4 * s)
+            return
         if hk == "p":
             # telunjuk lurus memanjang + jempol terbuka ringan + 2 jari lain terlipat
             palm_c = pt(3.5, -1.0)
@@ -2050,6 +2287,33 @@ class Tokoh:
                 (22, -86, 56, -88, 80, -58), (74, -46, 102, -44, 108, -18),
             ):
                 c.curve(HH([(hair_sh + x0_, y0_), (hair_sh + xm_, ym_), (hair_sh + x1_, y1_)]), sh_c, 2.6 * s)
+        if r == "ghibli_cewek" and not hij:
+            # Rambut belakang cewek Ghibli panjang sebahu bergelombang halus simetris (persis Summer — BERSIH tanpa benjolan/coretan kasar!)
+            oc_h = (52, 36, 30)
+            back_c = gelap(hair_c, 0.20)
+            pts_b = [
+                (hair_sh - 94, -18), (hair_sh - 92, -68), (hair_sh - 62, -104), (hair_sh, -116),
+                (hair_sh + 62, -104), (hair_sh + 92, -68), (hair_sh + 94, -18),
+                (hair_sh + 102, 46), (hair_sh + 96, 98), (hair_sh + 74, 118),
+                (hair_sh + 46, 108), (hair_sh, 104), (hair_sh - 46, 108),
+                (hair_sh - 74, 118), (hair_sh - 96, 98), (hair_sh - 102, 46),
+            ]
+            c.blob(HH(pts_b), back_c, 2.6 * s, oc_h, n=6)
+            # bayangan dalam lembut di belakang leher
+            c.blob(HH([
+                (hair_sh - 64, 10), (hair_sh + 64, 10), (hair_sh + 72, 100), (hair_sh - 72, 100)
+            ]), gelap(hair_c, 0.36), 0, n=4)
+            # garis gelombang halus di ujung rambut belakang (2 helai per sisi, bukan sapu!)
+            for sg_w in (-1, 1):
+                c.curve(HH([(hair_sh + sg_w * 78, 36), (hair_sh + sg_w * 88, 74), (hair_sh + sg_w * 72, 108)]), oc_h, 1.8 * s)
+        if r == "ghibli_cowok" and not hij:
+            # Rambut belakang cowok Ghibli pendek rapi memeluk kepala (persis Tom — bersih cel-shaded!)
+            oc_h = (48, 34, 28)
+            c.blob(HH([
+                (hair_sh - 86, 18), (hair_sh - 94, -34), (hair_sh - 76, -86), (hair_sh - 34, -110),
+                (hair_sh, -116), (hair_sh + 34, -110), (hair_sh + 76, -86), (hair_sh + 94, -34),
+                (hair_sh + 86, 18), (hair_sh + 64, 34), (hair_sh - 64, 34),
+            ]), gelap(hair_c, 0.22), 2.5 * s, oc_h, n=6)
         if r == "panjang_naa" and not hij:
             # rambut belakang panjang bergelombang sutra berlapis (mengalir lewat samping bahu + ujung wispy!)
             back_pts = [
@@ -2376,6 +2640,40 @@ class Tokoh:
             tc = warna(p["topi"] if not isinstance(p["topi"], bool) else "merah", MERAH)
             c.blob(HH([(-80, -48), (-72, -104), (0, -124), (72, -104), (80, -48), (0, -42)]), tc, ow, OUT)
             c.poly(HH([(38, -52), (120, -44), (120, -34), (38, -39)]), gelap(tc, .15), ow * .8, OUT)
+        # Headphone retro Studio Ghibli / 500 Days of Summer ("pakai" di kepala atau "leher" dikalungkan di leher!)
+        hp_mode = p.get("headphone")
+        if hp_mode:
+            hp_oc = (52, 38, 34)
+            band_c = (78, 76, 82)
+            cup_c = (108, 98, 92)
+            pad_c = (62, 56, 58)
+            if hp_mode == "leher":
+                # Headphone dikalungkan bersih di luar batas leher (tangkai berhenti tepat di belakang sisi luar leher x=+-20, nol tabrakan dengan leher/kerah!)
+                for sg_hp in (-1, 1):
+                    ex_hp = sg_hp * 40.0
+                    c.curve(HH([(ex_hp, 108), (sg_hp * 31, 98), (sg_hp * 20, 96)]), hp_oc, 5.8 * s)
+                    c.curve(HH([(ex_hp, 108), (sg_hp * 31, 98), (sg_hp * 20, 96)]), band_c, 3.2 * s)
+                    c.ell(*H(ex_hp - sg_hp * 2.6, 110), 11.6 * s, 15.2 * s, pad_c, 2.0 * s, hp_oc)
+                    c.ell(*H(ex_hp + sg_hp * 3.8, 110), 9.2 * s, 12.8 * s, cup_c, 1.9 * s, hp_oc)
+                    c.ell(*H(ex_hp + sg_hp * 4.6, 106), 3.0 * s, 4.4 * s, terang(cup_c, 0.25))
+                c.curve(HH([(-42, 124), (-50, 164), (-43, 198), (-28, 212)]), (64, 58, 56), 1.8 * s)
+            else:
+                # Headphone retro dipakai di kepala (band tipis melengkung di atas rambut + 2 earcup lembut di telinga + kabel tipis!)
+                band_pts = arc_pts(0, -14, 96, 106, 182, 358, 22)
+                c.curve(HH(band_pts), hp_oc, 9.2 * s)
+                c.curve(HH(band_pts), band_c, 5.2 * s)
+                c.curve(HH(arc_pts(0, -16, 95, 105, 220, 320, 12)), terang(band_c, 0.24), 2.2 * s)
+                # 2 earcup retro pas di sisi telinga kiri & kanan
+                for sg_hp in (-1, 1):
+                    if turn >= 0.72 and sg_hp > 0:
+                        continue
+                    ex_hp = sg_hp * (88.0 - 10.0 * turn if sg_hp > 0 else 90.0)
+                    ey_hp = 12.0
+                    c.ell(*H(ex_hp - sg_hp * 4.0, ey_hp), 12.5 * s, 24.0 * s, pad_c, 2.2 * s, hp_oc)
+                    c.ell(*H(ex_hp + sg_hp * 4.5, ey_hp), 11.5 * s, 21.0 * s, cup_c, 2.2 * s, hp_oc)
+                    c.ell(*H(ex_hp + sg_hp * 6.0, ey_hp - 5.0), 4.0 * s, 7.5 * s, terang(cup_c, 0.28))
+                # Kabel tipis melengkung mulus dari earcup kiri turun penuh masuk ke saku celana/pinggul (tidak terputus!)
+                c.curve(HH([(-90, 32), (-94, 96), (-84, 164), (-58, 206), (-26, 212)]), (64, 58, 56), 2.0 * s)
 
         # fitur wajah (bergeser natural ke kanan +x lokal saat hadap miring 3/4)
         lx_, ly_ = look
@@ -2685,38 +2983,36 @@ class Tokoh:
             for ex_ in ec:
                 c.poly(HH(_ellpts(ex_ + fx0, eye_y, 27 * (1.0 - 0.12 * turn), 27, 22)), (255, 255, 255, 70), ow * .95, OUT)
             c.line(HH([(ec[0] + 27 * (1.0 - 0.12 * turn) + fx0, eye_y - 3), (ec[1] - 27 * (1.0 - 0.12 * turn) + fx0, eye_y - 3)]), OUT, 4.2 * s)
-        # hidung mungil (aktif saat hadap miring 3/4, atau hidung tipis halus pada wajah_pintar)
+        # hidung mungil halus bergaya Studio Ghibli (kecil, lembut bernada coklat-kulit hangat — BUKAN kail hitam tebal!)
         if turn >= 0.28:
-            nx_n = fx0 + 6.0 * turn
-            ny_n = eye_y + 24.0 * fs
-            c.curve(HH([(nx_n - 2.0, ny_n - 5.0), (nx_n + 5.5 * turn, ny_n + 1.0), (nx_n - 1.0, ny_n + 5.5)]), OUT, 3.2 * s)
+            nx_n = fx0 + 4.5 * turn
+            ny_n = eye_y + 22.0 * fs
+            c.curve(HH([(nx_n - 0.8, ny_n - 2.4), (nx_n + 2.2 * turn, ny_n + 0.6), (nx_n - 0.6, ny_n + 2.4)]), (150, 108, 92), 1.8 * s)
         elif p.get("wajah_chibi_ref"):
             gm = p.get("gaya_mata", "fokus")
             if gm in ("ghibli_bulat", "ghibli_lembut", "chibi_hijab"):
-                # hidung titik/lengkung mungil khas Studio Ghibli / Chibi + 3 goresan blush pipi hangat lembut
-                nx_n = fx0 + 1.0
-                ny_n = eye_y + (26.0 if gm == "chibi_hijab" else 23.0)
-                if gm == "chibi_hijab":
-                    c.ell(*H(nx_n, ny_n), 1.8 * s, 2.2 * s, (116, 78, 64))
-                else:
-                    c.curve(HH([(nx_n - 1.8, ny_n - 1.5), (nx_n + 1.5, ny_n + 1.2), (nx_n - 1.0, ny_n + 2.8)]), (142, 102, 86), 2.0 * s)
-                for sg_b in (-1, 1):
-                    if turn >= 0.72 and sg_b > 0:
-                        continue
-                    bx_g = fx0 + sg_b * (48 if gm == "chibi_hijab" else 46) * (1.0 - 0.16 * turn)
-                    by_g = eye_y + (28.0 if gm == "chibi_hijab" else 24.0)
-                    c.poly(HH(_ellpts(bx_g, by_g, 13.5 if gm == "chibi_hijab" else 11.5, 7.2 if gm == "chibi_hijab" else 6.2, 12)), (242, 160, 134, 82))
-                    for dk in ((-4.5, 0.0, 4.5) if gm == "chibi_hijab" else (-3.2, 2.2)):
-                        c.line(HH([(bx_g + dk + 1.6, by_g - 3.0), (bx_g + dk - 1.6, by_g + 3.0)]), (218, 136, 110), 1.5 * s)
+                # hidung titik/lengkung mungil khas Studio Ghibli / Chibi + blush pipi hangat lembut
+                nx_n = fx0 + 0.5
+                ny_n = eye_y + (25.0 if gm == "chibi_hijab" else 22.0)
+                c.ell(*H(nx_n, ny_n), 1.5 * s, 1.8 * s, (152, 112, 96))
+                if ex.get("blush", 0.35) > 0.05:
+                    for sg_b in (-1, 1):
+                        if turn >= 0.72 and sg_b > 0:
+                            continue
+                        bx_g = fx0 + sg_b * (48 if gm == "chibi_hijab" else 46) * (1.0 - 0.16 * turn)
+                        by_g = eye_y + (28.0 if gm == "chibi_hijab" else 24.0)
+                        c.poly(HH(_ellpts(bx_g, by_g, 13.5 if gm == "chibi_hijab" else 11.5, 7.2 if gm == "chibi_hijab" else 6.2, 12)), (242, 160, 134, 82))
+                        for dk in ((-4.5, 0.0, 4.5) if gm == "chibi_hijab" else (-3.2, 2.2)):
+                            c.line(HH([(bx_g + dk + 1.6, by_g - 3.0), (bx_g + dk - 1.6, by_g + 3.0)]), (218, 136, 110), 1.5 * s)
             else:
-                # hidung cowok tegas minimalis: garis batang + sudut hidung kecil
-                nx_n = fx0 + 1.5
-                ny_n = eye_y + 23.0
-                c.line(HH([(nx_n - 0.5, ny_n - 6.0), (nx_n + 2.0, ny_n + 1.0), (nx_n - 2.0, ny_n + 3.0)]), (136, 98, 84), 2.1 * s)
+                # hidung tipis halus Studio Ghibli (bayangan mungil 3px, lembut & bersih!)
+                nx_n = fx0 + 0.8
+                ny_n = eye_y + 22.0
+                c.curve(HH([(nx_n - 0.5, ny_n - 2.2), (nx_n + 1.2, ny_n + 0.5), (nx_n - 0.6, ny_n + 2.0)]), (150, 110, 94), 1.6 * s)
         elif p.get("wajah_pintar"):
-            nx_n = fx0 + 1.5
-            ny_n = eye_y + 23.0 * fs
-            c.curve(HH([(nx_n - 1.0, ny_n - 3.5), (nx_n + 2.5, ny_n + 1.5), (nx_n - 1.5, ny_n + 3.5)]), (136, 98, 82), 2.4 * s)
+            nx_n = fx0 + 1.0
+            ny_n = eye_y + 22.0 * fs
+            c.curve(HH([(nx_n - 0.6, ny_n - 2.2), (nx_n + 1.4, ny_n + 0.5), (nx_n - 0.8, ny_n + 2.0)]), (150, 110, 94), 1.7 * s)
         # tahi lalat mungil khas karakter (mis. Hana di bawah mata kiri)
         if p.get("tahi_lalat") and turn < 0.72:
             c.ell(*H(fx0 + 34 * (1.0 - 0.16 * turn), eye_y + 23.0), 2.1 * s, 2.1 * s, (78, 54, 46))
@@ -3287,6 +3583,72 @@ class Tokoh:
                 top = arc_pts(0, 0, HEAD_R + 6, HEAD_R + 6, 176, 364, 22)
                 fr = [(88, 4), (80, -48), (40, -58), (0, -48), (-40, -58), (-80, -48), (-88, 4)]
                 c.poly(HH(top + fr), hc, ow * .9, OUT)
+        elif r == "ghibli_cowok":
+            # RAMBUT COWOK GHIBLI PENDEK RAPI CEL-SHADED (Tom — halus, poni pendek natural, kilau hangat lembut, TANPA garis abu-abu kasar!)
+            oc_h = (48, 34, 28)
+            hi_h = terang(hc, 0.22)
+            sh_h = gelap(hc, 0.20)
+            # Bayangan poni halus di dahi
+            c.blob(HH([(-66, -24), (-22, -16), (26, -16), (66, -26), (56, -44), (-56, -44)]), (204, 158, 138, 72), 0, n=4)
+            # Siluet utama rambut pendek rapi dengan poni jatuh natural ke samping-tengah (menutupi jidat proporsional!)
+            main_pts = [
+                (-84, 10), (-92, -32), (-82, -78), (-48, -106), (0, -115),
+                (52, -106), (84, -76), (92, -30), (84, 10),
+                (72, -12), (66, -42), (48, -22), (38, -46),
+                (14, -20), (-2, -42), (-24, -18), (-42, -44),
+                (-62, -22), (-74, -10),
+            ]
+            c.blob(HH(main_pts), hc, 2.5 * s, oc_h, n=5)
+            # Cel-shading halus di sisi kanan & bawah rambut
+            c.blob(HH([
+                (26, -108), (64, -92), (88, -56), (86, -4),
+                (70, -24), (58, -68), (22, -92),
+            ]), sh_h, 0, n=4)
+            # Pita kilau Ghibli hangat melengkung lembut di ubun-ubun (bukan garis coretan!)
+            c.curve(HH([(-54, -78), (-20, -92), (24, -88), (54, -72)]), hi_h + (165,), 8.5 * s)
+            c.curve(HH([(-36, -68), (-8, -76), (22, -74)]), terang(hc, 0.34) + (115,), 4.2 * s)
+            # 3 garis aksen helaian poni super halus & rapi
+            c.curve(HH([(-18, -94), (-22, -58), (-24, -22)]), oc_h, 1.7 * s)
+            c.curve(HH([(12, -96), (14, -56), (14, -22)]), oc_h, 1.7 * s)
+            c.curve(HH([(44, -84), (48, -52), (48, -24)]), oc_h, 1.6 * s)
+            c.blob(HH(main_pts), None, 2.5 * s, oc_h, n=5)
+        elif r == "ghibli_cewek":
+            # RAMBUT CEWEK GHIBLI SEBAHU BERGELOMBANG + PONI PENUH MANIS (Summer — bersih cel-shaded, TANPA sapu ijuk & benjolan!)
+            oc_h = (46, 32, 26)
+            hi_h = terang(hc, 0.24)
+            sh_h = gelap(hc, 0.22)
+            # Bayangan poni halus di dahi
+            c.blob(HH([(-64, -16), (-20, -10), (20, -10), (64, -16), (54, -34), (-54, -34)]), (204, 158, 138, 70), 0, n=4)
+            # Sisi rambut membingkai pipi kiri & kanan (melengkung lembut masuk ke bahu, 100% simetris!)
+            for sg_s in (-1, 1):
+                side_lock = [
+                    (sg_s * 54, -88), (sg_s * 88, -60), (sg_s * 96, -8),
+                    (sg_s * 98, 56), (sg_s * 84, 98), (sg_s * 66, 94),
+                    (sg_s * 74, 52), (sg_s * 72, 4), (sg_s * 64, -44),
+                ]
+                c.blob(HH(side_lock), hc, 2.4 * s, oc_h, n=5)
+                # cel-shading halus di tepi luar gelombang rambut
+                c.blob(HH([
+                    (sg_s * 78, -24), (sg_s * 94, 16), (sg_s * 94, 72),
+                    (sg_s * 82, 96), (sg_s * 74, 70), (sg_s * 76, 16),
+                ]), sh_h, 0, n=4)
+                c.blob(HH(side_lock), None, 2.4 * s, oc_h, n=5)
+            # Mahkota rambut atas + poni penuh manis khas Summer Finn (lembut, rapi, 3 celah mungil natural!)
+            top_pts = [
+                (-88, -22), (-84, -68), (-56, -104), (0, -118),
+                (56, -104), (84, -68), (88, -22),
+                (72, -16), (62, -46), (50, -18), (34, -20), (24, -44),
+                (12, -18), (-10, -18), (-22, -44), (-34, -20),
+                (-50, -18), (-62, -46), (-72, -16),
+            ]
+            c.blob(HH(top_pts), hc, 2.5 * s, oc_h, n=5)
+            # Pita kilau halo Ghibli hangat yang halus & manis di puncak rambut
+            c.curve(HH([(-58, -72), (-22, -90), (22, -90), (58, -72)]), hi_h + (175,), 9.0 * s)
+            c.curve(HH([(-38, -64), (0, -76), (38, -64)]), terang(hc, 0.36) + (110,), 4.2 * s)
+            # 2 garis belahan poni super halus
+            c.curve(HH([(-22, -88), (-22, -62), (-22, -44)]), oc_h, 1.5 * s)
+            c.curve(HH([(24, -88), (24, -62), (24, -44)]), oc_h, 1.5 * s)
+            c.blob(HH(top_pts), None, 2.5 * s, oc_h, n=5)
         elif r == "panjang_naa":
             # RAMBUT PANJANG BERGELOMBANG SUTRA COKELAT MADU (Hana — puncak ubun-ubun 1 lengkungan mulus tanpa potongan!)
             c.blob(HH([(-64, -20), (-26, -14), (18, -14), (60, -20), (50, -34), (-50, -34)]), (220, 174, 152, 68), 0, n=4)
