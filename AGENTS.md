@@ -53,6 +53,12 @@ Seluruh produksi video `/stikman-cerita` — baik latar, properti, tokoh, maupun
 
 > **ATURAN WAJIB PEMBUATAN ELEMEN BARU:**
 > Apabila agen diminta membuat video `/stikman-cerita` dan terdapat elemen yang **belum ada** di pustaka (latar/set baru, bangunan, kendaraan, properti/benda baru, ruangan khusus, tanaman, atau tokoh baru), agen **WAJIB merancang dan membuat elemen baru tersebut 100% mengikuti seluruh kriteria Ghibli Studio Art Style di atas**. Dilarang membuat elemen baru bergaya kotak datar, polos tanpa tekstur/bayangan, atau bergaya modern/neon yang bertabrakan dengan estetika Ghibli.
+>
+> **ATURAN WAJIB KARAKTER NON-MANUSIA (BENTUK SESUAI KARAKTERNYA):**
+> Untuk setiap **karakter non-manusia** (organ tubuh seperti *otak, jantung, paru-paru, lambung, hati*, mikroba/sel seperti *virus, bakteri, sel imun/imun*, hewan maskot, benda hidup, simbol, atau konsep abstrak yang dihidupkan), **DILARANG** menggambarnya berbentuk tubuh manusia (jangan dipakaikan kemeja, dasi, celana, atau rok manusia!). Agen **WAJIB** membentuk badan utama karakter **sesuai wujud asli karakternya** bergaya **Retro Rubber-Hose Mascot** (`maskot=True` di `tokoh.py`):
+> - **Badan = wujud asli objek/organ/makhluknya** (contoh: `otak` = otak berlekuk gembul + headphone retro, `virus` = bola patogen berduri *spike-protein*, `sel_imun`/`imun` = sel darah putih amoeboid empuk + topi lencana penjaga), lengkap dengan *cel shading* hangat & *halftone shading* halus.
+> - **Tangan & kaki rubber-hose lentur** tumbuh langsung dari sisi & bawah tubuh objek, memakai **sarung tangan kartun putih-krem gembul** (*puffy gloves*), **kaus kaki belang retro**, dan **sepatu kartun chunky bersol tebal**.
+> - **Wajah retro *pie-cut eyes* ekspresif** + mulut *lipsync* VO penuh (20 ekspresi & 40+ pose) langsung di permukaan tubuh karakternya.
 
 ---
 

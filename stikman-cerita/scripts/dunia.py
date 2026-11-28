@@ -2978,52 +2978,40 @@ def ruang_otak_f(c, t, o):
         wood_m = (118, 84, 56)
         wood_d = (84, 58, 38)
         bahaya = bool(o.get("bahaya"))
-        # bayangan meja mixer analog di lantai kayu
+        # bayangan meja mixer analog di lantai kayu (tinggi proporsional agar maskot pendek seperti Sang Otak terlihat penuh!)
         c.ell(0, 14, 560, 24, (32, 26, 22, 72))
-        # badan utama meja mixer analog 80an (panel abu-krem miring + bingkai samping kayu kenari!)
-        c.poly([(-488, -158), (488, -158), (548, 0), (-548, 0)], (146, 142, 132), 2.4, G_OC)
-        # dek kontrol miring atas warna krem-abu klasik (seperti konsol mixer di referensi!)
-        c.poly([(-482, -152), (482, -152), (516, -64), (-516, -64)], (176, 172, 162), 2.0, G_OC)
-        # meter bridge belakang warna besi gelap
-        c.poly([(-478, -172), (478, -172), (486, -148), (-486, -148)], (56, 60, 62), 2.0, G_OC)
-        # pipi samping kayu kenari (wood side cheeks khas mixer analog vintage!)
-        c.poly([(-512, -172), (-478, -172), (-516, 0), (-554, 0)], wood_m, 2.2, G_OC)
-        c.poly([(478, -172), (512, -172), (554, 0), (516, 0)], wood_m, 2.2, G_OC)
-        c.line([(-514, -64), (514, -64)], wood_d, 4.0)
-        # 2 meter VU analog bercahaya kuning hangat di meter bridge kiri & kanan
+        c.poly([(-488, -134), (488, -134), (548, 0), (-548, 0)], (146, 142, 132), 2.4, G_OC)
+        c.poly([(-482, -130), (482, -130), (516, -54), (-516, -54)], (176, 172, 162), 2.0, G_OC)
+        c.poly([(-478, -148), (478, -148), (486, -126), (-486, -126)], (56, 60, 62), 2.0, G_OC)
+        c.poly([(-512, -148), (-478, -148), (-516, 0), (-554, 0)], wood_m, 2.2, G_OC)
+        c.poly([(478, -148), (512, -148), (554, 0), (516, 0)], wood_m, 2.2, G_OC)
+        c.line([(-514, -54), (514, -54)], wood_d, 4.0)
         for vx in (-270, 270):
-            c.rect(vx - 54, -168, vx + 54, -150, (228, 204, 146), 1.4, G_OC, r=2)
+            c.rect(vx - 54, -144, vx + 54, -128, (228, 204, 146), 1.4, G_OC, r=2)
             na = math.sin(t * 2.6 + vx) * 0.65
-            c.line([(vx, -151), (vx + math.sin(na) * 14, -165)], (62, 48, 42), 2.0)
-        # deret lampu pilot kecil lembut di tengah meter bridge
+            c.line([(vx, -129), (vx + math.sin(na) * 12, -142)], (62, 48, 42), 2.0)
         for li in range(-6, 7):
             lx = li * 16
             lcol = (206, 114, 92) if (bahaya and li % 2 == 0) else ((218, 192, 116) if li % 3 == 0 else (142, 182, 144))
-            c.ell(lx, -160, 3.5, 3.5, lcol)
-        # saluran fader vertikal + knob putar analog berjejer rapi di atas dek miring!
+            c.ell(lx, -136, 3.5, 3.5, lcol)
         for ch in range(-7, 8):
             fx_top = ch * 58
             fx_bot = ch * 62
-            # garis trek fader gelap
-            c.line([(fx_top, -138), (fx_bot, -74)], (74, 72, 68), 3.4)
-            # 2 knob putar mungil di bagian atas tiap channel
-            c.ell(fx_top, -142, 6, 4.5, (84, 82, 78), 1.1, G_OC)
-            # posisi tuas fader bervariasi alami
+            c.line([(fx_top, -118), (fx_bot, -62)], (74, 72, 68), 3.4)
+            c.ell(fx_top, -121, 6, 4.5, (84, 82, 78), 1.1, G_OC)
             frac = 0.28 + 0.45 * ((ch * 37 + 19) % 10) / 10.0
-            fy = -132 + frac * 52
+            fy = -112 + frac * 44
             fx = fx_top + (fx_bot - fx_top) * frac
             cap_c = (176, 86, 74) if abs(ch) <= 1 else ((224, 218, 202) if ch % 2 == 0 else (88, 90, 92))
             c.rect(fx - 10, fy - 5, fx + 10, fy + 5, cap_c, 1.3, G_OC, r=2)
             c.line([(fx - 7, fy), (fx + 7, fy)], (242, 238, 228) if cap_c[0] < 140 else (68, 62, 56), 1.2)
-        # pelat depan bawah dengan gril ventilasi lembut
-        c.rect(-170, -48, 170, -14, (66, 68, 70), 1.6, G_OC, r=4)
+        c.rect(-170, -42, 170, -12, (66, 68, 70), 1.6, G_OC, r=4)
         for gx in range(-152, 156, 16):
-            c.line([(gx, -42), (gx, -20)], (104, 102, 96), 2.2)
-        # cangkir teh/kopi krem mungil di tepi kiri konsol + uap hangat tipis!
-        c.rect(-466, -182, -432, -152, (234, 228, 212), 1.8, G_OC, r=4)
-        c.curve(arc_pts(-430, -168, 10, 9, -90, 90, 10), G_OC, 2.2)
-        c.ell(-449, -182, 16, 4, (132, 92, 62), 1.2, G_OC)
-        _uap_hangat(c, -449, -190, t, s=0.68, n=2)
+            c.line([(gx, -36), (gx, -18)], (104, 102, 96), 2.2)
+        c.rect(-466, -158, -432, -130, (234, 228, 212), 1.8, G_OC, r=4)
+        c.curve(arc_pts(-430, -145, 10, 9, -90, 90, 10), G_OC, 2.2)
+        c.ell(-449, -158, 16, 4, (132, 92, 62), 1.2, G_OC)
+        _uap_hangat(c, -449, -166, t, s=0.68, n=2)
 
 
 def dalam_tubuh_b(c, t, o):

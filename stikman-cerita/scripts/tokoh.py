@@ -128,21 +128,15 @@ PRESET = {
                    hip_y=-114.0, kaki_lebar=1.34, sepatu_besar=1.24, tangan_besar=0.84,
                    sweater=True, kemeja=(248, 214, 72), krah=False, kancing=False, dasi=None, lengan_panjang=True,
                    celana_jogger=True, bawah="celana", bawah_warna=(132, 134, 140), sepatu=(92, 62, 50), sepatu_gaya="loafer", skala=0.90),
-    "otak":   dict(_BODY_KRIBO, nama="Sang Otak", kepala="otak", kulit=(250, 174, 198), mata_chibi=True, bulu_mata=False,
-                   gaya_mulut="senyum_hangat",
-                   kemeja=(242, 248, 255), krah=True, kancing=True, dasi=(66, 178, 232),
-                   lengan_panjang=True, celana_jogger=True,
-                   bawah="celana", bawah_warna=(78, 108, 152), sepatu=(68, 94, 132)),
-    "virus":  dict(_BODY_KRIBO, nama="Virus", kepala="virus", kulit=(112, 204, 88), wajah_maskulin=True, bulu_mata=False,
-                   gaya_mulut="smirk",
-                   kaos_chibi=True, kemeja=(66, 138, 64), krah=False, kancing=False, dasi=None,
-                   lengan_panjang=False, celana_jogger=True,
-                   bawah="celana", bawah_warna=(52, 96, 58), sepatu=(44, 76, 48), skala=0.86),
-    "sel_imun": dict(_BODY_KRIBO, nama="Sel Imun", kepala="sel_imun", kulit=(236, 248, 255), mata_chibi=True, bulu_mata=False,
-                     gaya_mulut="ceria_lebar",
-                     kaos_chibi=True, kemeja=(78, 172, 242), krah=False, kancing=False, dasi=None, perisai_dada=True,
-                     lengan_panjang=True, celana_jogger=True,
-                     bawah="celana", bawah_warna=(62, 124, 196), sepatu=(214, 228, 244), skala=0.94),
+    "otak":   dict(_BODY_KRIBO, nama="Sang Otak", maskot=True, bentuk_maskot="otak", kepala="otak",
+                   kulit=(248, 174, 178), lengan_warna=(240, 152, 158), sepatu=(232, 132, 138), sol_warna=(248, 248, 250),
+                   aksen=(248, 248, 250), iris=(58, 128, 178), headphone=False, bulu_mata=False, gaya_mulut="senyum_hangat", skala=0.98),
+    "virus":  dict(_BODY_KRIBO, nama="Virus", maskot=True, bentuk_maskot="virus", kepala="virus",
+                   kulit=(136, 198, 56), lengan_warna=(112, 172, 46), sepatu=(102, 152, 46), sol_warna=(248, 248, 246),
+                   aksen=(168, 220, 86), bulu_mata=False, gaya_mulut="smirk", skala=0.94),
+    "sel_imun": dict(_BODY_KRIBO, nama="Sel Imun", maskot=True, bentuk_maskot="sel_imun", kepala="sel_imun",
+                     kulit=(244, 246, 238), lengan_warna=(132, 182, 212), sepatu=(86, 144, 188), sol_warna=(248, 248, 250),
+                     aksen=(226, 174, 84), iris=(56, 124, 174), bulu_mata=False, gaya_mulut="ceria_lebar", skala=0.96),
     "bos":    dict(_BODY_KRIBO, nama="Bos", rambut="botak", telinga=True, kacamata="bulat",
                    wajah_chibi_ref=True, bentuk_wajah="kotak", gaya_mata="kalem",
                    gaya_mulut="smirk", iris=(38, 40, 48),
@@ -156,11 +150,16 @@ PRESET["formal"] = dict(PRESET["bos"], nama="Formal", rambut="klimis", rambut_wa
                         bawah_warna=(56, 70, 98), sepatu=(96, 68, 52), sepatu_gaya="loafer")
 
 
+ALIAS_PRESET = {"imun": "sel_imun", "sel_darah_putih": "sel_imun", "brain": "otak"}
+
+
 def casting(spec):
     """spec = nama preset (str) atau dict {'dasar': 'kribo', ...override}. Default = kribo."""
     if isinstance(spec, str):
         spec = {"dasar": spec}
-    base = dict(PRESET.get(spec.get("dasar", "kribo"), PRESET["kribo"]))
+    nm = spec.get("dasar", "kribo")
+    nm = ALIAS_PRESET.get(nm, nm)
+    base = dict(PRESET.get(nm, PRESET["kribo"]))
     base.update({k: (tuple(v) if isinstance(v, list) and len(v) == 3 and all(isinstance(i, int) for i in v) else v)
                  for k, v in spec.items() if k != "dasar"})
     base.setdefault("skala", 1.0)
@@ -344,6 +343,8 @@ class Tokoh:
     # st: x y s flip lean tilt sit look expr talk blink arms legs phase amp bob squash bawa
     def draw(self, c, st):
         p = self.p
+        if p.get("maskot"):
+            return self._draw_mascot(c, st)
         s = st["s"] * p["skala"]
         fl = st["flip"]
         sx, sy = st.get("squash", (1.0, 1.0))
@@ -3437,6 +3438,750 @@ class Tokoh:
             c.curve(HH([(mx - 20, my + 2), (mx + 4, my + 10), (mx + 24, my - 8)]), OUT, 4.8 * s)
         elif kind == "pout":
             c.curve(HH(arc_pts(mx, my + 14, 13, 8, 205, 335, 8)), OUT, 4.8 * s)
+
+    # =========================================================================
+    # MASKOT NON-MANUSIA (RETRO RUBBER-HOSE OBJECT-BODY MASCOT)
+    # Bentuk tubuh = langsung wujud asli karakternya (otak, virus, sel_imun, dsb.)
+    # TANPA baju/celana manusia; tangan & kaki rubber-hose + sarung tangan kartun + sepatu chunky!
+    # =========================================================================
+    def _draw_mascot(self, c, st):
+        p = self.p
+        s = st["s"] * p["skala"]
+        fl = st["flip"]
+        sx, sy = st.get("squash", (1.0, 1.0))
+        lean = math.radians(st.get("lean", 0))
+        sit = st.get("sit", 0.0)
+        dy = SIT_DROP * sit
+        X0, Y0 = st["x"], st["y"] + st.get("hop", 0)
+        cl, sl = math.cos(lean), math.sin(lean)
+
+        def T(lx, ly, nodrop=False):
+            if not nodrop:
+                ly = ly + dy
+            lx = lx * fl
+            rx, ry = lx * cl - ly * sl, lx * sl + ly * cl
+            return (X0 + rx * s * sx, Y0 + ry * s * sy)
+
+        def TT(pts):
+            return [T(*q) for q in pts]
+
+        oc_m = (52, 24, 22) if p.get("bentuk_maskot") == "otak" else (42, 34, 34)
+        ow = 3.4 * s
+        limb_c = warna(p.get("lengan_warna"), (240, 152, 158))
+        shoe_c = warna(p.get("sepatu"), (232, 132, 138))
+        sol_c = warna(p.get("sol_warna"), (248, 248, 250))
+        acc_c = warna(p.get("aksen"), (248, 248, 250))
+        bentuk = p.get("bentuk_maskot", p.get("kepala", "otak"))
+
+        stance_cur = st.get("legs", "stand")
+        walking = stance_cur == "walk" and st.get("amp", 0.0) > 0.01
+        hadap_raw = st.get("hadap", st.get("miring", None))
+        if hadap_raw is None:
+            turn = 0.50 if stance_cur == "walk" else 0.0
+        elif isinstance(hadap_raw, str):
+            turn = {"depan": 0.0, "miring": 0.40, "3/4": 0.40, "samping": 0.60, "side": 0.60}.get(hadap_raw.lower(), 0.0)
+        else:
+            turn = clamp(float(hadap_raw), 0.0, 0.65)
+
+        # Proporsi badan besar & kaki pendek gemoy (persis referensi otak user: kaki pendek ~58px!)
+        cy = -206.0
+        # 1) Bayangan oval lembut di lantai
+        c.ell(*T(0, 6, nodrop=True), 104 * s, 18 * s, (48, 34, 34, 56))
+
+        # 2) Lengan pendek gemoy yang SELALU keluar rapi di sisi badan (tidak tersembunyi di belakang otak!)
+        arms = st["arms"]
+        hands = {}
+        front_arms = []
+        ph_w = st.get("phase", 0.0)
+        amp_w = st.get("amp", 0.0)
+        sw_w = st.get("swing", 1.0)
+        for side, sgn in (("L", -1), ("R", 1)):
+            a, e, hk = arms[side]
+            if walking:
+                swing_ang = math.sin(ph_w + (0.0 if side == "R" else math.pi)) * 30.0 * min(1.3, amp_w) * sw_w
+                a = 28.0 + swing_ang
+                e = 18.0 if side == "R" else -14.0
+            if e < -125:
+                front_arms.append((side, sgn, a, e, hk))
+            else:
+                hands[side] = self._mascot_arm(c, T, s, fl, sgn, a, e, hk, limb_c, oc_m, ow, cy, bentuk)
+
+        # 3) Kaki pendek gemoy bersih + kaus kaki putih + sepatu sneaker kanvas rapi (persis referensi!)
+        self._mascot_legs_and_shoes(c, st, T, s, fl, sit, limb_c, shoe_c, sol_c, acc_c, oc_m, ow, cy)
+
+        # 4) Badan Utama = Wujud Asli Karakter Non-Manusia (bertekstur 3D penuh!)
+        if bentuk == "virus":
+            self._mascot_body_virus(c, T, TT, s, oc_m, ow, cy, p)
+        elif bentuk in ("sel_imun", "imun"):
+            self._mascot_body_imun(c, T, TT, s, oc_m, ow, cy, p)
+        else:
+            self._mascot_body_otak(c, T, TT, s, oc_m, ow, cy, p)
+
+        # 5) Wajah Ekspresif + Lipsync VO penuh langsung di permukaan badan maskot!
+        self._mascot_face(c, st, T, TT, s, fl, ow, oc_m, cy, turn, bentuk, p)
+
+        # 6) Lengan depan khusus pose tangan dekat dagu/wajah
+        for side, sgn, a, e, hk in front_arms:
+            hands[side] = self._mascot_arm(c, T, s, fl, sgn, a, e, hk, limb_c, oc_m, ow, cy, bentuk)
+
+        return hands
+
+    def _mascot_halftone(self, c, T, s, cx, cy, rx, ry, col, a0_deg=110, a1_deg=255):
+        """Titik-titik halftone retro lembut (opsional untuk maskot gaya print)."""
+        for ring_k, r_frac in ((0, 0.86), (1, 0.74), (2, 0.62)):
+            n_d = 12 - ring_k * 2
+            for i in range(n_d):
+                ang = math.radians(lerp(a0_deg, a1_deg, i / max(1, n_d - 1)) + ring_k * 5.0)
+                px = cx + math.cos(ang) * rx * r_frac
+                py = cy + math.sin(ang) * ry * r_frac
+                rad = (3.4 - ring_k * 0.65) * s
+                c.ell(*T(px, py), rad, rad, col)
+
+    def _mascot_legs_and_shoes(self, c, st, T, s, fl, sit, limb_c, shoe_c, sol_c, acc_c, oc_m, ow, cy):
+        """Kaki pendek kokoh super rapi + kaus kaki pergelangan putih + sepatu sneaker kanvas rata-tanah bertali rapi (persis referensi!)."""
+        stance = st.get("legs", "stand")
+        ph = st.get("phase", 0.0)
+        amp = st.get("amp", 0.0)
+        hip_y = cy + 92.0
+        leg_specs = []
+        for idx, sgn in enumerate((-1, 1)):
+            hx = sgn * 32.0
+            if stance == "walk" and amp > 0.01:
+                sw = math.sin(ph + idx * math.pi)
+                lift = max(0.0, -math.cos(ph + idx * math.pi)) * 20.0 * amp
+                fx = hx + sw * 36.0 * amp
+                fy = -14.0 - lift
+                kx = (hx + fx) * 0.5 + 8.0 * max(0.0, sw)
+                ky = (hip_y + fy) * 0.5 - lift * 0.25
+                order = 0 if sw < 0 else 1
+            elif sit > 0.05:
+                fx = hx + sgn * 14.0 * sit
+                fy = -16.0 - 14.0 * sit
+                kx = hx + sgn * 16.0 * sit
+                ky = hip_y + 28.0 * (1.0 - 0.3 * sit)
+                order = idx
+            else:
+                fx = sgn * 36.0
+                fy = -14.0
+                kx = sgn * 34.0
+                ky = (hip_y + fy) * 0.5
+                order = idx
+            leg_specs.append((order, sgn, (hx, hip_y), (kx, ky), (fx, fy)))
+        leg_specs.sort(key=lambda item: item[0])
+
+        limb_sh = gelap(limb_c, 0.16)
+        shoe_sh = gelap(shoe_c, 0.18)
+        shoe_hl = terang(shoe_c, 0.22)
+        for _, sgn, H0, K0, F0 in leg_specs:
+            fd = 1 if (stance == "walk" and amp > 0.01) else sgn
+            fx, fy = F0
+            ank = (fx - fd * 2.0, fy - 24.0)
+            # 1) Tungkai pendek bersih bentuk tabung meruncing halus (tanpa garis coretan tengah!)
+            dx_l, dy_l = ank[0] - H0[0], ank[1] - H0[1]
+            ll_l = max(1e-5, math.hypot(dx_l, dy_l))
+            nx_l, ny_l = -dy_l / ll_l, dx_l / ll_l
+            if nx_l < 0:
+                nx_l, ny_l = -nx_l, -ny_l
+            r_top, r_bot = 12.0, 9.8
+            leg_poly = [
+                (H0[0] - nx_l * r_top, H0[1] - ny_l * r_top),
+                (H0[0] + nx_l * r_top, H0[1] + ny_l * r_top),
+                (ank[0] + nx_l * r_bot, ank[1] + ny_l * r_bot),
+                (ank[0] - nx_l * r_bot, ank[1] - ny_l * r_bot),
+            ]
+            c.poly([T(*q) for q in leg_poly], limb_c, ow * 0.95, oc_m)
+            # satu jalur cel-shading halus di tepi dalam + bayangan paha atas di bawah badan
+            sh_side = [
+                (H0[0] + nx_l * (r_top * 0.25), H0[1] + ny_l * (r_top * 0.25)),
+                (H0[0] + nx_l * (r_top - 1.2), H0[1] + ny_l * (r_top - 1.2)),
+                (ank[0] + nx_l * (r_bot - 1.2), ank[1] + ny_l * (r_bot - 1.2)),
+                (ank[0] + nx_l * (r_bot * 0.25), ank[1] + ny_l * (r_bot * 0.25)),
+            ]
+            c.poly([T(*q) for q in sh_side], limb_sh)
+            c.poly([T(H0[0] - nx_l * (r_top - 1), H0[1]), T(H0[0] + nx_l * (r_top - 1), H0[1]),
+                    T(H0[0] + nx_l * (r_top - 1), H0[1] + 15), T(H0[0] - nx_l * (r_top - 1), H0[1] + 15)], limb_sh)
+            c.poly([T(*q) for q in leg_poly], None, ow * 0.95, oc_m)
+
+            # 2) Kaus kaki pendek putih rapi di atas kerah sneaker
+            sock_pts = [
+                (ank[0] - 11.5, ank[1] - 4), (ank[0] + 11.5, ank[1] - 4),
+                (ank[0] + 13.0, ank[1] + 9), (ank[0] - 13.0, ank[1] + 9),
+            ]
+            c.poly([T(*q) for q in sock_pts], (248, 248, 252), ow * 0.85, oc_m)
+            c.poly([T(ank[0] + 2, ank[1] - 3), T(ank[0] + 11, ank[1] - 3),
+                    T(ank[0] + 12, ank[1] + 8), T(ank[0] + 2, ank[1] + 8)], (214, 222, 234))
+
+            # 3) SEPATU SNEAKER KANVAS CHUNKY RAPI (sol putih rata-tanah + toe-cap putih bersih + 3 tali DI DALAM punggung sepatu!)
+            # Sol karet putih tebal rata-bawah
+            sole_pts = [
+                (fx - fd * 24, fy + 2), (fx + fd * 46, fy + 2),
+                (fx + fd * 47, fy + 10), (fx + fd * 38, fy + 15),
+                (fx - fd * 18, fy + 15), (fx - fd * 25, fy + 10),
+            ]
+            c.poly([T(*q) for q in sole_pts], (248, 249, 252), ow * 0.95, oc_m)
+            c.line([T(fx - fd * 21, fy + 11), T(fx + fd * 42, fy + 11)], (196, 206, 220), 2.4 * s)
+            # Badan kanvas sneaker (kurva bersih mulus tanpa sudut runcing!)
+            upper_pts = [
+                (fx - fd * 24, fy + 2), (fx - fd * 24, fy - 16), (fx - fd * 14, fy - 24),
+                (fx + fd * 4, fy - 24), (fx + fd * 22, fy - 15), (fx + fd * 42, fy - 8),
+                (fx + fd * 47, fy + 2),
+            ]
+            c.poly([T(*q) for q in upper_pts], shoe_c, ow * 0.95, oc_m)
+            # shading bawah tipis di sepanjang tumit-samping kanvas
+            c.poly([T(fx - fd * 23, fy - 4), T(fx + fd * 20, fy - 3), T(fx + fd * 20, fy + 1), T(fx - fd * 23, fy + 1)], shoe_sh)
+            # garis jahitan kanvas halus
+            c.line([T(fx - fd * 16, fy - 14), T(fx - fd * 4, fy - 18)], shoe_hl, 2.2 * s)
+            # ujung toe-cap putih rapi di bagian depan (mengikuti batas atas sepatu persis!)
+            toe_pts = [
+                (fx + fd * 22, fy + 2), (fx + fd * 24, fy - 13),
+                (fx + fd * 36, fy - 11), (fx + fd * 44, fy - 6),
+                (fx + fd * 47, fy + 2),
+            ]
+            c.poly([T(*q) for q in toe_pts], (250, 251, 254), ow * 0.85, oc_m)
+            # 3 tali sepatu putih rapi DI DALAM lereng punggung sepatu (tidak mencuat keluar!)
+            for lk_i in range(3):
+                p_l = lk_i / 2.0
+                lx_c = lerp(fx + fd * 1, fx + fd * 17, p_l)
+                ly_c = lerp(fy - 18, fy - 11, p_l)
+                c.line([T(lx_c - fd * 5, ly_c - 3), T(lx_c + fd * 6, ly_c - 1)], oc_m, 6.2 * s)
+                c.line([T(lx_c - fd * 5, ly_c - 3), T(lx_c + fd * 6, ly_c - 1)], (252, 252, 254), 3.4 * s)
+
+    def _mascot_arm(self, c, T, s, fl, sgn, a, e, hk, limb_c, oc_m, ow, cy, bentuk="otak"):
+        """Lengan pendek jelas & natural yang SELALU berada di luar tepi badan + sarung tangan putih 2-pass super bersih!"""
+        # Pastikan lengan tidak pernah melipat masuk ke belakang tubuh otak yang lebar!
+        a_eff = max(34.0, a) if a < 38.0 else a
+        e_eff = e
+        if e_eff < -45.0 and e_eff > -125.0:
+            # lengan santai/pinggang: melengkung lembut ke bawah-luar (persis tangan kanan referensi otak!)
+            a_eff = 48.0
+            e_eff = -38.0
+        elif hk == "p":
+            # pose peace/tunjuk: melengkung gagah keluar lalu NAIK KE ATAS (persis tangan kiri referensi otak!)
+            a_eff = 68.0
+            e_eff = 76.0
+        ar = math.radians(a_eff)
+        br = math.radians(a_eff + e_eff)
+        sh_x = 104.0 if bentuk == "otak" else 90.0
+        sh = (sgn * sh_x, cy + 20.0)
+        up_l = 44.0
+        fo_l = 40.0
+        el = (sh[0] + sgn * math.sin(ar) * up_l, sh[1] + math.cos(ar) * up_l)
+        hd = (el[0] + sgn * math.sin(br) * fo_l, el[1] + math.cos(br) * fo_l)
+        S, E, H = T(*sh), T(*el), T(*hd)
+        aw = 19.5 * s
+        # Pipa lengan pendek bersih 1-warna + bayangan tepi bawah tipis (tanpa garis ganda acak!)
+        c.curve([S, E, H], oc_m, aw + 2.1 * ow, n=7)
+        c.curve([S, E, H], limb_c, aw, n=7)
+        c.curve([T(sh[0], sh[1] + 3), T(el[0], el[1] + 3), T(hd[0], hd[1] + 3)], gelap(limb_c, 0.14), aw * 0.34, n=6)
+        dvx, dvy = H[0] - E[0], H[1] - E[1]
+        ang = math.atan2(dvy, dvx)
+        g_kind = hk
+        if hk == "m" and a_eff < 55.0 and e_eff <= 0:
+            g_kind = "hang"
+        self._mascot_glove(c, H, ang, s * 1.15, sgn, fl, g_kind, oc_m, ow)
+        return {"pos": H, "ang": ang, "elbow": E}
+
+    def _mascot_glove(self, c, H, ang, s, sgn, fl, kind, oc_m, ow):
+        """Sarung tangan kartun dengan JARI-JARI ANATOMIS JELAS (peace V, jempol + 3 jari terlipat, tangan santai berjari 4, kepal berbuku, & tangan terbuka 5 jari!)."""
+        gl_c = (252, 253, 255)
+        gl_sh = (204, 216, 232)
+        d_x = sgn * fl
+        pad_o = ow * 0.92
+
+        def UP(dx, dy):
+            """Koordinat tegak dunia (untuk pose yang harus selalu menghadap ke atas/bawah alami seperti peace, jempol, tangan santai!)."""
+            return (H[0] + dx * d_x * s, H[1] + dy * s)
+
+        # 1) PEACE / TUNJUK ("p"): 2 jari V tegak + 2 jari terlipat jelas + ibu jari melingkup (persis tangan kiri referensi otak!)
+        if kind == "p":
+            for pass_i in range(2):
+                pad = pad_o if pass_i == 0 else 0.0
+                col = oc_m if pass_i == 0 else gl_c
+                # manset pergelangan & telapak
+                c.ell(*UP(-1, 16), (13.0 + pad) * s, (7.5 + pad) * s, col)
+                c.ell(*UP(0, 2), (19.5 + pad) * s, (17.5 + pad) * s, col)
+                # jari telunjuk & jari tengah tegak membentuk V rapi
+                c.line([UP(-5, -6), UP(-15, -45)], col, (12.2 + pad * 2) * s)
+                c.line([UP(6, -6), UP(15, -45)], col, (12.2 + pad * 2) * s)
+            # shading lembut bawah telapak
+            c.ell(*UP(0, 9), 15.0 * s, 8.5 * s, gl_sh)
+            # 2 jari manis & kelingking tertekuk rapi + ibu jari melingkup di atasnya!
+            c.ell(*UP(13, -1), 7.2 * s, 9.5 * s, gl_c, ow * 0.85, oc_m)
+            c.ell(*UP(5, 1), 7.6 * s, 9.5 * s, gl_c, ow * 0.85, oc_m)
+            c.curve([UP(-13, -4), UP(-4, -8), UP(5, -2), UP(-2, 7), UP(-13, 4)], oc_m, 12.0 * s)
+            c.curve([UP(-13, -4), UP(-4, -8), UP(5, -2), UP(-2, 7), UP(-13, 4)], gl_c, 7.6 * s)
+            c.curve([UP(-10, 14), UP(0, 17), UP(10, 14)], oc_m, 2.0 * s)
+            return
+
+        # 2) JEMPOL ("t"): Ibu jari tegak jelas ke atas + 3 jari melingkar bertumpuk rapi di sisi depan kepalan!
+        if kind == "t":
+            for pass_i in range(2):
+                pad = pad_o if pass_i == 0 else 0.0
+                col = oc_m if pass_i == 0 else gl_c
+                # manset pergelangan
+                c.ell(*UP(-16, 4), (7.5 + pad) * s, (12.5 + pad) * s, col)
+                # badan kepalan tangan
+                c.ell(*UP(0, 4), (17.5 + pad) * s, (17.0 + pad) * s, col)
+                # ibu jari melengkung tegak ke atas!
+                c.curve([UP(-4, -6), UP(-5, -22), UP(-11, -35)], col, (12.0 + pad * 2) * s)
+                # 3 jari terlipat bertumpuk di tepi kanan kepalan (jelas terlihat 3 ruas jari!)
+                for fy_j, rx_j in ((-6, 11.5), (4, 12.2), (14, 10.5)):
+                    c.ell(*UP(11, fy_j), (rx_j + pad) * s, (5.8 + pad) * s, col)
+            c.ell(*UP(-2, 12), 13.5 * s, 7.5 * s, gl_sh)
+            # garis lipatan jelas memisahkan 3 jari yang terlipat!
+            for fy_j, rx_j in ((-6, 11.0), (4, 11.8), (14, 10.0)):
+                c.ell(*UP(11, fy_j), rx_j * s, 5.4 * s, gl_c, ow * 0.80, oc_m)
+            c.curve([UP(-10, -7), UP(-10, 14)], oc_m, 2.0 * s)
+            return
+
+        # 3) TANGAN SANTAI MENGGANTUNG ("hang"): persis tangan kanan bawah referensi otak — ibu jari melengkung ke dalam + 3 jari jatuh rapi!
+        if kind == "hang":
+            for pass_i in range(2):
+                pad = pad_o if pass_i == 0 else 0.0
+                col = oc_m if pass_i == 0 else gl_c
+                # manset pergelangan atas
+                c.ell(*UP(0, -10), (13.0 + pad) * s, (7.2 + pad) * s, col)
+                # punggung telapak
+                c.ell(*UP(1, 3), (17.0 + pad) * s, (14.5 + pad) * s, col)
+                # ibu jari melengkung lembut di sisi dalam (-x)
+                c.curve([UP(-12, 0), UP(-19, 10), UP(-14, 21)], col, (10.5 + pad * 2) * s)
+                # 3 jari melengkung ke bawah (telunjuk, tengah, manis/kelingking — jelas terpisah!)
+                c.curve([UP(-5, 10), UP(-6, 22), UP(-9, 28)], col, (10.0 + pad * 2) * s)
+                c.curve([UP(5, 11), UP(5, 24), UP(1, 31)], col, (10.2 + pad * 2) * s)
+                c.curve([UP(14, 8), UP(15, 19), UP(11, 25)], col, (9.4 + pad * 2) * s)
+            # shading biru-abu lembut di sisi dalam & bawah jari
+            c.ell(*UP(-4, 10), 12.0 * s, 8.5 * s, gl_sh)
+            # garis celah antar-jari jelas sehingga benar-benar terbaca jari-jari tangan!
+            c.curve([UP(-10, 4), UP(-12, 16)], oc_m, 2.2 * s)
+            c.curve([UP(-1, 13), UP(-1, 26)], oc_m, 2.2 * s)
+            c.curve([UP(9, 12), UP(9, 24)], oc_m, 2.2 * s)
+            c.curve([UP(-10, -8), UP(0, -5), UP(11, -8)], oc_m, 2.0 * s)
+            return
+
+        # 4) KEPAL MARAH ("f"): kepalan tangan dengan 4 buku jari terlipat + ibu jari mengunci di depan!
+        if kind == "f":
+            for pass_i in range(2):
+                pad = pad_o if pass_i == 0 else 0.0
+                col = oc_m if pass_i == 0 else gl_c
+                c.ell(*UP(-1, -11), (12.5 + pad) * s, (7.0 + pad) * s, col)
+                c.ell(*UP(0, 3), (18.5 + pad) * s, (16.0 + pad) * s, col)
+                for fx_j in (-12, -4, 4, 12):
+                    c.ell(*UP(fx_j, 12), (5.8 + pad) * s, (8.5 + pad) * s, col)
+            c.ell(*UP(0, 12), 14.0 * s, 7.0 * s, gl_sh)
+            for fx_j in (-11, -3.5, 4, 11.5):
+                c.ell(*UP(fx_j, 11), 5.2 * s, 8.0 * s, gl_c, ow * 0.78, oc_m)
+            # ibu jari melintang mengunci kepalan
+            c.curve([UP(-14, 1), UP(-4, 5), UP(5, 4)], oc_m, 11.0 * s)
+            c.curve([UP(-14, 1), UP(-4, 5), UP(5, 4)], gl_c, 6.8 * s)
+            return
+
+        # 5) TANGAN TERBUKA / MELAMBAI ("m"): 5 jari (ibu jari + 4 jari mekar jelas & natural mengikuti arah lengan!)
+        ux, uy = math.cos(ang), math.sin(ang)
+        nx, ny = -uy, ux
+        if d_x < 0:
+            nx, ny = -nx, -ny
+
+        def G(dx, dy):
+            return (H[0] + (ux * dx + nx * dy) * s, H[1] + (uy * dx + ny * dy) * s)
+
+        fingers = [
+            (9, -8, 20, -25, 9.6),    # ibu jari
+            (13, -7, 34, -15, 9.4),   # telunjuk
+            (15, -2, 39, -3, 9.6),    # jari tengah
+            (14, 4, 36, 9, 9.2),      # jari manis
+            (11, 9, 28, 17, 8.4),     # kelingking
+        ]
+        for pass_i in range(2):
+            pad = pad_o if pass_i == 0 else 0.0
+            col = oc_m if pass_i == 0 else gl_c
+            c.ell(*G(-4, 0), (8.5 + pad) * s, (13.0 + pad) * s, col)
+            c.ell(*G(10, 0), (16.5 + pad) * s, (15.5 + pad) * s, col)
+            for x0_f, y0_f, x1_f, y1_f, wf in fingers:
+                c.line([G(x0_f, y0_f), G(x1_f, y1_f)], col, (wf + pad * 2) * s)
+        # shading lembut telapak + garis celah pangkal jari agar 5 jari terbaca sangat jelas!
+        c.ell(*G(11, 5), 11.5 * s, 8.5 * s, gl_sh)
+        for sx_g, sy_g, ex_g, ey_g in ((17, -9, 24, -12), (19, -3, 27, -3), (18, 4, 26, 6), (14, 9, 21, 13)):
+            c.line([G(sx_g, sy_g), G(ex_g, ey_g)], oc_m, 2.0 * s)
+        c.curve([G(2, -10), G(0, 0), G(2, 10)], oc_m, 2.0 * s)
+
+    def _mascot_body_otak(self, c, T, TT, s, oc_m, ow, cy, p):
+        """Wujud maskot Otak 3D GLOSSY BERGELOMBANG (persis referensi user: lipatan gyri gembul, kilau glossy DI BAWAH garis celah, sulkus melingkar mulus!)."""
+        bc = warna(p.get("kulit"), (248, 174, 178))
+        b_deep = (196, 98, 108)       # bayangan dalam bawah & celah lipatan
+        b_mid = (232, 134, 142)       # pink koral sedang (sisi bawah)
+        b_lit = (252, 202, 204)       # pink peach cerah (bagian atas)
+        b_spec = (255, 242, 244)      # kilau glossy lembut (digambar SEBELUM garis sulkus!)
+        oc_b = (56, 22, 22)
+
+        # 1) Siluet 2-pass luar otak lebar penuh (2 hemisfer jelas dengan lekukan tengah atas & bawah!)
+        outer_lobes = [
+            (-36, -78, 44, 38), (-78, -62, 46, 42), (-108, -26, 46, 42),
+            (-120, 18, 44, 40), (-96, 58, 46, 38), (-54, 76, 46, 36), (-20, 70, 38, 32),
+            (36, -78, 44, 38), (78, -62, 46, 42), (108, -26, 46, 42),
+            (120, 18, 44, 40), (96, 58, 46, 38), (54, 76, 46, 36), (20, 70, 38, 32),
+            (-36, -4, 76, 70), (36, -4, 76, 70),
+        ]
+        # Pass A: outline luar coklat-maroon tebal menyatu mulus
+        for dx, dy, rx, ry in outer_lobes:
+            c.ell(*T(dx, cy + dy), (rx + 5.2) * s, (ry + 5.2) * s, oc_b)
+        # Pass B: dasar bayangan rose-tua -> lalu isi pink koral naik ke kiri-atas (shading 100% di dalam siluet!)
+        for dx, dy, rx, ry in outer_lobes:
+            c.ell(*T(dx, cy + dy), rx * s, ry * s, b_deep)
+        for dx, dy, rx, ry in outer_lobes:
+            c.ell(*T(dx - 3, cy + dy - 8), (rx - 4) * s, (ry - 7) * s, bc)
+        # Gradasi pencahayaan hangat atas otak lebih cerah (peach-pink) & bawah lebih teduh
+        c.ell(*T(-42, cy - 52), 78 * s, 54 * s, b_lit)
+        c.ell(*T(42, cy - 52), 78 * s, 54 * s, b_lit)
+        c.ell(*T(0, cy + 4), 76 * s, 58 * s, bc)
+
+        # 2) Bantal-bantal lipatan GYRI 3D lembut + kilau melengkung glossy (DIGAMBAR SEBELUM GARIS SULKUS agar tidak menimpa garis!)
+        gyri = [
+            (-36, -76, 32, 22, b_lit), (36, -76, 32, 22, b_lit),
+            (-78, -58, 32, 24, b_lit), (78, -58, 32, 24, b_lit),
+            (-104, -22, 30, 24, bc), (104, -22, 30, 24, bc),
+            (-114, 18, 30, 24, b_mid), (114, 18, 30, 24, b_mid),
+            (-92, 54, 32, 22, b_mid), (92, 54, 32, 22, b_mid),
+            (-52, 70, 32, 20, b_mid), (52, 70, 32, 20, b_mid),
+        ]
+        for gx, gy, grx, gry, gcol in gyri:
+            c.ell(*T(gx + 2, cy + gy + 5), grx * s, gry * s, b_deep)
+            c.ell(*T(gx, cy + gy), (grx - 2) * s, (gry - 2) * s, gcol)
+            # kilau melengkung lembut di punggung atas tiap bantal lipatan (khas tekstur kenyal glossy referensi!)
+            c.curve(TT(arc_pts(gx - 2, cy + gy + 2, grx * 0.65, gry * 0.65, 205, 315, 8)), b_spec, 5.2 * s)
+
+        # 3) Belahan tengah hemisfer & lipatan SULKUS MELINGKAR MULUS (semua kurva organik mulus, NOL garis patah zig-zag!)
+        def _sulcus(pts, w_line=3.0):
+            # bayangan rose tipis tepat di bawah lipatan untuk ilusi kedalaman 3D lembut
+            c.curve(TT([(px + 1.5, py + 3.5) for px, py in pts]), b_deep, (w_line + 3.2) * s)
+            c.curve(TT(pts), oc_b, w_line * s)
+
+        # Belahan utama tengah atas membelah 2 hemisfer + belahan bawah
+        _sulcus([(0, cy - 104), (-3, cy - 82), (2, cy - 60), (-2, cy - 42), (0, cy - 28)], 4.2)
+        _sulcus([(0, cy + 94), (2, cy + 78), (-1, cy + 62)], 3.4)
+
+        # Lipatan-lipatan sulkus melengkung bundar-mulus (U-loops & C-coils halus di kedua hemisfer!)
+        coils = [
+            # Hemisfer kiri (melingkar lembut mengelilingi dahi, pelipis, pipi & dagu!)
+            arc_pts(-32, cy - 72, 24, 18, 120, 290, 10),
+            arc_pts(-64, cy - 52, 22, 18, 30, 210, 10),
+            arc_pts(-92, cy - 22, 22, 18, -55, 130, 10),
+            arc_pts(-100, cy + 20, 22, 18, -75, 115, 10),
+            arc_pts(-76, cy + 50, 22, 16, -25, 165, 10),
+            arc_pts(-44, cy + 66, 20, 15, 20, 205, 10),
+            # Cabang pendek lembut di antara dahi & pelipis
+            [(-4, cy - 64), (-22, cy - 56), (-38, cy - 62)],
+            [(-118, cy - 2), (-98, cy - 4), (-84, cy + 6)],
+            # Hemisfer kanan (simetris tapi sedikit variatif organik!)
+            arc_pts(32, cy - 72, 24, 18, 250, 420, 10),
+            arc_pts(64, cy - 52, 22, 18, -30, 150, 10),
+            arc_pts(92, cy - 22, 22, 18, 50, 235, 10),
+            arc_pts(100, cy + 20, 22, 18, 65, 255, 10),
+            arc_pts(76, cy + 50, 22, 16, 15, 205, 10),
+            arc_pts(44, cy + 66, 20, 15, -25, 160, 10),
+            [(4, cy - 62), (22, cy - 54), (38, cy - 60)],
+            [(118, cy - 2), (98, cy - 4), (84, cy + 6)],
+        ]
+        for pts_cr in coils:
+            _sulcus(pts_cr, 2.8)
+
+    def _mascot_body_virus(self, c, T, TT, s, oc_m, ow, cy, p):
+        """Wujud maskot Virus 100% persis referensi user: 2-pass siluet hijau menyatu mulus, 10 spike corong hijau + 4 tonjolan kecil + shading bersih di dalam!"""
+        vc = warna(p.get("kulit"), (136, 198, 56))
+        vsh = gelap(vc, 0.19)
+        vhl = terang(vc, 0.30)
+        voc = (34, 42, 22)
+
+        # Pra-hitung 10 spike-corong utama & 4 tonjolan kecil (persis siluet referensi virus user!)
+        main_angles = [k * 36.0 - 90.0 for k in range(10)]
+        nub_angles = [-112.0, -40.0, 68.0, 140.0]
+
+        def _draw_virus_shapes(pad, col, draw_inner_shade=False):
+            # 1) 10 spike corong/jamur menyatu mulus
+            for deg in main_angles:
+                ang = math.radians(deg)
+                ca, sa = math.cos(ang), math.sin(ang)
+                nx, ny = -sa, ca
+                r0, r1 = 84.0, 120.0
+                # tangkai menyempit di tengah lalu melebar di pangkal & kepala corong
+                stem = [
+                    (ca * r0 + nx * (15 + pad), cy + sa * r0 + ny * (15 + pad)),
+                    (ca * ((r0 + r1) * 0.52) + nx * (7.5 + pad), cy + sa * ((r0 + r1) * 0.52) + ny * (7.5 + pad)),
+                    (ca * r1 + nx * (11 + pad), cy + sa * r1 + ny * (11 + pad)),
+                    (ca * r1 - nx * (11 + pad), cy + sa * r1 - ny * (11 + pad)),
+                    (ca * ((r0 + r1) * 0.52) - nx * (7.5 + pad), cy + sa * ((r0 + r1) * 0.52) - ny * (7.5 + pad)),
+                    (ca * r0 - nx * (15 + pad), cy + sa * r0 - ny * (15 + pad)),
+                ]
+                c.poly(TT(stem), col)
+                # kepala corong bulat melebar sedikit
+                tx, ty = ca * (r1 + 6), cy + sa * (r1 + 6)
+                c.ell(*T(tx, ty), (17.5 + pad) * s, (16.5 + pad) * s, col)
+                if draw_inner_shade:
+                    # highlight mungil di sisi kiri-atas tiap kepala spike
+                    c.ell(*T(tx - 4.5, ty - 4.5), 6.0 * s, 4.2 * s, vhl)
+            # 2) 4 tonjolan kecil mungil di sela-sela spike utama (ciri khas referensi!)
+            for deg in nub_angles:
+                ang = math.radians(deg)
+                ca, sa = math.cos(ang), math.sin(ang)
+                c.ell(*T(ca * 102, cy + sa * 102), (10.5 + pad) * s, (10.5 + pad) * s, col)
+            # 3) Badan bulat sempurna
+            c.ell(*T(0, cy), (97.0 + pad) * s, (97.0 + pad) * s, col)
+
+        # Pass 1: Outline tebal bersih menyatu (NOL garis pemotong di pangkal spike!)
+        _draw_virus_shapes(5.2, voc, False)
+        # Pass 2: Isi bayangan hijau-tua pada seluruh bentuk dulu (cel-shading bawah-kanan yang 100% rapi & melengkung mulus!)
+        _draw_virus_shapes(0.0, vsh, False)
+        # Pass 3: Isi hijau cerah utama, lalu lingkaran hijau cerah bergeser sedikit ke kiri-atas untuk bulan sabit bayangan mulus tanpa garis lurus patah!
+        _draw_virus_shapes(0.0, vc, True)
+        c.ell(*T(0, cy), 96.5 * s, 96.5 * s, vsh)
+        c.ell(*T(-8, cy - 8), 89.0 * s, 89.0 * s, vc)
+        # 6 bintik mikroba hijau-tua TANPA outline kasar (persis referensi user!)
+        for sx_p, sy_p, rx_p, ry_p in ((-62, -46, 9, 7), (-34, -74, 7, 5), (26, -70, 10, 7),
+                                       (64, -42, 8, 6), (52, 54, 11, 7), (-56, 48, 9, 6)):
+            c.ell(*T(sx_p, cy + sy_p), rx_p * s, ry_p * s, vsh)
+        # kilau mengkilap di pojok kiri atas bola virus
+        c.ell(*T(-50, cy - 58), 16 * s, 7.5 * s, vhl)
+
+    def _mascot_body_imun(self, c, T, TT, s, oc_m, ow, cy, p):
+        """Wujud maskot Sel Imun 2-pass siluet sel darah putih amoeboid mulus + cel-shading rapi di dalam + topi perisai medis!"""
+        ic = warna(p.get("kulit"), (244, 246, 238))
+        ish = (204, 222, 234)
+        badge_c = warna(p.get("sepatu"), (78, 134, 178))
+        gold_c = warna(p.get("sol_warna"), (226, 174, 84))
+
+        lobes = [
+            (-82, -24, 52, 48), (-44, -66, 54, 46), (44, -66, 54, 46),
+            (82, -24, 52, 48), (90, 26, 48, 44), (46, 70, 52, 42),
+            (-46, 70, 52, 42), (-90, 26, 48, 44), (0, 0, 96, 84),
+        ]
+        # Pass 1: outline luar menyatu
+        for dx, dy, rx, ry in lobes:
+            c.ell(*T(dx, cy + dy), (rx + 4.4) * s, (ry + 4.4) * s, oc_m)
+        # Pass 2: bayangan biru-lembut di dalam siluet -> isi putih-gading bergeser ke kiri-atas (NOL bocor keluar!)
+        for dx, dy, rx, ry in lobes:
+            c.ell(*T(dx, cy + dy), rx * s, ry * s, ish)
+        for dx, dy, rx, ry in lobes:
+            c.ell(*T(dx - 5, cy + dy - 7), (rx - 4) * s, (ry - 5) * s, ic)
+        for gx, gy, gr in ((-76, -24, 9), (78, -20, 10), (-72, 44, 8), (72, 46, 9)):
+            c.ell(*T(gx, cy + gy), gr * s, gr * 0.85 * s, (188, 216, 234))
+        c.ell(*T(-26, cy - 60), 34 * s, 14 * s, (255, 255, 252))
+
+        # Topi/helm lencana penjaga imun mungil di puncak sel
+        cap_y = cy - 90
+        c.blob(TT([(-56, cap_y + 18), (-50, cap_y - 24), (0, cap_y - 36), (50, cap_y - 24),
+                   (56, cap_y + 18), (0, cap_y + 24)]), badge_c, ow, oc_m, n=6)
+        c.blob(TT([(-62, cap_y + 16), (0, cap_y + 8), (62, cap_y + 16), (54, cap_y + 28), (0, cap_y + 22), (-54, cap_y + 28)]),
+               gold_c, ow * 0.85, oc_m, n=5)
+        c.ell(*T(0, cap_y - 8), 18 * s, 18 * s, (248, 246, 236), ow * 0.75, oc_m)
+        c.poly(TT([(-10, cap_y - 12), (10, cap_y - 12), (10, cap_y - 4), (-10, cap_y - 4)]), (206, 82, 74))
+        c.poly(TT([(-4, cap_y - 18), (4, cap_y - 18), (4, cap_y + 2), (-4, cap_y + 2)]), (206, 82, 74))
+
+    def _mascot_face(self, c, st, T, TT, s, fl, ow, oc_m, cy, turn, bentuk, p):
+        """Wajah maskot ekspresif & super rapi (Virus = mata miring tajam + seringai bertaring persis referensi; Otak/Imun = mata pie-cut ceria!)."""
+        ex = eks(st.get("expr", "senang"))
+        bl = st.get("blink", 0.0)
+        lk = st.get("look", ex.get("look", (0.0, 0.0)))
+        fx = 10.0 * turn
+
+        # === KHUSUS VIRUS: ekspresi nakal ikonik persis referensi user (alis V tegas + 2 mata besar tajam + seringai lebar bertaring!) ===
+        if bentuk == "virus":
+            voc = (34, 42, 22)
+            vc = warna(p.get("kulit"), (136, 198, 56))
+            eye_y = cy - 12.0
+            eye_sep = 30.0
+            ek = ex["eyes"]
+            # 1) 2 Mata Virus lebar ekspresif
+            for sg in (-1, 1):
+                ex_x = fx + sg * eye_sep
+                if bl > 0.72 or ek == "arc_dn":
+                    c.curve(TT([(ex_x - 18, eye_y + 2), (ex_x, eye_y + 12), (ex_x + 18, eye_y + 2)]), voc, 4.2 * s)
+                elif ek == "arc_up":
+                    c.curve(TT([(ex_x - 18, eye_y + 8), (ex_x, eye_y - 10), (ex_x + 18, eye_y + 8)]), voc, 4.2 * s)
+                elif ek == "wink" and sg > 0:
+                    c.curve(TT([(ex_x - 18, eye_y + 4), (ex_x, eye_y - 8), (ex_x + 18, eye_y + 4)]), voc, 4.2 * s)
+                else:
+                    erx = 24.5 if ek != "wide" else 27.0
+                    ery = 22.0 if ek != "wide" else 26.0
+                    c.ell(*T(ex_x, eye_y), erx * s, ery * s, (254, 253, 248), ow * 1.15, voc)
+                    if ek == "dot":
+                        c.ell(*T(ex_x + lk[0] * 4, eye_y + lk[1] * 4), 6.0 * s, 6.0 * s, voc)
+                    else:
+                        px = ex_x + lk[0] * 6.0 + (7.0 if sg < 0 else 6.0)
+                        py = eye_y + lk[1] * 5.0 + 1.0
+                        c.ell(*T(px, py), 11.5 * s, 12.5 * s, voc)
+                        c.ell(*T(px - 3.5, py - 4.0), 3.4 * s, 3.4 * s, (255, 255, 255))
+                    # kelopak miring tegas di atas mata untuk ekspresi nakal/marah khas referensi virus!
+                    if ek not in ("wide", "dot") and st.get("expr") not in ("kaget", "panik", "sedih"):
+                        cut_in = eye_y - 6.0
+                        cut_out = eye_y - 24.0
+                        if sg < 0:
+                            c.poly(TT([(ex_x - erx - 4, eye_y - ery - 8), (ex_x + erx + 4, eye_y - ery - 8),
+                                       (ex_x + erx + 4, cut_in), (ex_x - erx - 4, cut_out)]), vc)
+                        else:
+                            c.poly(TT([(ex_x - erx - 4, eye_y - ery - 8), (ex_x + erx + 4, eye_y - ery - 8),
+                                       (ex_x + erx + 4, cut_out), (ex_x - erx - 4, cut_in)]), vc)
+            # 2) Alis V tegas bergaris tebal (persis gambar referensi virus!)
+            brow = ex.get("brow", (0, 0, 0))
+            if st.get("expr") in ("kaget", "panik"):
+                for sg in (-1, 1):
+                    bx = fx + sg * eye_sep
+                    c.curve(TT([(bx - 18, eye_y - 34), (bx, eye_y - 42), (bx + 18, eye_y - 34)]), voc, 5.2 * s)
+            elif st.get("expr") == "sedih":
+                for sg in (-1, 1):
+                    bx = fx + sg * eye_sep
+                    c.curve(TT([(bx - 18, eye_y - 26 + sg * 6), (bx + 18, eye_y - 26 - sg * 6)]), voc, 5.2 * s)
+            else:
+                # alis V nakal/jahil khas referensi: menukik tajam ke tengah!
+                c.curve(TT([(fx - 58, eye_y - 28), (fx - 26, eye_y - 16), (fx - 6, eye_y - 5)]), voc, 6.2 * s)
+                c.curve(TT([(fx + 58, eye_y - 28), (fx + 26, eye_y - 16), (fx + 6, eye_y - 5)]), voc, 6.2 * s)
+                c.curve(TT([(fx - 6, eye_y - 5), (fx - 8, eye_y - 16)]), voc, 3.2 * s)
+                c.curve(TT([(fx + 6, eye_y - 5), (fx + 8, eye_y - 16)]), voc, 3.2 * s)
+
+            # 3) Mulut seringai lebar bertaring khas referensi virus (tetap mendukung VO lipsync & 20 ekspresi!)
+            talk = st.get("mouth")
+            op = talk if talk is not None else ex.get("open", 0.65)
+            mk = "open" if talk is not None else ex["mouth"]
+            my = eye_y + 26.0
+            if mk in ("smirk", "grin", "open", "smile"):
+                mw = 52.0 if mk in ("smirk", "grin") else 40.0
+                mh = lerp(22.0, 42.0, clamp(op, 0.35, 1.0)) if mk == "open" else 36.0
+                # lengkung seringai bulan sabit lebar persis referensi!
+                top_arc = [(fx - mw, my - 6), (fx - mw * 0.45, my + 8), (fx, my + 12), (fx + mw * 0.45, my + 8), (fx + mw, my - 6)]
+                bot_arc = [(fx + mw * 0.80, my + mh * 0.72), (fx + mw * 0.35, my + mh), (fx, my + mh + 2),
+                           (fx - mw * 0.35, my + mh), (fx - mw * 0.80, my + mh * 0.72)]
+                c.blob(TT(top_arc + bot_arc), voc, ow * 0.9, voc, n=4)
+                # barisan gigi putih tajam bertaring kiri & kanan (persis referensi!)
+                t_pts = [
+                    (fx - mw * 0.78, my + 2), (fx - mw * 0.42, my + 11), (fx, my + 14),
+                    (fx + mw * 0.42, my + 11), (fx + mw * 0.78, my + 2),
+                    (fx + mw * 0.60, my + mh * 0.76), (fx + mw * 0.44, my + mh * 0.48),
+                    (fx + mw * 0.30, my + mh * 0.82), (fx, my + mh * 0.86),
+                    (fx - mw * 0.30, my + mh * 0.82), (fx - mw * 0.44, my + mh * 0.48),
+                    (fx - mw * 0.60, my + mh * 0.76),
+                ]
+                c.poly(TT(t_pts), (254, 253, 248))
+                # garis pemisah antar-gigi + sudut lesung senyum nakal
+                c.line(TT([(fx, my + 14), (fx, my + mh * 0.84)]), voc, 2.4 * s)
+                c.line(TT([(fx - mw * 0.28, my + 12), (fx - mw * 0.28, my + mh * 0.80)]), voc, 2.2 * s)
+                c.line(TT([(fx + mw * 0.28, my + 12), (fx + mw * 0.28, my + mh * 0.80)]), voc, 2.2 * s)
+                c.curve(TT(top_arc), voc, 4.4 * s)
+                c.curve(TT([(fx - mw - 6, my - 4), (fx - mw + 3, my - 10)]), voc, 3.2 * s)
+                c.curve(TT([(fx + mw + 6, my - 4), (fx + mw - 3, my - 10)]), voc, 3.2 * s)
+            elif mk == "gigit":
+                c.poly(TT([(fx - 38, my + 2), (fx + 38, my + 2), (fx + 32, my + 24), (fx - 32, my + 24)]), (254, 253, 248), ow, voc)
+                for gx in (-18, 0, 18):
+                    c.line(TT([(fx + gx, my + 2), (fx + gx, my + 24)]), voc, 2.6 * s)
+            elif mk in ("o", "yawn", "wave_o"):
+                c.ell(*T(fx, my + 16), 16 * s, 20 * s, (156, 48, 52), ow, voc)
+                c.ell(*T(fx, my + 24), 8 * s, 6 * s, (226, 108, 92))
+            elif mk in ("frown", "pout"):
+                c.curve(TT([(fx - 26, my + 24), (fx, my + 8), (fx + 26, my + 24)]), voc, 4.4 * s)
+            else:
+                c.curve(TT([(fx - 24, my + 12), (fx, my + 10), (fx + 24, my + 12)]), voc, 4.2 * s)
+
+            if ex.get("sweat"):
+                c.blob(TT([(fx + 66, eye_y - 30), (fx + 74, eye_y - 10), (fx + 66, eye_y - 4), (fx + 58, eye_y - 10)]),
+                       (142, 212, 246), ow * 0.6, voc, n=4)
+            return
+
+        # === OTAK & SEL IMUN: Mata Chibi/Ghibli Besar Berkilau Biru-Samudra (persis referensi otak user!) ===
+        eye_y = cy - 4.0
+        eye_sep = 34.0
+        iris_c = warna(p.get("iris"), (56, 126, 178))
+        iris_glow = terang(iris_c, 0.42)
+        ek = ex["eyes"]
+        for idx, sg in enumerate((-1, 1)):
+            ex_x = fx + sg * eye_sep
+            if bl > 0.72 or ek == "arc_dn":
+                c.curve(TT([(ex_x - 19, eye_y + 2), (ex_x, eye_y + 13), (ex_x + 19, eye_y + 2)]), oc_m, 4.2 * s)
+            elif ek == "arc_up" or (ek == "wink" and sg > 0):
+                c.curve(TT([(ex_x - 19, eye_y + 7), (ex_x, eye_y - 12), (ex_x + 19, eye_y + 7)]), oc_m, 4.4 * s)
+            else:
+                erx = 26.5 if ek != "wide" else 29.0
+                ery = 27.5 if ek != "wide" else 30.5
+                # sklera putih bersih + garis tebal kelopak atas
+                c.ell(*T(ex_x, eye_y), erx * s, ery * s, (254, 254, 255), ow * 1.15, oc_m)
+                c.curve(TT(arc_pts(ex_x, eye_y, erx, ery, 200, 340, 14)), oc_m, ow * 1.65)
+                if ek == "dot":
+                    c.ell(*T(ex_x + lk[0] * 4, eye_y + lk[1] * 4), 6.2 * s, 6.2 * s, oc_m)
+                else:
+                    px = ex_x + lk[0] * 6.0
+                    py = eye_y + lk[1] * 6.0 + 2.0
+                    ir = 19.5 * (0.85 if ek == "wide" else 1.0)
+                    # iris biru-samudra bergradasi + kilau sabit bawah + pupil hitam mengkilap + 2 titik kilau putih!
+                    c.ell(*T(px, py), ir * s, ir * s, gelap(iris_c, 0.28), ow * 0.55, oc_m)
+                    c.ell(*T(px, py + 1.5), (ir - 2.0) * s, (ir - 2.5) * s, iris_c)
+                    c.ell(*T(px, py + ir * 0.36), ir * 0.62 * s, ir * 0.36 * s, iris_glow)
+                    c.ell(*T(px, py - 1.0), ir * 0.60 * s, ir * 0.62 * s, (24, 22, 28))
+                    # 2 titik kilau besar & kecil persis referensi mata chibi!
+                    c.ell(*T(px - ir * 0.34, py - ir * 0.34), ir * 0.34 * s, ir * 0.32 * s, (255, 255, 255))
+                    c.ell(*T(px + ir * 0.30, py + ir * 0.28), ir * 0.16 * s, ir * 0.16 * s, (255, 255, 255))
+                if ek == "half":
+                    c.poly(TT([(ex_x - erx - 2, eye_y - ery - 2), (ex_x + erx + 2, eye_y - ery - 2),
+                               (ex_x + erx + 2, eye_y - 6), (ex_x - erx - 2, eye_y - 6)]), warna(p.get("kulit"), (248, 174, 178)))
+                    c.line(TT([(ex_x - erx, eye_y - 6), (ex_x + erx, eye_y - 6)]), oc_m, 3.2 * s)
+
+        # Alis lembut melengkung manis di atas mata (persis referensi!)
+        brow = ex.get("brow", (0, 0, 0))
+        for sg, tilt_b in ((-1, brow[1]), (1, brow[2])):
+            bx = fx + sg * (eye_sep - 2)
+            by = eye_y - 38.0 - brow[0] * 0.55
+            p0 = (bx - 13, by + 2 + sg * tilt_b * 8)
+            pm = (bx, by - 3)
+            p1 = (bx + 13, by + 2 - sg * tilt_b * 8)
+            c.curve(TT([p0, pm, p1]), oc_m, 5.4 * s)
+
+        # Pipi merona hangat halus (tanpa hidung tajam agar wajah super imut seperti referensi!)
+        blush = ex.get("blush", 0.45)
+        if blush > 0.05:
+            bcol = (242, 134, 152) if bentuk == "otak" else (242, 152, 176)
+            for sg in (-1, 1):
+                c.ell(*T(fx + sg * 54, eye_y + 24), 11.0 * s, 6.5 * s, bcol + (int(150 * blush),))
+
+        # Mulut senyum manis / lipsync VO penuh!
+        talk = st.get("mouth")
+        op = talk if talk is not None else ex.get("open", 0.55)
+        mk = "open" if talk is not None else ex["mouth"]
+        my = eye_y + 24.0
+        if mk == "open" and talk is None and op <= 0.68:
+            # senyum U membulat manis bersih saat diam (persis referensi otak user, bukan V lancip!)
+            c.curve(TT(arc_pts(fx, my - 3, 17, 15, 22, 158, 12)), oc_m, 4.4 * s)
+        elif mk in ("open", "grin"):
+            mw = 26.0 if mk == "grin" else 22.0
+            mh = lerp(11.0, 26.0, clamp(op, 0.2, 1.0))
+            pts_m = [(fx - mw, my), (fx, my + 4), (fx + mw, my),
+                     (fx + mw * 0.78, my + mh * 0.85), (fx, my + mh), (fx - mw * 0.78, my + mh * 0.85)]
+            c.blob(TT(pts_m), oc_m, ow * 0.9, oc_m, n=5)
+            c.ell(*T(fx + 2, my + mh * 0.72), mw * 0.48 * s, mh * 0.28 * s, (232, 112, 98))
+            if mh > 14:
+                c.poly(TT([(fx - mw * 0.68, my + 2), (fx + mw * 0.68, my + 2),
+                           (fx + mw * 0.56, my + 8), (fx - mw * 0.56, my + 8)]), (252, 250, 244))
+            c.blob(TT(pts_m), None, ow * 0.85, oc_m, n=5)
+        elif mk == "smile":
+            c.curve(TT([(fx - 18, my + 2), (fx, my + 14), (fx + 18, my + 2)]), oc_m, 4.4 * s)
+        elif mk == "smirk":
+            c.curve(TT([(fx - 16, my + 6), (fx + 4, my + 10), (fx + 22, my - 3)]), oc_m, 4.2 * s)
+        elif mk in ("o", "yawn", "wave_o"):
+            c.ell(*T(fx, my + 10), 12 * s, 15 * s, (168, 52, 56), ow * 0.85, oc_m)
+            c.ell(*T(fx, my + 17), 6.5 * s, 4.5 * s, (232, 112, 98))
+        elif mk in ("frown", "pout"):
+            c.curve(TT([(fx - 16, my + 16), (fx, my + 5), (fx + 16, my + 16)]), oc_m, 4.2 * s)
+        elif mk == "gigit":
+            c.poly(TT([(fx - 22, my), (fx + 22, my), (fx + 22, my + 15), (fx - 22, my + 15)]), (252, 250, 244), ow * 0.8, oc_m)
+            for gx in (-10, 0, 10):
+                c.line(TT([(fx + gx, my), (fx + gx, my + 15)]), oc_m, 2.2 * s)
+        else:
+            c.curve(TT([(fx - 15, my + 8), (fx, my + 6), (fx + 15, my + 8)]), oc_m, 3.8 * s)
+
+        if ex.get("tear"):
+            for sg in (-1, 1):
+                c.ell(*T(fx + sg * 32, eye_y + 26), 5.5 * s, 8.5 * s, (132, 206, 244), ow * 0.5, oc_m)
+        if ex.get("sweat"):
+            c.blob(TT([(fx + 64, eye_y - 34), (fx + 72, eye_y - 14), (fx + 64, eye_y - 8), (fx + 56, eye_y - 14)]),
+                   (142, 212, 246), ow * 0.55, oc_m, n=4)
+        if ex.get("vein"):
+            vx, vy = fx + 54, eye_y - 46
+            c.curve(TT([(vx - 10, vy - 6), (vx - 3, vy - 3), (vx - 6, vy - 12)]), (214, 72, 66), 2.8 * s)
+            c.curve(TT([(vx + 10, vy + 6), (vx + 3, vy + 3), (vx + 6, vy + 12)]), (214, 72, 66), 2.8 * s)
 
 
 def pose_state(name, t=0.0):
